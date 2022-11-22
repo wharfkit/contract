@@ -25,10 +25,27 @@ export function isABISerializableObject(value: any): value is ABISerializableObj
 
 export class Contract {
     /** Account where contract is deployed. */
-    static account: Name
+    static account?: NameType
 
     private static _shared: Contract | null = null
     private static _session: Session | null = null
+
+    /** Account where contract is deployed. */
+    readonly account: Name
+
+    constructor(account?: NameType) {
+        if ((this.constructor as typeof Contract).account) {
+            if (account) {
+                throw new Error('Cannot specify account when using subclassed Contract')
+            }
+            this.account = Name.from((this.constructor as typeof Contract).account!)
+        } else {
+            if (!account) {
+                throw new Error('Must specify account when using Contract directly')
+            }
+            this.account = Name.from(account)
+        }
+    }
 
     /** Shared instance of the contract. */
     static shared<T extends {new ()}>(this: T): InstanceType<T> {
@@ -37,11 +54,6 @@ export class Contract {
             self._shared = new self()
         }
         return self._shared as InstanceType<T>
-    }
-
-    /** Account where contract is deployed. */
-    get account() {
-        return (this.constructor as typeof Contract).account
     }
 
     /** Call a contract action. */

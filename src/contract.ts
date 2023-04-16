@@ -59,7 +59,8 @@ export class Contract {
     /** Call a contract action. */
     async call(
         name: NameType,
-        data: ABISerializableObject | {[key: string]: any}
+        data: ABISerializableObject | {[key: string]: any},
+        session: Session,
     ): Promise<SessionTransactResult> {
         let action: Action
         if (isABISerializableObject(data)) {
@@ -73,6 +74,10 @@ export class Contract {
             // TODO: here we need to fetch the ABI and construct the action
             throw new Error('Not implemented')
         }
+
+        // Trigger the transaction using the session kit
+        session.transact(action)
+
         // TODO: resolve session and transact
         throw new Error('Not implemented')
     }

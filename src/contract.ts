@@ -1,16 +1,17 @@
 import {
+    Session,
+    TransactResult,
+    AnyAction,
     ABISerializableObject,
     Action,
-    AnyAction,
+    APIClient,
     Checksum256,
     Name,
     NameType,
-} from '@greymass/eosio'
+    FetchProvider,
+} from '@wharfkit/session'
 
 // stubs for session kit
-interface Session {
-    transact(SessionTransactArgs: any): Promise<SessionTransactResult>
-}
 interface SessionTransactArgs {
     actions: AnyAction[]
 }
@@ -60,9 +61,13 @@ export class Contract {
     async call(
         name: NameType,
         data: ABISerializableObject | {[key: string]: any},
-        session: Session,
-    ): Promise<SessionTransactResult> {
+        session: Session
+    ): Promise<TransactResult> {
         let action: Action
+
+        // Add a RPC provider URL here
+        const apiClient = new APIClient({provider: new FetchProvider(session.chain.url)})
+
         if (isABISerializableObject(data)) {
             action = Action.from({
                 account: this.account,
@@ -75,10 +80,22 @@ export class Contract {
             throw new Error('Not implemented')
         }
 
-        // Trigger the transaction using the session kit
-        session.transact(action)
+        try {
+            // Trigger the transaction using the session kit
+            return session.transact({actions: [action]})
+        } catch (error) {
+            throw error
+        }
+    }
 
-        // TODO: resolve session and transact
-        throw new Error('Not implemented')
+    private async _getAbi(apiClient): Promise<API.ABI> {
+        const cachedAbi = this.constructor['cachedAbi']
+        if (cachedAbi) {
+            return cachedAbi
+        } else {
+            const abiResult = await apiClient.v1.chain.get_abi(this.account)
+            this.constructor['cachedAbi'] = abiResult.abi
+            return abiResult.abi
+        }
     }
 }

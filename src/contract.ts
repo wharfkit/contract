@@ -9,6 +9,8 @@ import {
     Name,
     NameType,
     FetchProvider,
+    ABI,
+    Serializer
 } from '@wharfkit/session'
 
 // stubs for session kit
@@ -68,17 +70,22 @@ export class Contract {
         // Add a RPC provider URL here
         const apiClient = new APIClient({provider: new FetchProvider(session.chain.url)})
 
+        let serializedData: ABISerializableObject
+
         if (isABISerializableObject(data)) {
-            action = Action.from({
-                account: this.account,
-                name,
-                authorization: [],
-                data,
-            })
+            serializedData = data
         } else {
-            // TODO: here we need to fetch the ABI and construct the action
-            throw new Error('Not implemented')
+            /// Fetch the ABI and construct the action
+            const abi = await this._getAbi(apiClient)
+            serializedData = await this._serializeActionData(abi, name, data)
         }
+
+        action = Action.from({
+            account: this.account,
+            name,
+            authorization: [],
+            data: serializedData,
+        })
 
         try {
             // Trigger the transaction using the session kit
@@ -88,7 +95,7 @@ export class Contract {
         }
     }
 
-    private async _getAbi(apiClient): Promise<API.ABI> {
+    private async _getAbi(apiClient): Promise<ABI> {
         const cachedAbi = this.constructor['cachedAbi']
         if (cachedAbi) {
             return cachedAbi
@@ -97,5 +104,18 @@ export class Contract {
             this.constructor['cachedAbi'] = abiResult.abi
             return abiResult.abi
         }
+    }
+
+    private async _serializeActionData(
+        abi: ABI,
+        name: NameType,
+        data: {[key: string]: any}
+    ): Promise<ABISerializableObject> {
+        const actionType = abi.actions.find((a) => a.name === name)?.type
+        if (!actionType) {
+            throw new Error(`Action '${name}' not found in ABI`)
+        }
+
+        return Serializer.encode({object: data, type: actionType})
     }
 }

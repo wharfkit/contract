@@ -1,10 +1,6 @@
 import {ABISerializableObject, Action, Name, Session} from '@wharfkit/session'
 import type {NameType, TransactOptions, TransactResult, BytesType} from '@wharfkit/session'
 
-export function isABISerializableObject(value: any): value is ABISerializableObject {
-    return value.constructor && typeof value.constructor.abiName === 'string'
-}
-
 export class Contract {
     /** Account where contract is deployed. */
     static account?: NameType

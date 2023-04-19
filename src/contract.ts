@@ -1,12 +1,10 @@
 import {
-    Session,
-    TransactResult,
-    AnyAction,
     ABISerializableObject,
     Action,
-    Checksum256,
     Name,
     NameType,
+    Session,
+    TransactResult,
 } from '@wharfkit/session'
 
 export class Contract {
@@ -14,7 +12,6 @@ export class Contract {
     static account?: NameType
 
     private static _shared: Contract | null = null
-    private static _session: Session | null = null
 
     /** Account where contract is deployed. */
     readonly account: Name
@@ -48,20 +45,14 @@ export class Contract {
         data: ABISerializableObject | {[key: string]: any},
         session: Session
     ): Promise<TransactResult> {
-        let action: Action
-
-        action = Action.from({
+        const action: Action = Action.from({
             account: this.account,
             name,
             authorization: [],
             data,
         })
 
-        try {
-            // Trigger the transaction using the session kit
-            return session.transact({action})
-        } catch (error) {
-            throw error
-        }
+        // Trigger the transaction using the session kit
+        return session.transact({action})
     }
 }

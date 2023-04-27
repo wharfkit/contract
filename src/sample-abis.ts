@@ -1,4 +1,4 @@
-import {ABI} from '@greymass/eosio'
+import {ABI, Asset, Name, Struct} from '@greymass/eosio'
 
 export const eosioToken = ABI.from({
     actions: [
@@ -1690,36 +1690,32 @@ export const atomicAssets = ABI.from({
     ],
 })
 
+@Struct.type('account')
+export class account extends Struct {
+    @Struct.field('asset')
+    declare balance: Asset
+}
+@Struct.type('close')
+export class close extends Struct {
+    @Struct.field('name')
+    declare owner: Name
+    @Struct.field('symbol')
+    declare symbol: symbol
+}
+@Struct.type('create')
+export class create extends Struct {
+    @Struct.field('name')
+    declare issuer: Name
+    @Struct.field('asset')
+    declare maximum_supply: Asset
+}
 
-
-@Struct.type("account")
-export class account {
-    @Struct.field("asset")
-    declare balance: asset;
-}
-export
-@Struct.type("close")
-class close {
-    @Struct.field("name")
-    declare owner: name;
-    @Struct.field("symbol")
-    declare symbol: symbol;
-}
-export
-@Struct.type("create")
-class create {
-    @Struct.field("name")
-    declare issuer: name;
-    @Struct.field("asset")
-    declare maximum_supply: asset;
-}
-export
-@Struct.type("currency_stats")
-class currency_stats {
-    @Struct.field("asset")
-    declare supply: asset;
-    @Struct.field("asset")
-    declare max_supply: asset;
-    @Struct.field("name")
-    declare issuer: name;
+@Struct.type('currency_stats')
+export class currency_stats extends Struct {
+    @Struct.field('asset')
+    declare supply: Asset
+    @Struct.field('asset')
+    declare max_supply: Asset
+    @Struct.field('name')
+    declare issuer: Name
 }

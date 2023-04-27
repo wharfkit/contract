@@ -2,7 +2,7 @@ import {ABI} from '@greymass/eosio'
 import assert from 'assert'
 import * as ts from 'typescript'
 
-import {eosioToken, eosioTokenModified} from './sample-abis'
+import {eosioTokenModified} from './sample-abis'
 
 const file = ts.createSourceFile('test.ts', '', ts.ScriptTarget.ES2022)
 const printer = ts.createPrinter()

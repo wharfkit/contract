@@ -287,6 +287,8 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
     return classDeclaration
 }
 
-const contractClass = createContractClass(eosioTokenModified)
-const result2 = printer.printNode(ts.EmitHint.Unspecified, contractClass, file)
-console.log(result2)
+export function codegen() {
+    const contractClass = createContractClass(eosioTokenModified)
+    const result2 = printer.printNode(ts.EmitHint.Unspecified, contractClass, file)
+    console.log(result2)
+}

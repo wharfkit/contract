@@ -1,5 +1,4 @@
-PACKAGE
-=======
+# PACKAGE
 
 Greymass TypeScript library template, intended for libraries that work in any JavaScript context (node.js, Browser, React native), `@types/node` are installed only for tests, don't rely on any node.js types or imports inside `src/` (no `buffer`, `crypto` imports etc, they can be filled for browser but will bloat the bundle 100x)
 
@@ -15,7 +14,15 @@ npm install --save PACKAGE
 
 ## Usage
 
-TODO
+To generate the Contract helper for a specific Antelope contract, use the `generate` make target:
+
+```bash
+make generate contract=<CONTRACT_NAME_HERE>
+```
+
+and your contract helper will be added to `contracts/CONTRACT_NAME.ts`.
+
+```typescript
 
 ## Developing
 
@@ -26,3 +33,9 @@ Clone the repository and run `make` to checkout all dependencies and build the p
 ---
 
 Made with ☕️ & ❤️ by [Greymass](https://greymass.com), if you find this useful please consider [supporting us](https://greymass.com/support-us).
+
+```
+
+```
+
+```

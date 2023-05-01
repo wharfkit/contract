@@ -292,6 +292,8 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
     return classDeclaration
 }
 
+const contractFilesLocation = path.join('contracts')
+
 export async function codegen(contract: string = 'eosio.token') {
     console.log(`Fetching ABI for ${contract}...`)
     const {abi} = await eosClient.v1.chain.get_abi(contract)
@@ -305,9 +307,8 @@ export async function codegen(contract: string = 'eosio.token') {
     const generatedCode = printer.printNode(ts.EmitHint.Unspecified, contractClass, file)
     console.log(`Generated Contract helper for ${contract}...`)
 
-    const outputDir = path.join('codegen', contract)
-    fs.mkdirSync(outputDir, {recursive: true})
-    const outputFile = path.join(outputDir, `${contract}.ts`)
+    fs.mkdirSync(contractFilesLocation, {recursive: true})
+    const outputFile = path.join(contractFilesLocation, `${contract}.ts`)
     fs.writeFileSync(outputFile, generatedCode)
 
     console.log(`Generated Contract helper for ${contract} saved to ${outputFile}`)

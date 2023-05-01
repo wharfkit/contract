@@ -1,8 +1,13 @@
-import {ABI} from '@greymass/eosio'
+import {ABI, APIClient} from '@greymass/eosio'
 import assert from 'assert'
 import * as ts from 'typescript'
 
-import {eosioTokenModified} from './sample-abis'
+import fs from 'fs'
+import path from 'path'
+
+const eosClient = new APIClient({
+    url: 'https://eos.greymass.com',
+})
 
 const file = ts.createSourceFile('test.ts', '', ts.ScriptTarget.ES2022)
 const printer = ts.createPrinter()
@@ -287,8 +292,23 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
     return classDeclaration
 }
 
-export function codegen() {
-    const contractClass = createContractClass(eosioTokenModified)
-    const result2 = printer.printNode(ts.EmitHint.Unspecified, contractClass, file)
-    console.log(result2)
+export async function codegen(contract: string = 'eosio.token') {
+    console.log(`Fetching ABI for ${contract}...`)
+    const {abi} = await eosClient.v1.chain.get_abi(contract)
+
+    if (!abi) {
+        return console.log(`No ABI found for ${contract}`)
+    }
+
+    console.log(`Generating Contract helper for ${contract}...`)
+    const contractClass = createContractClass(ABI.from(abi))
+    const generatedCode = printer.printNode(ts.EmitHint.Unspecified, contractClass, file)
+    console.log(`Generated Contract helper for ${contract}...`)
+
+    const outputDir = path.join('codegen', contract)
+    fs.mkdirSync(outputDir, {recursive: true})
+    const outputFile = path.join(outputDir, `${contract}.ts`)
+    fs.writeFileSync(outputFile, generatedCode)
+
+    console.log(`Generated Contract helper for ${contract} saved to ${outputFile}`)
 }

@@ -9,7 +9,7 @@ const eosClient = new APIClient({
     url: 'https://eos.greymass.com',
 })
 
-const file = ts.createSourceFile('test.ts', '', ts.ScriptTarget.ES2022)
+const file = ts.createSourceFile('codegen.ts', '', ts.ScriptTarget.ES2022)
 const printer = ts.createPrinter()
 
 function pascalCase(value: string): string {
@@ -280,16 +280,35 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
 
     // debug print all structs
     for (const struct of structs.values()) {
-        const result = printer.printNode(ts.EmitHint.Unspecified, struct, file)
-        console.log(result)
+        printer.printNode(ts.EmitHint.Unspecified, struct, file)
     }
     // debug print all struct types
     for (const structType of structTypes.values()) {
-        const result = printer.printNode(ts.EmitHint.Unspecified, structType, file)
-        console.log(result)
+        printer.printNode(ts.EmitHint.Unspecified, structType, file)
     }
 
-    return classDeclaration
+    return {
+        classDeclaration,
+        structTypes: undefined, // generate and pass struct types here
+    }
+}
+
+function createImportStatement(): ts.ImportDeclaration {
+    return ts.factory.createImportDeclaration(
+        undefined, // modifiers
+        ts.factory.createImportClause(
+            false, // isTypeOnly
+            undefined, // name
+            ts.factory.createNamedImports([
+                ts.factory.createImportSpecifier(
+                    false,
+                    undefined, // propertyName
+                    ts.factory.createIdentifier('Contract') // name
+                ),
+            ]) // namedBindings
+        ),
+        ts.factory.createStringLiteral('../src/contract') // moduleSpecifier
+    )
 }
 
 const contractFilesLocation = path.join('contracts')
@@ -303,9 +322,17 @@ export async function codegen(contract: string = 'eosio.token') {
     }
 
     console.log(`Generating Contract helper for ${contract}...`)
-    const contractClass = createContractClass(ABI.from(abi))
-    const generatedCode = printer.printNode(ts.EmitHint.Unspecified, contractClass, file)
-    console.log(`Generated Contract helper for ${contract}...`)
+    const importStatement = createImportStatement()
+    const {structTypes, classDeclaration} = createContractClass(ABI.from(abi))
+
+    const sourceFile = ts.factory.createSourceFile(
+        [importStatement, classDeclaration],
+        ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
+        ts.NodeFlags.None
+    )
+
+    const generatedCode = printer.printFile(sourceFile)
+    console.log(`Generated Contract helper class for ${contract}...`)
 
     fs.mkdirSync(contractFilesLocation, {recursive: true})
     const outputFile = path.join(contractFilesLocation, `${contract}.ts`)

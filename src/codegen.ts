@@ -5,6 +5,11 @@ import * as ts from 'typescript'
 import fs from 'fs'
 import path from 'path'
 
+interface FieldType {
+    name: string
+    type: string
+}
+
 const eosClient = new APIClient({
     url: 'https://eos.greymass.com',
 })
@@ -287,10 +292,7 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
         printer.printNode(ts.EmitHint.Unspecified, structType, file)
     }
 
-    return {
-        classDeclaration,
-        structTypes: undefined, // generate and pass struct types here
-    }
+    return classDeclaration
 }
 
 function createImportStatement(): ts.ImportDeclaration {
@@ -311,6 +313,98 @@ function createImportStatement(): ts.ImportDeclaration {
     )
 }
 
+function createNamespace(namespace: string, child: ts.ModuleDeclaration): ts.ModuleDeclaration {
+    return ts.factory.createModuleDeclaration(
+        undefined, // decorators
+        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)], // modifiers
+        ts.factory.createIdentifier(namespace),
+        ts.factory.createModuleBlock([child]),
+        ts.NodeFlags.Namespace
+    )
+}
+
+function createExportNamespace(namespace: string, children): ts.ModuleDeclaration {
+    return ts.factory.createModuleDeclaration(
+        undefined, // decorators
+        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)], // modifiers
+        ts.factory.createIdentifier(namespace),
+        ts.factory.createModuleBlock([...children]),
+        ts.NodeFlags.Namespace
+    )
+}
+
+function createStruct(
+    structName: string,
+    isExport: boolean = false,
+    members: ts.ClassElement[] = []
+): ts.ClassDeclaration {
+    const decorators = [
+        ts.factory.createDecorator(
+            ts.factory.createCallExpression(ts.factory.createIdentifier('Struct.type'), undefined, [
+                ts.factory.createStringLiteral(structName),
+            ])
+        ),
+    ]
+
+    return ts.factory.createClassDeclaration(
+        decorators,
+        isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : undefined,
+        ts.factory.createIdentifier(structName),
+        undefined, // typeParameters
+        [
+            ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
+                ts.factory.createExpressionWithTypeArguments(
+                    ts.factory.createIdentifier('Struct'),
+                    []
+                ),
+            ]),
+        ], // heritageClauses
+        members // Pass the members array
+    )
+}
+
+function createField(field: FieldType, isExport: boolean = false): ts.PropertyDeclaration {
+    const decorators = [
+        ts.factory.createDecorator(
+            ts.factory.createCallExpression(
+                ts.factory.createIdentifier('Struct.field'),
+                undefined,
+                [ts.factory.createStringLiteral(field.name)]
+            )
+        ),
+    ]
+
+    return ts.factory.createPropertyDeclaration(
+        decorators,
+        isExport ? [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)] : undefined,
+        ts.factory.createIdentifier(field.name), // Fixed: Use field.name as the identifier
+        undefined, // questionToken
+        ts.factory.createTypeReferenceNode(field.type), // Fixed: Use field.type as the type reference
+        undefined // initializer
+    )
+}
+
+function getFieldTypesFromAbi(abi: any): {structName: string; fields: FieldType[]}[] {
+    const structTypes: {structName: string; fields: FieldType[]}[] = []
+
+    if (abi && abi.structs) {
+        for (const struct of abi.structs) {
+            const fields: FieldType[] = []
+
+            for (const field of struct.fields) {
+                fields.push({
+                    name: field.name.charAt(0).toUpperCase() + field.name.slice(1),
+                    type: field.type,
+                })
+            }
+
+            structTypes.push({structName: struct.name, fields})
+        }
+    }
+
+    return structTypes
+}
+
 const contractFilesLocation = path.join('contracts')
 
 export async function codegen(contract: string = 'eosio.token') {
@@ -323,10 +417,34 @@ export async function codegen(contract: string = 'eosio.token') {
 
     console.log(`Generating Contract helper for ${contract}...`)
     const importStatement = createImportStatement()
-    const {structTypes, classDeclaration} = createContractClass(ABI.from(abi))
+
+    const classDeclaration = createContractClass(ABI.from(abi))
+
+    // Extract fields from the ABI
+    const structs = getFieldTypesFromAbi(abi)
+
+    const structDeclarations: ts.ClassDeclaration[] = []
+
+    // Iterate through structs and create struct with fields
+    for (const struct of structs) {
+        const structMembers: ts.ClassElement[] = []
+
+        for (const field of struct.fields) {
+            structMembers.push(createField(field, true))
+        }
+
+        structDeclarations.push(createStruct(struct.structName, true, structMembers))
+        // exportNamespace.body?.members?.push(newStruct)
+    }
+
+    // Add your custom namespace and export namespace
+    const exportNamespace = createExportNamespace('Types', structDeclarations)
+
+    const namespace = createNamespace('contractImpl', exportNamespace)
+    // namespace.members.push(exportNamespace)
 
     const sourceFile = ts.factory.createSourceFile(
-        [importStatement, classDeclaration],
+        [importStatement, classDeclaration, namespace],
         ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
         ts.NodeFlags.None
     )

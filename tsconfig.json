@@ -14,5 +14,5 @@
         "target": "es2020",
         "allowSyntheticDefaultImports": true
     },
-    "include": ["src/**/*"]
+    "include": ["src/**/*", "contracts/*"]
 }

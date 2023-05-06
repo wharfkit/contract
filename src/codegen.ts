@@ -64,8 +64,6 @@ function createClassDeclaration(
     return classDeclaration
 }
 
-function createTypeDeclarationForType(type: ABI.ResolvedType) {}
-
 function createPropertyDeclarationForField(name: string, type: ABI.ResolvedType) {
     // field options is an object with all optional fields, e.g.: {array: true, optional: true, extension: true}
     const optionsProps: ts.ObjectLiteralElementLike[] = []
@@ -125,7 +123,7 @@ function createPropertyDeclarationForField(name: string, type: ABI.ResolvedType)
     return propertyDeclaration
 }
 
-function createContractClass(abi: ABI, name = 'contractImpl') {
+function createContractClass(abi: ABI, name = 'ContractImpl') {
     const structs: Map<string, ts.ClassDeclaration> = new Map()
     const structTypes: Map<string, ts.TypeAliasDeclaration> = new Map()
     const coreImports: Set<string> = new Set()
@@ -200,7 +198,7 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
         const alias = ts.factory.createTypeAliasDeclaration(
             undefined, // decorators
             [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)], // modifiers
-            `${type.name}Type`, // name
+            capitalize(type.name), // name
             undefined, // type parameters
             structType // type
         )
@@ -232,6 +230,11 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
         structs.set(abiType.name, structClass)
     }
 
+    const fields = [
+        {name: 'account', type: 'Name'},
+        {name: 'amount', type: 'Asset'},
+    ]
+
     const members: ts.ClassElement[] = []
     // add a method for each action
     for (const action of abi.actions) {
@@ -243,16 +246,16 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
             actionName, // name
             undefined, // question token
             undefined, // type parameters
-            [
+            fields.map((field) =>
                 ts.factory.createParameterDeclaration(
                     undefined, // decorators
                     undefined, // dot dot dot token
-                    ts.factory.createIdentifier('args'), // name
+                    ts.factory.createIdentifier(field.name), // name
                     undefined, // question token
-                    ts.factory.createTypeReferenceNode(getStructType(abi.resolveType(action.type))), // , // type
+                    ts.factory.createTypeReferenceNode(`${field.type}Type`), // type
                     undefined // initializer
-                ),
-            ], // parameters
+                )
+            ),
             ts.factory.createTypeReferenceNode('Promise', [
                 ts.factory.createTypeReferenceNode('void'),
             ]), // type
@@ -267,7 +270,31 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
                             undefined,
                             [
                                 ts.factory.createStringLiteral(String(action.name)),
-                                ts.factory.createIdentifier('args'),
+                                ts.factory.createCallExpression(
+                                    ts.factory.createPropertyAccessExpression(
+                                        ts.factory.createPropertyAccessExpression(
+                                            ts.factory.createPropertyAccessExpression(
+                                                ts.factory.createIdentifier('contractImpl'),
+                                                ts.factory.createIdentifier('Types')
+                                            ),
+                                            ts.factory.createIdentifier('Claim')
+                                        ),
+                                        ts.factory.createIdentifier('from')
+                                    ),
+                                    undefined,
+                                    [
+                                        ts.factory.createObjectLiteralExpression([
+                                            ts.factory.createPropertyAssignment(
+                                                ts.factory.createIdentifier('account'),
+                                                ts.factory.createIdentifier('account')
+                                            ),
+                                            ts.factory.createPropertyAssignment(
+                                                ts.factory.createIdentifier('amount'),
+                                                ts.factory.createIdentifier('amount')
+                                            ),
+                                        ]),
+                                    ]
+                                ),
                             ]
                         )
                     ),
@@ -295,28 +322,30 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
     return classDeclaration
 }
 
-function createImportStatement(): ts.ImportDeclaration {
+function createImportStatement(classes, path): ts.ImportDeclaration {
     return ts.factory.createImportDeclaration(
         undefined, // modifiers
         ts.factory.createImportClause(
             false, // isTypeOnly
             undefined, // name
-            ts.factory.createNamedImports([
-                ts.factory.createImportSpecifier(
-                    false,
-                    undefined, // propertyName
-                    ts.factory.createIdentifier('Contract') // name
-                ),
-            ]) // namedBindings
+            ts.factory.createNamedImports(
+                classes.map((className) =>
+                    ts.factory.createImportSpecifier(
+                        false,
+                        undefined, // propertyName
+                        ts.factory.createIdentifier(className) // name
+                    )
+                )
+            ) // namedBindings
         ),
-        ts.factory.createStringLiteral('../src/contract') // moduleSpecifier
+        ts.factory.createStringLiteral(path) // moduleSpecifier
     )
 }
 
 function createNamespace(namespace: string, child: ts.ModuleDeclaration): ts.ModuleDeclaration {
     return ts.factory.createModuleDeclaration(
         undefined, // decorators
-        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)], // modifiers
+        [], // modifiers
         ts.factory.createIdentifier(namespace),
         ts.factory.createModuleBlock([child]),
         ts.NodeFlags.Namespace
@@ -326,7 +355,7 @@ function createNamespace(namespace: string, child: ts.ModuleDeclaration): ts.Mod
 function createExportNamespace(namespace: string, children): ts.ModuleDeclaration {
     return ts.factory.createModuleDeclaration(
         undefined, // decorators
-        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)], // modifiers
+        [], // modifiers
         ts.factory.createIdentifier(namespace),
         ts.factory.createModuleBlock([...children]),
         ts.NodeFlags.Namespace
@@ -349,7 +378,7 @@ function createStruct(
     return ts.factory.createClassDeclaration(
         decorators,
         isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : undefined,
-        ts.factory.createIdentifier(structName),
+        ts.factory.createIdentifier(capitalize(structName)),
         undefined, // typeParameters
         [
             ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
@@ -364,12 +393,14 @@ function createStruct(
 }
 
 function createField(field: FieldType, isExport: boolean = false): ts.PropertyDeclaration {
+    const fieldName = field.name.toLowerCase()
+
     const decorators = [
         ts.factory.createDecorator(
             ts.factory.createCallExpression(
                 ts.factory.createIdentifier('Struct.field'),
                 undefined,
-                [ts.factory.createStringLiteral(field.name)]
+                [ts.factory.createStringLiteral(fieldName)]
             )
         ),
     ]
@@ -377,9 +408,9 @@ function createField(field: FieldType, isExport: boolean = false): ts.PropertyDe
     return ts.factory.createPropertyDeclaration(
         decorators,
         isExport ? [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)] : undefined,
-        ts.factory.createIdentifier(field.name), // Fixed: Use field.name as the identifier
+        ts.factory.createIdentifier(fieldName), // Fixed: Use field.name as the identifier
         undefined, // questionToken
-        ts.factory.createTypeReferenceNode(field.type), // Fixed: Use field.type as the type reference
+        ts.factory.createTypeReferenceNode(capitalize(field.type)), // Fixed: Use field.type as the type reference
         undefined // initializer
     )
 }
@@ -416,7 +447,8 @@ export async function codegen(contract: string = 'eosio.token') {
     }
 
     console.log(`Generating Contract helper for ${contract}...`)
-    const importStatement = createImportStatement()
+    const importCoreStatement = createImportStatement(['Struct'], '@greymass/eosio')
+    const importContractStatement = createImportStatement(['Contract'], '../src/contract')
 
     const classDeclaration = createContractClass(ABI.from(abi))
 
@@ -434,17 +466,15 @@ export async function codegen(contract: string = 'eosio.token') {
         }
 
         structDeclarations.push(createStruct(struct.structName, true, structMembers))
-        // exportNamespace.body?.members?.push(newStruct)
     }
 
     // Add your custom namespace and export namespace
     const exportNamespace = createExportNamespace('Types', structDeclarations)
 
-    const namespace = createNamespace('contractImpl', exportNamespace)
-    // namespace.members.push(exportNamespace)
+    const namespace = createNamespace('ContractImpl', exportNamespace)
 
     const sourceFile = ts.factory.createSourceFile(
-        [importStatement, classDeclaration, namespace],
+        [importContractStatement, importCoreStatement, classDeclaration, namespace],
         ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
         ts.NodeFlags.None
     )
@@ -457,4 +487,12 @@ export async function codegen(contract: string = 'eosio.token') {
     fs.writeFileSync(outputFile, generatedCode)
 
     console.log(`Generated Contract helper for ${contract} saved to ${outputFile}`)
+}
+
+function capitalize(string) {
+    if (typeof string !== 'string' || string.length === 0) {
+        return ''
+    }
+
+    return string.charAt(0).toUpperCase() + string.slice(1)
 }

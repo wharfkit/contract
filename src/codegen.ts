@@ -206,6 +206,8 @@ function createContractClass(abi: ABI, name = 'ContractImpl') {
         return alias.name
     }
 
+    console.log({st: resolved.structs})
+
     for (let abiType of resolved.structs) {
         while (abiType.ref) {
             abiType = abiType.ref
@@ -239,23 +241,29 @@ function createContractClass(abi: ABI, name = 'ContractImpl') {
     // add a method for each action
     for (const action of abi.actions) {
         console.log('create', action.name)
+        const actionStruct = resolved.structs.find((struct) => struct.name === action.name)
+        if (!actionStruct) {
+            throw Error(`Action Struct not found for ${action.name}`)
+        }
         const actionName = ts.factory.createIdentifier(String(action.name))
+        const fields = actionStruct.fields || []
         const actionMethod = ts.factory.createMethodDeclaration(
             undefined, // decorators
             undefined, // asterisk token
             actionName, // name
             undefined, // question token
             undefined, // type parameters
-            fields.map((field) =>
-                ts.factory.createParameterDeclaration(
+            fields.map((field) => {
+                console.log({field})
+                return ts.factory.createParameterDeclaration(
                     undefined, // decorators
                     undefined, // dot dot dot token
                     ts.factory.createIdentifier(field.name), // name
                     undefined, // question token
-                    ts.factory.createTypeReferenceNode(`${field.type}Type`), // type
+                    ts.factory.createTypeReferenceNode(cleanupParam(field.type)), // type
                     undefined // initializer
                 )
-            ),
+            }) || [],
             ts.factory.createTypeReferenceNode('Promise', [
                 ts.factory.createTypeReferenceNode('void'),
             ]), // type
@@ -283,16 +291,14 @@ function createContractClass(abi: ABI, name = 'ContractImpl') {
                                     ),
                                     undefined,
                                     [
-                                        ts.factory.createObjectLiteralExpression([
-                                            ts.factory.createPropertyAssignment(
-                                                ts.factory.createIdentifier('account'),
-                                                ts.factory.createIdentifier('account')
-                                            ),
-                                            ts.factory.createPropertyAssignment(
-                                                ts.factory.createIdentifier('amount'),
-                                                ts.factory.createIdentifier('amount')
-                                            ),
-                                        ]),
+                                        ts.factory.createObjectLiteralExpression(
+                                            fields.map((field) =>
+                                                ts.factory.createPropertyAssignment(
+                                                    ts.factory.createIdentifier(field.name),
+                                                    ts.factory.createIdentifier(field.name)
+                                                )
+                                            )
+                                        ),
                                     ]
                                 ),
                             ]
@@ -447,7 +453,10 @@ export async function codegen(contract: string = 'eosio.token') {
     }
 
     console.log(`Generating Contract helper for ${contract}...`)
-    const importCoreStatement = createImportStatement(['Struct'], '@greymass/eosio')
+    const importCoreStatement = createImportStatement(
+        ['Struct', 'Name', 'Asset'],
+        '@greymass/eosio'
+    )
     const importContractStatement = createImportStatement(['Contract'], '../src/contract')
 
     const classDeclaration = createContractClass(ABI.from(abi))
@@ -495,4 +504,14 @@ function capitalize(string) {
     }
 
     return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+const EOSIO_CORE_TYPES = ['asset', 'name']
+
+function cleanupParam(type: ABI.ResolvedType) {
+    if (EOSIO_CORE_TYPES.includes(type.name)) {
+        return `${capitalize(type.name)}Type`
+    } else {
+        return type.name
+    }
 }

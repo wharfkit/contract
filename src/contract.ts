@@ -1,5 +1,10 @@
-import {ABISerializableObject, Action, BytesType, Name, Session} from '@wharfkit/session'
-import type {NameType, TransactOptions, TransactResult} from '@wharfkit/session'
+import {ABISerializableObject, Action, Name, Session} from '@wharfkit/session'
+import type {NameType, TransactOptions, TransactResult, BytesType} from '@wharfkit/session'
+
+// TODO: move this to core
+export function isABISerializableObject(value: any): value is ABISerializableObject {
+    return value.constructor && typeof value.constructor.abiName === 'string'
+}
 
 export class Contract {
     /** Account where contract is deployed. */

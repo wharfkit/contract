@@ -12,7 +12,7 @@
         "sourceMap": true,
         "strict": true,
         "target": "es2020",
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
     },
     "include": ["src/**/*", "contracts/*"]
 }

@@ -26,11 +26,6 @@ function pascalCase(value: string): string {
         .join('')
 }
 
-function camelCase(value: string): string {
-    const rv = pascalCase(value)
-    return rv[0].toLowerCase() + rv.slice(1)
-}
-
 function createClassDeclaration(
     name: string,
     members: ts.ClassElement[],
@@ -317,7 +312,7 @@ function createNamespace(namespace: string, children, isExport = true): ts.Modul
 
 function createStruct(
     structName: string,
-    isExport: boolean = false,
+    isExport = false,
     members: ts.ClassElement[] = []
 ): ts.ClassDeclaration {
     const decorators = [
@@ -346,7 +341,7 @@ function createStruct(
     )
 }
 
-function createField(field: FieldType, isExport: boolean = false): ts.PropertyDeclaration {
+function createField(field: FieldType, isExport = false): ts.PropertyDeclaration {
     const fieldName = field.name.toLowerCase()
 
     const decorators = [
@@ -393,15 +388,15 @@ function getFieldTypesFromAbi(abi: any): {structName: string; fields: FieldType[
 
 const contractFilesLocation = path.join('contracts')
 
-export async function codegen(contract: string = 'eosio.token') {
-    console.log(`Fetching ABI for ${contract}...`)
+export async function codegen(contract = 'eosio.token') {
+    log(`Fetching ABI for ${contract}...`)
     const {abi} = await eosClient.v1.chain.get_abi(contract)
 
     if (!abi) {
-        return console.log(`No ABI found for ${contract}`)
+        return log(`No ABI found for ${contract}`)
     }
 
-    console.log(`Generating Contract helper for ${contract}...`)
+    log(`Generating Contract helper for ${contract}...`)
     const importCoreStatement = createImportStatement(
         ['Struct', 'Name', 'NameType', 'Asset', 'AssetType', 'TransactResult'],
         '@wharfkit/session'
@@ -438,13 +433,14 @@ export async function codegen(contract: string = 'eosio.token') {
     )
 
     const generatedCode = printer.printFile(sourceFile)
-    console.log(`Generated Contract helper class for ${contract}...`)
+
+    log(`Generated Contract helper class for ${contract}...`)
 
     fs.mkdirSync(contractFilesLocation, {recursive: true})
     const outputFile = path.join(contractFilesLocation, `${contract}.ts`)
     fs.writeFileSync(outputFile, generatedCode)
 
-    console.log(`Generated Contract helper for ${contract} saved to ${outputFile}`)
+    log(`Generated Contract helper for ${contract} saved to ${outputFile}`)
 }
 
 function capitalize(string) {
@@ -463,4 +459,9 @@ function cleanupParam(type: ABI.ResolvedType) {
     } else {
         return type.name
     }
+}
+
+function log(message: string) {
+    // eslint-disable-next-line no-console
+    console.log(message)
 }

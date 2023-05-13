@@ -3,8 +3,8 @@ import {
     Action,
     Name,
     NameType,
-    TransactResult,
     Session,
+    TransactResult,
 } from '@wharfkit/session'
 
 // TODO: move this to core
@@ -50,9 +50,8 @@ export class Contract {
         name: NameType,
         data: ABISerializableObject | {[key: string]: any}
     ): Promise<TransactResult> {
-        let action: Action
         if (isABISerializableObject(data)) {
-            action = Action.from({
+            Action.from({
                 account: this.account,
                 name,
                 authorization: [],

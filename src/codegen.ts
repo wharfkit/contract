@@ -135,7 +135,6 @@ function createContractClass(abi: ABI, name = 'ContractImpl') {
             return getStructDeclaration(type).name!
         }
         return ts.factory.createIdentifier(type.name)
-        throw new Error(`unhandled type: ${type.name}`)
     }
 
     function getStructDeclaration(type: ABI.ResolvedType) {
@@ -172,38 +171,6 @@ function createContractClass(abi: ABI, name = 'ContractImpl') {
         })
         structs.set(name, structClass)
         return structClass
-    }
-
-    function getStructType(type: ABI.ResolvedType) {
-        // get the type interface for the struct that can be used in the .from() classmethod
-        // e.g. type MyStructType = MyStruct | {field1: string, field2: number}
-        const looseInterface = ts.factory.createTypeLiteralNode(
-            type.allFields!.map((field) => {
-                return ts.factory.createPropertySignature(
-                    undefined, // modifiers
-                    field.name, // name
-                    field.type.isOptional
-                        ? ts.factory.createToken(ts.SyntaxKind.QuestionToken)
-                        : undefined, // question token
-                    ts.factory.createTypeReferenceNode(getTypeIdentifier(field.type)) // type
-                )
-            })
-        )
-        const structDeclaration = getStructDeclaration(type)
-        // type MyStructType = MyStruct | {field1: string, field2: number}
-        const structType = ts.factory.createUnionTypeNode([
-            ts.factory.createTypeReferenceNode(structDeclaration.name!),
-            looseInterface,
-        ])
-        const alias = ts.factory.createTypeAliasDeclaration(
-            undefined, // decorators
-            [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)], // modifiers
-            capitalize(type.name), // name
-            undefined, // type parameters
-            structType // type
-        )
-        structTypes.set(type.name, alias)
-        return alias.name
     }
 
     for (let abiType of resolved.structs) {
@@ -391,15 +358,6 @@ function createField(field: FieldType, isExport: boolean = false): ts.PropertyDe
             )
         ),
     ]
-
-    // return ts.factory.createPropertyDeclaration(
-    //     decorators,
-    //     isExport ? [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)] : undefined,
-    //     ts.factory.createIdentifier(fieldName), // Fixed: Use field.name as the identifier
-    //     undefined, // questionToken
-    //     ts.factory.createTypeReferenceNode(capitalize(field.type)), // Fixed: Use field.type as the type reference
-    //     undefined // initializer
-    // )
 
     return ts.factory.createPropertyDeclaration(
         isExport

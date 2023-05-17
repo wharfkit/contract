@@ -16,7 +16,12 @@
         "prepare": "make"
     },
     "dependencies": {
+<<<<<<< Updated upstream
         "@wharfkit/session": "^0.3.3",
+=======
+        "@wharfkit/session": "^0.4.0",
+        "node-fetch": "^3.3.1",
+>>>>>>> Stashed changes
         "tslib": "^2.1.0"
     },
     "devDependencies": {

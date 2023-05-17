@@ -5,7 +5,10 @@ import {
     NameType,
     Session,
     TransactResult,
+    UInt64,
+    API,
 } from '@wharfkit/session'
+import type {APIClient} from '@wharfkit/session'
 
 interface GetTableRowsOptions {
     // Query
@@ -13,34 +16,42 @@ interface GetTableRowsOptions {
     // Response
     json?: boolean; // default: true
     // Pagination
-    start?: string; // default: null, used for lower_bound
-    end?: string; // default: null, used for upper_bound
-    limit?: number; // default: 100, used for limit
+    start?: number | UInt64; // default: null, used for lower_bound
+    end?: number | UInt64; // default: null, used for upper_bound
+    limit?: number | UInt64; // default: 100, used for limit
     // Indices
-    index?: number; // default: 1, used for index_position
-    indexType? : string; // default: "", used for key_type
+    keyType?: "primary" | "secondary" | "tertiary" | "fourth" | "fifth" | "sixth" | "seventh" | "eighth" | "ninth" | "tenth";
+}
+
+export interface ContractOptions {
+    account?: NameType
+    client?: APIClient
 }
 
 export class Contract {
-    /** Account where contract is deployed. */
-    static account?: NameType
-
     private static _shared: Contract | null = null
+    private static account: Name
+
+    private client: APIClient | undefined
 
     /** Account where contract is deployed. */
     readonly account: Name
 
-    constructor(account?: NameType) {
+    constructor(options?: ContractOptions) {
         if ((this.constructor as typeof Contract).account) {
-            if (account) {
+            if (options?.account) {
                 throw new Error('Cannot specify account when using subclassed Contract')
             }
             this.account = Name.from((this.constructor as typeof Contract).account!)
         } else {
-            if (!account) {
+            if (!options?.account) {
                 throw new Error('Must specify account when using Contract directly')
             }
-            this.account = Name.from(account)
+            this.account = Name.from(options?.account)
+        }
+
+        if (options?.client) {
+            this.client = options.client
         }
     }
 
@@ -70,33 +81,48 @@ export class Contract {
         return session.transact({action})
     }
 
-    static async function getTableRows(table: string, options: GetTableRowsOptions = {}): Promise<TableCursor> {
-        const scope = options.scope || contract.account;
+    async getTableRows(table: string, options: GetTableRowsOptions = {}): Promise<TableCursor> {
+        if (!this.client) {
+            throw Error("A client instance must be passed to the contract instance in order to use this method.")
+        }
+
+        const scope = this.account;
         const json = options.json ?? true;
         const start = options.start || null;
         const end = options.end || null;
         const limit = options.limit || 100;
-        const index = options.index || 1;
-        const indexType = options.indexType || "";
+        const index_position = options.keyType
     
-        const response = await contract.client.v1.chain.get_table_rows({
+        const { rows, next_key } = await this.client.v1.chain.get_table_rows({
             json,
-            code: contract.account,
+            code: this.account,
             scope,
             table,
-            table_key: "",
-            lower_bound: start,
-            upper_bound: end,
+            lower_bound: start ? UInt64.from(start) : undefined,
+            upper_bound: end ? UInt64.from(end) : undefined,
             limit,
-            key_type: indexType,
-            index_position: index,
+            index_position,
         });
         
-        return new TableCursor(response.rows, response.more);
+        return new TableCursor(rows, () => {
+          // const lastRow = response.rows[response.rows.length - 1]
+
+          this.getTableRows(table, {
+            ...options,
+            start: next_key
+          })
+        });
     }
 }
 
-class TableCursor {
+interface TableRow {
+
+}
+
+export class TableCursor {
+  private rows: TableRow[]
+  private currentIndex: number
+
   constructor(rows, more) {
     this.rows = rows;
     this.more = more;
@@ -121,8 +147,8 @@ class TableCursor {
     if (this.more) {
       // Here you should implement code to fetch next batch of rows from the server
       // This is just a simplified example without actual server call
-      const response = await fetchNextBatch(); // fetchNextBatch is a hypothetical function
-      this.rows = response.rows;
+      const response = await this.more(); // fetchNextBatch is a hypothetical function
+      this.rows = this.rows.concat(response.rows);
       this.more = response.more;
       this.currentIndex = 0;
     }

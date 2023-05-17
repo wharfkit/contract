@@ -1,8 +1,9 @@
 import chai from 'chai'
+import {APIClient} from '@greymass/eosio'
+
 const expect = chai.expect
 
-import {Contract} from '../src/contract'
-import {APIClient} from '@greymass/eosio'
+import {Contract, TableCursor} from '../src/contract'
 import {MockProvider} from './utils/mock-provider'
 
 describe('getTableRows', () => {
@@ -30,7 +31,7 @@ describe('getTableRows', () => {
     })
 
     it('should fetch table rows correctly with custom options', async () => {
-        const cursor = await getTableRows('customTable', {
+        const cursor = await mockContract.getTableRows('customTable', {
             scope: 'customScope',
             json: false,
             start: '10',

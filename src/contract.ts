@@ -1,6 +1,29 @@
 import {ABISerializableObject, Action, Name, Session} from '@wharfkit/session'
 import type {NameType, TransactOptions, TransactResult, BytesType} from '@wharfkit/session'
 
+interface GetTableRowsOptions {
+    // Query
+    scope?: string // default: matches contract account name
+    // Response
+    json?: boolean // default: true
+    // Pagination
+    start?: number | UInt64 // default: null, used for lower_bound
+    end?: number | UInt64 // default: null, used for upper_bound
+    limit?: number | UInt64 // default: 100, used for limit
+    // Indices
+    keyType?:
+        | 'primary'
+        | 'secondary'
+        | 'tertiary'
+        | 'fourth'
+        | 'fifth'
+        | 'sixth'
+        | 'seventh'
+        | 'eighth'
+        | 'ninth'
+        | 'tenth'
+}
+
 export interface ContractOptions {
     account?: NameType
 }
@@ -17,7 +40,7 @@ export class Contract {
             if (options?.account) {
                 throw new Error('Cannot specify account when using subclassed Contract')
             }
-            this.account = Name.from((this.constructor as typeof Contract).account!)
+            this.account = Name.from((this.constructor as any).account!)
         } else {
             if (!options?.account) {
                 throw new Error('Must specify account when using Contract directly')
@@ -67,7 +90,7 @@ export class Contract {
         const limit = options.limit || 100
         const index_position = options.keyType
 
-        const {rows, next_key} = await this.client.v1.chain.get_table_rows({
+        const {rows, next_key} = await (this.client as APIClient).v1.chain.get_table_rows({
             json,
             code: this.account,
             scope,
@@ -92,10 +115,11 @@ export class Contract {
 interface TableRow {}
 
 export class TableCursor {
-    private rows: TableRow[]
+    rows: TableRow[]
+    readonly more: Function
     private currentIndex: number
 
-    constructor(rows, more) {
+    constructor(rows: TableRow[], more: Function) {
         this.rows = rows
         this.more = more
         this.currentIndex = 0

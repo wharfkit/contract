@@ -4,10 +4,11 @@ import typescript from '@rollup/plugin-typescript'
 
 import pkg from './package.json' assert {type: 'json'}
 
+const name = pkg.name
 const license = fs.readFileSync('LICENSE').toString('utf-8').trim()
 const banner = `
 /**
- * Account SDK v${pkg.version}
+ * ${name} v${pkg.version}
  * ${pkg.homepage}
  *
  * @license
@@ -17,6 +18,7 @@ const banner = `
 
 const external = Object.keys(pkg.dependencies)
 
+/** @type {import('rollup').RollupOptions} */
 export default [
     {
         input: 'src/index.ts',
@@ -28,7 +30,6 @@ export default [
         },
         plugins: [typescript({target: 'es6'})],
         external,
-        onwarn,
     },
     {
         input: 'src/index.ts',
@@ -40,29 +41,11 @@ export default [
         },
         plugins: [typescript({target: 'es2020'})],
         external,
-        onwarn,
     },
     {
         input: 'src/index.ts',
         output: {banner, file: pkg.types, format: 'esm'},
-        onwarn,
+
         plugins: [dts()],
     },
 ]
-
-function onwarn(warning, rollupWarn) {
-    if (warning.code === 'CIRCULAR_DEPENDENCY') {
-        // unnecessary warning
-        return
-    }
-    if (
-        warning.code === 'UNUSED_EXTERNAL_IMPORT' &&
-        warning.source === 'tslib' &&
-        warning.names[0] === '__read'
-    ) {
-        // when using ts with importHelpers: true rollup complains about this
-        // seems safe to ignore since __read is not actually imported or used anywhere in the resulting bundles
-        return
-    }
-    rollupWarn(warning)
-}

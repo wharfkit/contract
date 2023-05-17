@@ -1,27 +1,24 @@
 {
-    "name": "PACKAGE",
-    "description": "DESCRIPTION",
+    "name": "contract",
+    "description": "wharfkit contract kit",
     "version": "0.0.0",
-    "homepage": "https://github.com/greymass/PACKAGE",
+    "homepage": "https://github.com/wharfkit/contract",
     "license": "BSD-3-Clause",
-    "main": "lib/PACKAGE.js",
-    "module": "lib/PACKAGE.m.js",
-    "types": "lib/PACKAGE.d.ts",
+    "main": "lib/contract.js",
+    "module": "lib/contract.m.js",
+    "types": "lib/contract.d.ts",
     "sideEffects": false,
     "files": [
         "lib/*",
         "src/*"
     ],
     "scripts": {
-        "prepare": "make"
+        "prepare": "make",
+        "test": "TS_NODE_PROJECT='test/tsconfig.json' mocha --require ts-node/register --extension ts test/*ts"
     },
     "dependencies": {
-<<<<<<< Updated upstream
-        "@wharfkit/session": "^0.3.3",
-=======
         "@wharfkit/session": "^0.4.0",
         "node-fetch": "^3.3.1",
->>>>>>> Stashed changes
         "tslib": "^2.1.0"
     },
     "devDependencies": {
@@ -47,7 +44,7 @@
         "rollup": "^3.2.3",
         "rollup-plugin-dts": "^5.0.0",
         "rollup-plugin-terser": "^7.0.2",
-        "ts-node": "^10.1.0",
+        "ts-node": "^10.9.1",
         "tsconfig-paths": "^4.0.0",
         "typedoc": "^0.23.14",
         "typescript": "^4.1.2"

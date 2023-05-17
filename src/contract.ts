@@ -6,21 +6,30 @@ import {
     Session,
     TransactResult,
     UInt64,
-    API,
 } from '@wharfkit/session'
 import type {APIClient} from '@wharfkit/session'
 
 interface GetTableRowsOptions {
     // Query
-    scope?: string; // default: matches contract account name
+    scope?: string // default: matches contract account name
     // Response
-    json?: boolean; // default: true
+    json?: boolean // default: true
     // Pagination
-    start?: number | UInt64; // default: null, used for lower_bound
-    end?: number | UInt64; // default: null, used for upper_bound
-    limit?: number | UInt64; // default: 100, used for limit
+    start?: number | UInt64 // default: null, used for lower_bound
+    end?: number | UInt64 // default: null, used for upper_bound
+    limit?: number | UInt64 // default: 100, used for limit
     // Indices
-    keyType?: "primary" | "secondary" | "tertiary" | "fourth" | "fifth" | "sixth" | "seventh" | "eighth" | "ninth" | "tenth";
+    keyType?:
+        | 'primary'
+        | 'secondary'
+        | 'tertiary'
+        | 'fourth'
+        | 'fifth'
+        | 'sixth'
+        | 'seventh'
+        | 'eighth'
+        | 'ninth'
+        | 'tenth'
 }
 
 export interface ContractOptions {
@@ -42,7 +51,7 @@ export class Contract {
             if (options?.account) {
                 throw new Error('Cannot specify account when using subclassed Contract')
             }
-            this.account = Name.from((this.constructor as typeof Contract).account!)
+            this.account = Name.from((this.constructor as any).account!)
         } else {
             if (!options?.account) {
                 throw new Error('Must specify account when using Contract directly')
@@ -83,17 +92,19 @@ export class Contract {
 
     async getTableRows(table: string, options: GetTableRowsOptions = {}): Promise<TableCursor> {
         if (!this.client) {
-            throw Error("A client instance must be passed to the contract instance in order to use this method.")
+            throw Error(
+                'A client instance must be passed to the contract instance in order to use this method.'
+            )
         }
 
-        const scope = this.account;
-        const json = options.json ?? true;
-        const start = options.start || null;
-        const end = options.end || null;
-        const limit = options.limit || 100;
+        const scope = this.account
+        const json = options.json ?? true
+        const start = options.start || null
+        const end = options.end || null
+        const limit = options.limit || 100
         const index_position = options.keyType
-    
-        const { rows, next_key } = await this.client.v1.chain.get_table_rows({
+
+        const {rows, next_key} = await (this.client as APIClient).v1.chain.get_table_rows({
             json,
             code: this.account,
             scope,
@@ -102,57 +113,42 @@ export class Contract {
             upper_bound: end ? UInt64.from(end) : undefined,
             limit,
             index_position,
-        });
-        
-        return new TableCursor(rows, () => {
-          // const lastRow = response.rows[response.rows.length - 1]
+        })
 
-          this.getTableRows(table, {
-            ...options,
-            start: next_key
-          })
-        });
+        return new TableCursor(rows, () => {
+            // const lastRow = response.rows[response.rows.length - 1]
+
+            this.getTableRows(table, {
+                ...options,
+                start: next_key,
+            })
+        })
     }
 }
 
-interface TableRow {
-
-}
+interface TableRow {}
 
 export class TableCursor {
-  private rows: TableRow[]
-  private currentIndex: number
+    rows: TableRow[]
+    readonly more: Function
+    private currentIndex: number
 
-  constructor(rows, more) {
-    this.rows = rows;
-    this.more = more;
-    this.currentIndex = 0;
-  }
-
-  // Allows for iteration through rows
-  [Symbol.iterator]() {
-    return {
-      next: () => {
-        if (this.currentIndex < this.rows.length) {
-          return { value: this.rows[this.currentIndex++], done: false };
-        } else {
-          return { done: true };
-        }
-      }
-    };
-  }
-
-  // Fetches more rows
-  async more() {
-    if (this.more) {
-      // Here you should implement code to fetch next batch of rows from the server
-      // This is just a simplified example without actual server call
-      const response = await this.more(); // fetchNextBatch is a hypothetical function
-      this.rows = this.rows.concat(response.rows);
-      this.more = response.more;
-      this.currentIndex = 0;
+    constructor(rows: TableRow[], more: Function) {
+        this.rows = rows
+        this.more = more
+        this.currentIndex = 0
     }
-    return this;
-  }
-}
 
+    // Allows for iteration through rows
+    [Symbol.iterator]() {
+        return {
+            next: () => {
+                if (this.currentIndex < this.rows.length) {
+                    return {value: this.rows[this.currentIndex++], done: false}
+                } else {
+                    return {done: true}
+                }
+            },
+        }
+    }
+}

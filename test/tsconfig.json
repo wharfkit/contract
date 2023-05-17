@@ -7,8 +7,11 @@
         "types": ["mocha"],
         "baseUrl": ".",
         "paths": {
-            "$lib": ["../src"]
-        },
+            "@wharfkit/contract": ["src"],
+            "$lib": ["src"],
+            "$test": ["test"],
+            "$test/*": ["test/*"]
+        }
     },
     "include": ["./**/*.ts"]
 }

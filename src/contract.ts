@@ -9,8 +9,8 @@ interface GetTableRowsOptions {
     // Response
     json?: boolean // default: true
     // Pagination
-    start?: string // default: null, used for lower_bound
-    end?: string // default: null, used for upper_bound
+    start?: NameType | Name // default: null, used for lower_bound
+    end?: NameType | Name // default: null, used for upper_bound
     limit?: number | UInt64 // default: 100, used for limit
     // Indices
     keyType?:
@@ -92,25 +92,16 @@ export class Contract {
         const limit = options.limit
         const index_position = options.keyType
 
-        let response
-
-        try {
-            response = await this.client.v1.chain.get_table_rows({
-                json,
-                code: this.account,
-                scope,
-                table,
-                lower_bound,
-                upper_bound,
-                limit,
-                index_position,
-            })
-        } catch (error) {
-            console.log({error})
-            throw error
-        }
-
-        const {rows, next_key} = response
+        const {rows, next_key} = await this.client.v1.chain.get_table_rows({
+            json,
+            code: this.account,
+            scope,
+            table,
+            lower_bound,
+            upper_bound,
+            limit,
+            index_position,
+        })
 
         return new TableCursor(rows, () =>
             this.getTableRows(table, {

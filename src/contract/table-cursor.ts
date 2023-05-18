@@ -1,11 +1,11 @@
-interface TableRow {}
+type TableRow = any
 
 export class TableCursor {
     rows: TableRow[]
-    private _more: Function
+    private _more: () => Promise<TableCursor>
     private currentIndex: number
 
-    constructor(rows: TableRow[], more: Function) {
+    constructor(rows: TableRow[], more: () => Promise<TableCursor>) {
         this.rows = rows
         this._more = more
         this.currentIndex = 0

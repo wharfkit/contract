@@ -13,10 +13,10 @@
         "connection": "close",
         "content-length": "324",
         "content-type": "application/json",
-        "date": "Thu, 18 May 2023 21:32:11 GMT",
+        "date": "Thu, 18 May 2023 21:38:49 GMT",
         "host": "eos.greymass.com",
         "server": "nginx",
-        "x-cached": "EXPIRED"
+        "x-cached": "MISS"
     },
     "status": 200,
     "json": {

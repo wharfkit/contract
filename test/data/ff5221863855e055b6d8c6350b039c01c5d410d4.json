@@ -1,0 +1,37 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"json\":true,\"code\":\"eosio.forum\",\"scope\":\"eosio.forum\",\"table\":\"proposal\",\"lower_bound\":\".ncrease...of\",\"limit\":1,\"key_type\":\"name\"}"
+        }
+    },
+    "headers": {
+        "access-control-allow-headers": "X-Requested-With,Accept,Content-Type,Origin",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "connection": "close",
+        "content-length": "324",
+        "content-type": "application/json",
+        "date": "Thu, 18 May 2023 21:32:11 GMT",
+        "host": "eos.greymass.com",
+        "server": "nginx",
+        "x-cached": "EXPIRED"
+    },
+    "status": 200,
+    "json": {
+        "rows": [
+            {
+                "proposal_name": ".ncrease...of",
+                "proposer": "evelyneos111",
+                "title": "Increase number of BP",
+                "proposal_json": "{\"content\":\"Increase number of active BPs from 21 to 43.\",\"type\":\"referendum-v1\"}",
+                "created_at": "2020-02-20T15:58:34",
+                "expires_at": "2020-06-20T00:58:07"
+            }
+        ],
+        "more": true,
+        "next_key": "613615449229230080"
+    },
+    "text": "{\"rows\":[{\"proposal_name\":\".ncrease...of\",\"proposer\":\"evelyneos111\",\"title\":\"Increase number of BP\",\"proposal_json\":\"{\\\"content\\\":\\\"Increase number of active BPs from 21 to 43.\\\",\\\"type\\\":\\\"referendum-v1\\\"}\",\"created_at\":\"2020-02-20T15:58:34\",\"expires_at\":\"2020-06-20T00:58:07\"}],\"more\":true,\"next_key\":\"613615449229230080\"}"
+}

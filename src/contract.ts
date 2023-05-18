@@ -1,14 +1,16 @@
 import {ABISerializableObject, Action, Name, Session} from '@wharfkit/session'
 import type {NameType, TransactOptions, TransactResult, BytesType} from '@wharfkit/session'
 
+import {TableCursor} from './contract/table-cursor'
+
 interface GetTableRowsOptions {
     // Query
     scope?: string // default: matches contract account name
     // Response
     json?: boolean // default: true
     // Pagination
-    start?: number | UInt64 // default: null, used for lower_bound
-    end?: number | UInt64 // default: null, used for upper_bound
+    start?: string // default: null, used for lower_bound
+    end?: string // default: null, used for upper_bound
     limit?: number | UInt64 // default: 100, used for limit
     // Indices
     keyType?:
@@ -85,57 +87,38 @@ export class Contract {
 
         const scope = this.account
         const json = options.json ?? true
-        const start = options.start || null
-        const end = options.end || null
-        const limit = options.limit || 100
+        const lower_bound = options.start ? Name.from(options.start) : undefined
+        const upper_bound = options.end ? Name.from(options.end) : undefined
+        const limit = options.limit
         const index_position = options.keyType
 
-        const {rows, next_key} = await (this.client as APIClient).v1.chain.get_table_rows({
-            json,
-            code: this.account,
-            scope,
-            table,
-            lower_bound: start ? UInt64.from(start) : undefined,
-            upper_bound: end ? UInt64.from(end) : undefined,
-            limit,
-            index_position,
-        })
+        let response
 
-        return new TableCursor(rows, () => {
-            // const lastRow = response.rows[response.rows.length - 1]
+        try {
+            response = await this.client.v1.chain.get_table_rows({
+                json,
+                code: this.account,
+                scope,
+                table,
+                lower_bound,
+                upper_bound,
+                limit,
+                index_position,
+            })
+        } catch (error) {
+            console.log({error})
+            throw error
+        }
 
+        const {rows, next_key} = response
+
+        return new TableCursor(rows, () =>
             this.getTableRows(table, {
                 ...options,
                 start: next_key,
+                end: undefined,
             })
-        })
-    }
-}
-
-interface TableRow {}
-
-export class TableCursor {
-    rows: TableRow[]
-    readonly more: Function
-    private currentIndex: number
-
-    constructor(rows: TableRow[], more: Function) {
-        this.rows = rows
-        this.more = more
-        this.currentIndex = 0
-    }
-
-    // Allows for iteration through rows
-    [Symbol.iterator]() {
-        return {
-            next: () => {
-                if (this.currentIndex < this.rows.length) {
-                    return {value: this.rows[this.currentIndex++], done: false}
-                } else {
-                    return {done: true}
-                }
-            },
-        }
+        )
     }
 
     // Fetches more rows

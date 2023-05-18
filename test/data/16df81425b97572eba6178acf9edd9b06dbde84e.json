@@ -1,0 +1,45 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"json\":true,\"code\":\"eosio.forum\",\"scope\":\"eosio.forum\",\"table\":\"proposal\",\"limit\":2,\"key_type\":\"name\"}"
+        }
+    },
+    "headers": {
+        "access-control-allow-headers": "X-Requested-With,Accept,Content-Type,Origin",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "connection": "close",
+        "content-length": "1963",
+        "content-type": "application/json",
+        "date": "Thu, 18 May 2023 21:32:11 GMT",
+        "host": "eos.greymass.com",
+        "server": "nginx",
+        "x-cached": "EXPIRED"
+    },
+    "status": 200,
+    "json": {
+        "rows": [
+            {
+                "proposal_name": ".......equire",
+                "proposer": "natalieeos11",
+                "title": "Require active BP to have the most updated eosio software being used",
+                "proposal_json": "{\"content\":\"Require active BP to have the most updated eosio software being used\",\"type\":\"referendum-v1\"}",
+                "created_at": "2020-02-21T04:22:13",
+                "expires_at": "2020-06-20T13:21:47"
+            },
+            {
+                "proposal_name": ".ccountabilid",
+                "proposer": "g44tomjrgige",
+                "title": "Stop Processing Sportbet Tx",
+                "proposal_json": "{\"content\":\"After some deliberation i decided to take pro active measures to bring more justice and accountability into EOS blockchain.\\n\\nIm using https://sportbet.one to place some bets using the EOS Token\\n\\nOn December 18 of 2019 i placed 2 bets in the match Kamza Basket vs Apollonia - Albania Basketball with the event starting at 16H GMT. The bet was Apollonia +37.5 points and the final result was Kamza Basket 83 Apollonia 74. So i won that bet.\\n\\nThe result can be verified at the League Official Site https://www.fshb.al/fshb/kategoria-i/\\n\\nBut for my surprise, after more than 2days the game was cancelled by the leader of Sbet without any explanation. After my questions at Sportbet TG, he decided to give his own view of the situation and what the rules of sportbet say about my bet:\\n\\nhis answer was since he didnt had the result, he decided to cancel the bet.\\n\\nThis is ilegal, fraud to the users and put at risk the BPs processing tx of a project this is stealing from their clients\\n\\nUnder this principle i ask the Top21 BPs to stop processing sportbet tx until they have a license to operate and have a Regulator that can protect clients in situations like mine. \\n\\nIf a projects want to use EOSio tech it should be legit, to many scams are using this blockchain to stole funds and for me this needs to end.\",\"type\":\"referendum-v1\"}",
+                "created_at": "2020-01-04T15:43:04",
+                "expires_at": "2020-05-03T03:42:38"
+            }
+        ],
+        "more": true,
+        "next_key": "347187405276578123"
+    },
+    "text": "{\"rows\":[{\"proposal_name\":\".......equire\",\"proposer\":\"natalieeos11\",\"title\":\"Require active BP to have the most updated eosio software being used\",\"proposal_json\":\"{\\\"content\\\":\\\"Require active BP to have the most updated eosio software being used\\\",\\\"type\\\":\\\"referendum-v1\\\"}\",\"created_at\":\"2020-02-21T04:22:13\",\"expires_at\":\"2020-06-20T13:21:47\"},{\"proposal_name\":\".ccountabilid\",\"proposer\":\"g44tomjrgige\",\"title\":\"Stop Processing Sportbet Tx\",\"proposal_json\":\"{\\\"content\\\":\\\"After some deliberation i decided to take pro active measures to bring more justice and accountability into EOS blockchain.\\\\n\\\\nIm using https://sportbet.one to place some bets using the EOS Token\\\\n\\\\nOn December 18 of 2019 i placed 2 bets in the match Kamza Basket vs Apollonia - Albania Basketball with the event starting at 16H GMT. The bet was Apollonia +37.5 points and the final result was Kamza Basket 83 Apollonia 74. So i won that bet.\\\\n\\\\nThe result can be verified at the League Official Site https://www.fshb.al/fshb/kategoria-i/\\\\n\\\\nBut for my surprise, after more than 2days the game was cancelled by the leader of Sbet without any explanation. After my questions at Sportbet TG, he decided to give his own view of the situation and what the rules of sportbet say about my bet:\\\\n\\\\nhis answer was since he didnt had the result, he decided to cancel the bet.\\\\n\\\\nThis is ilegal, fraud to the users and put at risk the BPs processing tx of a project this is stealing from their clients\\\\n\\\\nUnder this principle i ask the Top21 BPs to stop processing sportbet tx until they have a license to operate and have a Regulator that can protect clients in situations like mine. \\\\n\\\\nIf a projects want to use EOSio tech it should be legit, to many scams are using this blockchain to stole funds and for me this needs to end.\\\",\\\"type\\\":\\\"referendum-v1\\\"}\",\"created_at\":\"2020-01-04T15:43:04\",\"expires_at\":\"2020-05-03T03:42:38\"}],\"more\":true,\"next_key\":\"347187405276578123\"}"
+}

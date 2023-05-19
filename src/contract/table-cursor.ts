@@ -1,13 +1,31 @@
+import type {NameType} from '@greymass/eosio'
+
+import {GetTableRowsOptions, Contract} from '../contract'
+
 type TableRow = any
+
+interface TableCursorParams {
+    rows: TableRow[]
+    contract: Contract
+    table: NameType
+    options: GetTableRowsOptions
+    next_key?: string
+}
 
 export class TableCursor {
     rows: TableRow[]
-    private _more: () => Promise<TableCursor>
+    private contract: Contract
+    private table: NameType
+    private next_key: string | undefined
+    private options: GetTableRowsOptions
     private currentIndex: number
 
-    constructor(rows: TableRow[], more: () => Promise<TableCursor>) {
+    constructor({rows, contract, table, options, next_key}: TableCursorParams) {
         this.rows = rows
-        this._more = more
+        this.contract = contract
+        this.table = table
+        this.options = options
+        this.next_key = next_key
         this.currentIndex = 0
     }
 
@@ -38,9 +56,14 @@ export class TableCursor {
     }
 
     async more() {
-        const {rows, more} = await this._more()
+        const {rows, next_key} = await this.contract.getTableRows(String(this.table), {
+            ...this.options,
+            start: this.next_key,
+            end: undefined,
+        })
+
         this.rows = this.rows.concat(rows)
-        this._more = more
+        this.next_key = next_key
 
         return this
     }

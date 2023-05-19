@@ -1,11 +1,5 @@
-import {
-    ABISerializableObject,
-    Action,
-    Name,
-    NameType,
-    Session,
-    TransactResult,
-} from '@wharfkit/session'
+import {ABISerializableObject, Action, BytesType, Name, Session} from '@wharfkit/session'
+import type {NameType, TransactOptions, TransactResult} from '@wharfkit/session'
 
 export class Contract {
     /** Account where contract is deployed. */
@@ -42,17 +36,18 @@ export class Contract {
     /** Call a contract action. */
     async call(
         name: NameType,
-        data: ABISerializableObject | {[key: string]: any},
-        session: Session
+        data: BytesType | ABISerializableObject | Record<string, any>,
+        session: Session,
+        transactOptions?: TransactOptions
     ): Promise<TransactResult> {
         const action: Action = Action.from({
             account: this.account,
             name,
-            authorization: [],
+            authorization: [session.permissionLevel],
             data,
         })
 
         // Trigger the transaction using the session kit
-        return session.transact({action})
+        return session.transact({action}, transactOptions)
     }
 }

@@ -1,18 +1,11 @@
-import {ABI, APIClient} from '@greymass/eosio'
+import {ABI} from '@greymass/eosio'
 import assert from 'assert'
 import * as ts from 'typescript'
-
-import fs from 'fs'
-import path from 'path'
 
 interface FieldType {
     name: string
     type: string
 }
-
-const eosClient = new APIClient({
-    url: 'https://eos.greymass.com',
-})
 
 const file = ts.createSourceFile('codegen.ts', '', ts.ScriptTarget.ES2022)
 const printer = ts.createPrinter()
@@ -118,7 +111,7 @@ function createPropertyDeclarationForField(name: string, type: ABI.ResolvedType)
     return propertyDeclaration
 }
 
-function createContractClass(abi: ABI, name = 'ContractImpl') {
+function createContractClass(abi: ABI, namespaceName: string) {
     const structs: Map<string, ts.ClassDeclaration> = new Map()
     const structTypes: Map<string, ts.TypeAliasDeclaration> = new Map()
     const coreImports: Set<string> = new Set()
@@ -235,7 +228,7 @@ function createContractClass(abi: ABI, name = 'ContractImpl') {
                                     ts.factory.createPropertyAccessExpression(
                                         ts.factory.createPropertyAccessExpression(
                                             ts.factory.createPropertyAccessExpression(
-                                                ts.factory.createIdentifier('ContractImpl'),
+                                                ts.factory.createIdentifier(namespaceName),
                                                 ts.factory.createIdentifier('Types')
                                             ),
                                             ts.factory.createIdentifier(capitalize(action.name))
@@ -264,7 +257,7 @@ function createContractClass(abi: ABI, name = 'ContractImpl') {
         members.push(actionMethod)
     }
     // build out contract class with actions
-    const classDeclaration = createClassDeclaration(name, members, {
+    const classDeclaration = createClassDeclaration(namespaceName, members, {
         parent: 'Contract',
         export: true,
     })
@@ -301,10 +294,10 @@ function createImportStatement(classes, path): ts.ImportDeclaration {
     )
 }
 
-function createNamespace(namespace: string, children, isExport = true): ts.ModuleDeclaration {
+function createNamespace(namespaceName: string, children, isExport = true): ts.ModuleDeclaration {
     return ts.factory.createModuleDeclaration(
         isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : [], // modifiers
-        ts.factory.createIdentifier(namespace),
+        ts.factory.createIdentifier(namespaceName),
         ts.factory.createModuleBlock([...children]),
         ts.NodeFlags.Namespace
     )
@@ -386,24 +379,16 @@ function getFieldTypesFromAbi(abi: any): {structName: string; fields: FieldType[
     return structTypes
 }
 
-const contractFilesLocation = path.join('contracts')
+export async function codegen(contractName, abi) {
+    const namespaceName = generateNamespaceName(contractName)
 
-export async function codegen(contract = 'eosio.token') {
-    log(`Fetching ABI for ${contract}...`)
-    const {abi} = await eosClient.v1.chain.get_abi(contract)
-
-    if (!abi) {
-        return log(`No ABI found for ${contract}`)
-    }
-
-    log(`Generating Contract helper for ${contract}...`)
     const importCoreStatement = createImportStatement(
         ['Struct', 'Name', 'NameType', 'Asset', 'AssetType', 'TransactResult'],
         '@wharfkit/session'
     )
-    const importContractStatement = createImportStatement(['Contract'], '../src/contract')
+    const importContractStatement = createImportStatement(['Contract'], '@wharfkit/contract')
 
-    const classDeclaration = createContractClass(ABI.from(abi))
+    const classDeclaration = createContractClass(ABI.from(abi), namespaceName)
 
     // Extract fields from the ABI
     const structs = getFieldTypesFromAbi(abi)
@@ -424,7 +409,7 @@ export async function codegen(contract = 'eosio.token') {
     // Add your custom namespace and export namespace
     const exportNamespace = createNamespace('Types', structDeclarations)
 
-    const namespace = createNamespace('ContractImpl', [exportNamespace])
+    const namespace = createNamespace(namespaceName, [exportNamespace])
 
     const sourceFile = ts.factory.createSourceFile(
         [importContractStatement, importCoreStatement, classDeclaration, namespace],
@@ -432,15 +417,7 @@ export async function codegen(contract = 'eosio.token') {
         ts.NodeFlags.None
     )
 
-    const generatedCode = printer.printFile(sourceFile)
-
-    log(`Generated Contract helper class for ${contract}...`)
-
-    fs.mkdirSync(contractFilesLocation, {recursive: true})
-    const outputFile = path.join(contractFilesLocation, `${contract}.ts`)
-    fs.writeFileSync(outputFile, generatedCode)
-
-    log(`Generated Contract helper for ${contract} saved to ${outputFile}`)
+    return printer.printFile(sourceFile)
 }
 
 function capitalize(string) {
@@ -461,7 +438,10 @@ function cleanupParam(type: ABI.ResolvedType) {
     }
 }
 
-function log(message: string) {
-    // eslint-disable-next-line no-console
-    console.log(message)
+// Generates a namespace name for a contract (eg. _EosioToken for eosio.token)
+function generateNamespaceName(contractName: string) {
+    return `_${contractName
+        .split('.')
+        .map((namePart) => capitalize(namePart))
+        .join('')}`
 }

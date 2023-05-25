@@ -7,7 +7,7 @@ interface FieldType {
     type: string
 }
 
-const file = ts.createSourceFile('codegen.ts', '', ts.ScriptTarget.ES2022)
+const file = ts.createSourceFile('codegen.ts', '', 7)
 const printer = ts.createPrinter()
 
 function pascalCase(value: string): string {

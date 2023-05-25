@@ -1,10 +1,13 @@
-import fs from 'fs'
+#!/usr/bin/env node
 
-import {codegen, fetchAbi} from '../lib/contract.m.js'
-;(async () => {
+const fs = require('fs')
+
+const {codegen, fetchAbi} = require('../lib/contract.js')
+
+async function codegenCli() {
     // Check if the contractName argument is provided
     if (process.argv.length < 3) {
-        console.error('Usage: node -r esm scripts/codegen-cli.js {contractName}')
+        console.error('Usage: wharf-generate {contractName}')
         process.exit(1)
     }
 
@@ -37,9 +40,11 @@ import {codegen, fetchAbi} from '../lib/contract.m.js'
             log(generatedCode)
         }
     }
-})()
+}
 
 function log(message) {
     // eslint-disable-next-line no-console
     console.error(message)
 }
+
+codegenCli()

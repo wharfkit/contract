@@ -1,6 +1,6 @@
 import type {NameType} from '@greymass/eosio'
 
-import {GetTableRowsOptions, Contract} from '../contract'
+import {Contract, GetTableRowsOptions} from '../contract'
 
 type TableRow = any
 

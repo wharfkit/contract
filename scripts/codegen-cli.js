@@ -43,8 +43,7 @@ async function codegenCli() {
 }
 
 function log(message) {
-    // eslint-disable-next-line no-console
-    console.error(message)
+    process.stderr.write(message)
 }
 
 codegenCli()

@@ -189,6 +189,7 @@ function createContractClass(abi: ABI, namespaceName: string) {
     // add a method for each action
     for (const action of abi.actions) {
         const actionStruct = resolved.structs.find((struct) => struct.name === action.name)
+        console.log({structs: resolved.structs, actionStruct})
         if (!actionStruct) {
             throw Error(`Action Struct not found for ${action.name}`)
         }

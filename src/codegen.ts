@@ -188,8 +188,9 @@ function createContractClass(abi: ABI, namespaceName: string) {
     const members: ts.ClassElement[] = []
     // add a method for each action
     for (const action of abi.actions) {
-        const actionStruct = resolved.structs.find((struct) => struct.name === action.name)
-        console.log({structs: resolved.structs, actionStruct})
+        const actionStruct = resolved.structs.find(
+            (struct) => struct.name === action.name || struct.name === `action_${action.name}`
+        )
         if (!actionStruct) {
             throw Error(`Action Struct not found for ${action.name}`)
         }
@@ -207,7 +208,7 @@ function createContractClass(abi: ABI, namespaceName: string) {
                     undefined, // dot dot dot token
                     ts.factory.createIdentifier(field.name), // name
                     undefined, // question token
-                    ts.factory.createTypeReferenceNode(cleanupParam(field.type)), // type
+                    ts.factory.createTypeReferenceNode(cleanupParamType(field.type)), // type
                     undefined // initializer
                 )
             }) || [],
@@ -354,7 +355,7 @@ function createField(field: FieldType, isExport = false): ts.PropertyDeclaration
             : decorators,
         ts.factory.createIdentifier(fieldName), // Fixed: Use field.name as the identifier
         undefined, // questionToken
-        ts.factory.createTypeReferenceNode(capitalize(field.type)), // Fixed: Use field.type as the type reference
+        ts.factory.createTypeReferenceNode(cleanupParamWrapperName(field.type)), // Fixed: Use field.type as the type reference
         undefined // initializer
     )
 }
@@ -384,7 +385,18 @@ export async function codegen(contractName, abi) {
     const namespaceName = generateNamespaceName(contractName)
 
     const importCoreStatement = createImportStatement(
-        ['Struct', 'Name', 'NameType', 'Asset', 'AssetType', 'TransactResult'],
+        [
+            'Struct',
+            'Name',
+            'NameType',
+            'Asset',
+            'AssetType',
+            'UInt32',
+            'UInt32Type',
+            'UInt64',
+            'UInt64Type',
+            'TransactResult',
+        ],
         '@wharfkit/session'
     )
     const importContractStatement = createImportStatement(['Contract'], '@wharfkit/contract')
@@ -429,14 +441,26 @@ function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1)
 }
 
-const EOSIO_CORE_TYPES = ['asset', 'name']
+const EOSIO_CORE_TYPES = ['Asset', 'Name', 'UInt32', 'UInt64']
 
-function cleanupParam(type: ABI.ResolvedType) {
-    if (EOSIO_CORE_TYPES.includes(type.name)) {
-        return `${capitalize(type.name)}Type`
-    } else {
-        return type.name
+function cleanupParamType(type: ABI.ResolvedType): string {
+    for (const coreType of EOSIO_CORE_TYPES) {
+        if (type.name === coreType.toLowerCase()) {
+            return `${coreType}Type`
+        }
     }
+
+    return type.name
+}
+
+function cleanupParamWrapperName(type: string): string {
+    for (const coreType of EOSIO_CORE_TYPES) {
+        if (type === coreType.toLowerCase()) {
+            return coreType
+        }
+    }
+
+    return type
 }
 
 // Generates a namespace name for a contract (eg. _EosioToken for eosio.token)

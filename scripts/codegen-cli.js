@@ -43,7 +43,7 @@ async function codegenCli() {
 }
 
 function log(message) {
-    process.stderr.write(message)
+    process.stderr.write(`${message}\n`)
 }
 
 codegenCli()

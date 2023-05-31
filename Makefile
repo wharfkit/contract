@@ -47,6 +47,10 @@ publish: | distclean node_modules
 docs: build/docs
 	@open build/docs/index.html
 
+.PHONY: generate
+generate: lib
+	node -r esm scripts/codegen-cli.js $(contract)
+
 build/docs: $(SRC_FILES) node_modules
 	@${BIN}/typedoc --out build/docs \
 		--excludeInternal --excludePrivate --excludeProtected \

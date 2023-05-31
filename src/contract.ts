@@ -1,22 +1,11 @@
 import {
     ABISerializableObject,
     Action,
-    AnyAction,
-    Checksum256,
     Name,
     NameType,
-} from '@greymass/eosio'
-
-// stubs for session kit
-interface Session {
-    transact(SessionTransactArgs: any): Promise<SessionTransactResult>
-}
-interface SessionTransactArgs {
-    actions: AnyAction[]
-}
-interface SessionTransactResult {
-    id: Checksum256
-}
+    Session,
+    TransactResult,
+} from '@wharfkit/session'
 
 // TODO: move this to core
 export function isABISerializableObject(value: any): value is ABISerializableObject {
@@ -60,10 +49,9 @@ export class Contract {
     async call(
         name: NameType,
         data: ABISerializableObject | {[key: string]: any}
-    ): Promise<SessionTransactResult> {
-        let action: Action
+    ): Promise<TransactResult> {
         if (isABISerializableObject(data)) {
-            action = Action.from({
+            Action.from({
                 account: this.account,
                 name,
                 authorization: [],

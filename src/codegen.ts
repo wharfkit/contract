@@ -2,9 +2,12 @@ import {ABI} from '@greymass/eosio'
 import assert from 'assert'
 import * as ts from 'typescript'
 
-import {eosioToken, eosioTokenModified} from './sample-abis'
+interface FieldType {
+    name: string
+    type: string
+}
 
-const file = ts.createSourceFile('test.ts', '', ts.ScriptTarget.ES2022)
+const file = ts.createSourceFile('codegen.ts', '', 7)
 const printer = ts.createPrinter()
 
 function pascalCase(value: string): string {
@@ -14,11 +17,6 @@ function pascalCase(value: string): string {
             return w[0].toUpperCase() + w.slice(1).toLowerCase()
         })
         .join('')
-}
-
-function camelCase(value: string): string {
-    const rv = pascalCase(value)
-    return rv[0].toLowerCase() + rv.slice(1)
 }
 
 function createClassDeclaration(
@@ -53,8 +51,6 @@ function createClassDeclaration(
     )
     return classDeclaration
 }
-
-function createTypeDeclarationForType(type: ABI.ResolvedType) {}
 
 function createPropertyDeclarationForField(name: string, type: ABI.ResolvedType) {
     // field options is an object with all optional fields, e.g.: {array: true, optional: true, extension: true}
@@ -115,7 +111,7 @@ function createPropertyDeclarationForField(name: string, type: ABI.ResolvedType)
     return propertyDeclaration
 }
 
-function createContractClass(abi: ABI, name = 'contractImpl') {
+function createContractClass(abi: ABI, namespaceName: string) {
     const structs: Map<string, ts.ClassDeclaration> = new Map()
     const structTypes: Map<string, ts.TypeAliasDeclaration> = new Map()
     const coreImports: Set<string> = new Set()
@@ -127,7 +123,6 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
             return getStructDeclaration(type).name!
         }
         return ts.factory.createIdentifier(type.name)
-        throw new Error(`unhandled type: ${type.name}`)
     }
 
     function getStructDeclaration(type: ABI.ResolvedType) {
@@ -166,38 +161,6 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
         return structClass
     }
 
-    function getStructType(type: ABI.ResolvedType) {
-        // get the type interface for the struct that can be used in the .from() classmethod
-        // e.g. type MyStructType = MyStruct | {field1: string, field2: number}
-        const looseInterface = ts.factory.createTypeLiteralNode(
-            type.allFields!.map((field) => {
-                return ts.factory.createPropertySignature(
-                    undefined, // modifiers
-                    field.name, // name
-                    field.type.isOptional
-                        ? ts.factory.createToken(ts.SyntaxKind.QuestionToken)
-                        : undefined, // question token
-                    ts.factory.createTypeReferenceNode(getTypeIdentifier(field.type)) // type
-                )
-            })
-        )
-        const structDeclaration = getStructDeclaration(type)
-        // type MyStructType = MyStruct | {field1: string, field2: number}
-        const structType = ts.factory.createUnionTypeNode([
-            ts.factory.createTypeReferenceNode(structDeclaration.name!),
-            looseInterface,
-        ])
-        const alias = ts.factory.createTypeAliasDeclaration(
-            undefined, // decorators
-            [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)], // modifiers
-            `${type.name}Type`, // name
-            undefined, // type parameters
-            structType // type
-        )
-        structTypes.set(type.name, alias)
-        return alias.name
-    }
-
     for (let abiType of resolved.structs) {
         while (abiType.ref) {
             abiType = abiType.ref
@@ -225,26 +188,30 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
     const members: ts.ClassElement[] = []
     // add a method for each action
     for (const action of abi.actions) {
-        console.log('create', action.name)
-        const actionName = ts.factory.createIdentifier(String(action.name))
+        const actionStruct = resolved.structs.find((struct) => struct.name === action.name)
+        if (!actionStruct) {
+            throw Error(`Action Struct not found for ${action.name}`)
+        }
+        const actionNameIdentifier = ts.factory.createIdentifier(String(action.name))
+        const fields = actionStruct.fields || []
         const actionMethod = ts.factory.createMethodDeclaration(
             undefined, // decorators
             undefined, // asterisk token
-            actionName, // name
+            actionNameIdentifier, // name
             undefined, // question token
             undefined, // type parameters
-            [
-                ts.factory.createParameterDeclaration(
+            fields.map((field) => {
+                return ts.factory.createParameterDeclaration(
                     undefined, // decorators
                     undefined, // dot dot dot token
-                    ts.factory.createIdentifier('args'), // name
+                    ts.factory.createIdentifier(field.name), // name
                     undefined, // question token
-                    ts.factory.createTypeReferenceNode(getStructType(abi.resolveType(action.type))), // , // type
+                    ts.factory.createTypeReferenceNode(cleanupParam(field.type)), // type
                     undefined // initializer
-                ),
-            ], // parameters
+                )
+            }) || [],
             ts.factory.createTypeReferenceNode('Promise', [
-                ts.factory.createTypeReferenceNode('void'),
+                ts.factory.createTypeReferenceNode('TransactResult'),
             ]), // type
             ts.factory.createBlock(
                 [
@@ -257,7 +224,29 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
                             undefined,
                             [
                                 ts.factory.createStringLiteral(String(action.name)),
-                                ts.factory.createIdentifier('args'),
+                                ts.factory.createCallExpression(
+                                    ts.factory.createPropertyAccessExpression(
+                                        ts.factory.createPropertyAccessExpression(
+                                            ts.factory.createPropertyAccessExpression(
+                                                ts.factory.createIdentifier(namespaceName),
+                                                ts.factory.createIdentifier('Types')
+                                            ),
+                                            ts.factory.createIdentifier(capitalize(action.name))
+                                        ),
+                                        ts.factory.createIdentifier('from')
+                                    ),
+                                    undefined,
+                                    [
+                                        ts.factory.createObjectLiteralExpression(
+                                            fields.map((field) =>
+                                                ts.factory.createPropertyAssignment(
+                                                    ts.factory.createIdentifier(field.name),
+                                                    ts.factory.createIdentifier(field.name)
+                                                )
+                                            )
+                                        ),
+                                    ]
+                                ),
                             ]
                         )
                     ),
@@ -268,25 +257,191 @@ function createContractClass(abi: ABI, name = 'contractImpl') {
         members.push(actionMethod)
     }
     // build out contract class with actions
-    const classDeclaration = createClassDeclaration(name, members, {
+    const classDeclaration = createClassDeclaration(namespaceName, members, {
         parent: 'Contract',
         export: true,
     })
 
     // debug print all structs
     for (const struct of structs.values()) {
-        const result = printer.printNode(ts.EmitHint.Unspecified, struct, file)
-        console.log(result)
+        printer.printNode(ts.EmitHint.Unspecified, struct, file)
     }
     // debug print all struct types
     for (const structType of structTypes.values()) {
-        const result = printer.printNode(ts.EmitHint.Unspecified, structType, file)
-        console.log(result)
+        printer.printNode(ts.EmitHint.Unspecified, structType, file)
     }
 
     return classDeclaration
 }
 
-const contractClass = createContractClass(eosioTokenModified)
-const result2 = printer.printNode(ts.EmitHint.Unspecified, contractClass, file)
-console.log(result2)
+function createImportStatement(classes, path): ts.ImportDeclaration {
+    return ts.factory.createImportDeclaration(
+        undefined, // modifiers
+        ts.factory.createImportClause(
+            false, // isTypeOnly
+            undefined, // name
+            ts.factory.createNamedImports(
+                classes.map((className) =>
+                    ts.factory.createImportSpecifier(
+                        false,
+                        undefined, // propertyName
+                        ts.factory.createIdentifier(className) // name
+                    )
+                )
+            ) // namedBindings
+        ),
+        ts.factory.createStringLiteral(path) // moduleSpecifier
+    )
+}
+
+function createNamespace(namespaceName: string, children, isExport = true): ts.ModuleDeclaration {
+    return ts.factory.createModuleDeclaration(
+        isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : [], // modifiers
+        ts.factory.createIdentifier(namespaceName),
+        ts.factory.createModuleBlock([...children]),
+        ts.NodeFlags.Namespace
+    )
+}
+
+function createStruct(
+    structName: string,
+    isExport = false,
+    members: ts.ClassElement[] = []
+): ts.ClassDeclaration {
+    const decorators = [
+        ts.factory.createDecorator(
+            ts.factory.createCallExpression(ts.factory.createIdentifier('Struct.type'), undefined, [
+                ts.factory.createStringLiteral(structName),
+            ])
+        ),
+    ]
+
+    return ts.factory.createClassDeclaration(
+        isExport
+            ? [...decorators, ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)]
+            : decorators,
+        ts.factory.createIdentifier(capitalize(structName)),
+        undefined, // typeParameters
+        [
+            ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
+                ts.factory.createExpressionWithTypeArguments(
+                    ts.factory.createIdentifier('Struct'),
+                    []
+                ),
+            ]),
+        ], // heritageClauses
+        members // Pass the members array
+    )
+}
+
+function createField(field: FieldType, isExport = false): ts.PropertyDeclaration {
+    const fieldName = field.name.toLowerCase()
+
+    const decorators = [
+        ts.factory.createDecorator(
+            ts.factory.createCallExpression(
+                ts.factory.createIdentifier('Struct.field'),
+                undefined,
+                [ts.factory.createStringLiteral(fieldName)]
+            )
+        ),
+    ]
+
+    return ts.factory.createPropertyDeclaration(
+        isExport
+            ? [...decorators, ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)]
+            : decorators,
+        ts.factory.createIdentifier(fieldName), // Fixed: Use field.name as the identifier
+        undefined, // questionToken
+        ts.factory.createTypeReferenceNode(capitalize(field.type)), // Fixed: Use field.type as the type reference
+        undefined // initializer
+    )
+}
+
+function getFieldTypesFromAbi(abi: any): {structName: string; fields: FieldType[]}[] {
+    const structTypes: {structName: string; fields: FieldType[]}[] = []
+
+    if (abi && abi.structs) {
+        for (const struct of abi.structs) {
+            const fields: FieldType[] = []
+
+            for (const field of struct.fields) {
+                fields.push({
+                    name: field.name.charAt(0).toUpperCase() + field.name.slice(1),
+                    type: field.type,
+                })
+            }
+
+            structTypes.push({structName: struct.name, fields})
+        }
+    }
+
+    return structTypes
+}
+
+export async function codegen(contractName, abi) {
+    const namespaceName = generateNamespaceName(contractName)
+
+    const importCoreStatement = createImportStatement(
+        ['Struct', 'Name', 'NameType', 'Asset', 'AssetType', 'TransactResult'],
+        '@wharfkit/session'
+    )
+    const importContractStatement = createImportStatement(['Contract'], '@wharfkit/contract')
+
+    const classDeclaration = createContractClass(ABI.from(abi), namespaceName)
+
+    // Extract fields from the ABI
+    const structs = getFieldTypesFromAbi(abi)
+
+    const structDeclarations: ts.ClassDeclaration[] = []
+
+    // Iterate through structs and create struct with fields
+    for (const struct of structs) {
+        const structMembers: ts.ClassElement[] = []
+
+        for (const field of struct.fields) {
+            structMembers.push(createField(field, true))
+        }
+
+        structDeclarations.push(createStruct(struct.structName, true, structMembers))
+    }
+
+    // Add your custom namespace and export namespace
+    const exportNamespace = createNamespace('Types', structDeclarations)
+
+    const namespace = createNamespace(namespaceName, [exportNamespace])
+
+    const sourceFile = ts.factory.createSourceFile(
+        [importContractStatement, importCoreStatement, classDeclaration, namespace],
+        ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
+        ts.NodeFlags.None
+    )
+
+    return printer.printFile(sourceFile)
+}
+
+function capitalize(string) {
+    if (typeof string !== 'string' || string.length === 0) {
+        return ''
+    }
+
+    return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+const EOSIO_CORE_TYPES = ['asset', 'name']
+
+function cleanupParam(type: ABI.ResolvedType) {
+    if (EOSIO_CORE_TYPES.includes(type.name)) {
+        return `${capitalize(type.name)}Type`
+    } else {
+        return type.name
+    }
+}
+
+// Generates a namespace name for a contract (eg. _EosioToken for eosio.token)
+function generateNamespaceName(contractName: string) {
+    return `_${contractName
+        .split('.')
+        .map((namePart) => capitalize(namePart))
+        .join('')}`
+}

@@ -1,31 +1,26 @@
-import type {API, NameType} from '@greymass/eosio'
-import {Name} from '@greymass/eosio'
-
-import {Contract} from '../contract'
+import type {API, NameType} from '@wharfkit/session'
+import {Name, APIClient} from '@wharfkit/session'
 
 type TableRow = any
 
 interface TableCursorParams {
     rows: TableRow[]
-    contract: Contract
-    table: NameType
-    options: API.v1.GetTableRowsParams
+    client: APIClient
+    tableParams: API.v1.GetTableRowsParams
     next_key?: string
 }
 
 export class TableCursor {
     rows: TableRow[]
-    private contract: Contract
-    private table: NameType
+    private client: APIClient
     private next_key: string | undefined
-    private options: API.v1.GetTableRowsParams
+    private tableParams: API.v1.GetTableRowsParams
     private currentIndex: number
 
-    constructor({rows, contract, table, options, next_key}: TableCursorParams) {
+    constructor({rows, client, tableParams, next_key}: TableCursorParams) {
         this.rows = rows
-        this.contract = contract
-        this.table = table
-        this.options = options
+        this.client = client
+        this.tableParams = tableParams
         this.next_key = next_key
         this.currentIndex = 0
     }
@@ -57,8 +52,8 @@ export class TableCursor {
     }
 
     async more() {
-        const {rows, next_key} = await this.contract.getTableRows({
-            ...this.options,
+        const {rows, next_key} = await this.client.v1.chain.get_table_rows({
+            ...this.tableParams,
             lower_bound: this.next_key ? Name.from(this.next_key) : undefined,
             upper_bound: undefined,
         })

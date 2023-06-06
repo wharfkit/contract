@@ -19,7 +19,7 @@ suite('getTableRows', () => {
     })
 
     test('should fetch table rows correctly with default options', async () => {
-        const tableCursor = await mockContract.getTableRows('proposal')
+        const tableCursor = await mockContract.where('proposal')
 
         // expect(cursor).to.be.instanceOf(TableCursor)
         assert.deepEqual(

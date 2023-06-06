@@ -2,27 +2,39 @@ import {NameType, Name, APIClient} from '@wharfkit/session'
 import {TableCursor} from './table-cursor'
 import {Contract} from '../contract'
 
-interface TableParams {
+interface TableParams<TableRow = any> {
     account: NameType
     table: NameType
     client: APIClient
-    tableStruct: any
+    tableStruct?: TableRow
 }
 
-export class Table {
+interface GetTableRowsOptions {
+    limit?: number
+}
+
+export class Table<TableRow = any> {
     private client: APIClient
     private account: Name
     private table: Name
-    private tableStruct: any
+    private tableStruct?: TableRow
 
-    constructor({account, table, client, tableStruct}: TableParams) {
+    constructor({account, table, client, tableStruct}: TableParams<TableRow>) {
         this.account = Name.from(account)
         this.table = Name.from(table)
         this.client = client
         this.tableStruct = tableStruct
     }
 
-    async where(fieldToIndex, queryParams: any, {limit = 10} = {}) {
+    static from(tableParams: TableParams) {
+        return new Table(tableParams)
+    }
+
+    async where(
+        fieldToIndex,
+        queryParams: any,
+        {limit = 10}: GetTableRowsOptions = {}
+    ): Promise<TableCursor<TableRow>> {
         const fieldToIndexMapping = fieldToIndex || (await this.getFieldToIndex())
 
         const {from, to} = queryParams
@@ -51,7 +63,7 @@ export class Table {
         })
     }
 
-    async find(fieldToIndex, queryParams: any) {
+    async find(fieldToIndex, queryParams: any): Promise<TableRow> {
         const fieldToIndexMapping = fieldToIndex || (await this.getFieldToIndex())
 
         const fieldName = Object.keys(queryParams)[0]
@@ -73,11 +85,11 @@ export class Table {
         return rows[0]
     }
 
-    async all(contract, table, tableParams, {limit = 10} = {}) {
+    async all({limit = 10}: GetTableRowsOptions = {}): Promise<TableCursor<TableRow>> {
         const tableRowsParams = {
-            table,
+            table: this.table,
             limit,
-            code: contract,
+            code: this.account,
             type: this.tableStruct,
         }
 

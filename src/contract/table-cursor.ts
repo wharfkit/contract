@@ -1,23 +1,21 @@
 import type {API, NameType} from '@wharfkit/session'
 import {Name, APIClient} from '@wharfkit/session'
 
-type TableRow = any
-
-interface TableCursorParams {
+interface TableCursorParams<TableRow> {
     rows: TableRow[]
     client: APIClient
     tableParams: API.v1.GetTableRowsParams
     next_key?: string
 }
 
-export class TableCursor {
+export class TableCursor<TableRow> {
     rows: TableRow[]
     private client: APIClient
     private next_key: string | undefined
     private tableParams: API.v1.GetTableRowsParams
     private currentIndex: number
 
-    constructor({rows, client, tableParams, next_key}: TableCursorParams) {
+    constructor({rows, client, tableParams, next_key}: TableCursorParams<TableRow>) {
         this.rows = rows
         this.client = client
         this.tableParams = tableParams

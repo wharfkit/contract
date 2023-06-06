@@ -1,111 +1,20 @@
-import {Contract, TableCursor} from '../src/index'
-import {Name, NameType} from '@wharfkit/session'
+import {TableCursor} from './index'
+import {Struct} from '@wharfkit/session'
+import type {APIClient, UInt64, Name} from '@wharfkit/session'
+import {Table} from './contract/table'
 
-const queryFields = ['name', 'email', 'id', 'title']
-type TableType = 'users' | 'proposals'
-
-export class _Blog extends Contract {
-    async where(
-        table: NameType,
-        queryParams: _Blog.Types.UsersQueryParams & _Blog.Types.ProposalsQueryParams,
-        {limit = 10} = {}
-    ) {
-        let lowerBound
-        let upperBound
-        let indexPosition
-
-        if (!this.client) {
-            throw new Error('Client not set')
-        }
-
-        for (let field of queryFields) {
-            if (queryParams[field]) {
-                const {from, to} = queryParams[field]
-                lowerBound = from
-                upperBound = to
-                indexPosition = getIndexPosition(table, field)
-                break
-            }
-        }
-
-        const tableRowsOptions = {
-            type: types.UsersRow,
-            table,
-            code: this.account,
-            lower_bound: lowerBound && Name.from(lowerBound),
-            upper_bound: upperBound && Name.from(upperBound),
-            scope: table,
-            limit,
-            index_position: indexPosition,
-        }
-
-        const {rows, next_key} = await this.client.v1.chain.get_table_rows(tableRowsOptions)
-
-        return new TableCursor({
-            rows,
-            contract: this,
-            table,
-            options: tableRowsOptions,
-            next_key: String(next_key),
-        })
-    }
-
-    async find(
-        table: TableType,
-        queryParams: _Blog.Types.UsersFindParams & _Blog.Types.ProposalsFindParams
-    ) {
-        let lowerBound
-        let upperBound
-        let indexPosition
-
-        let fieldFound = false
-
-        for (let field of queryFields) {
-            if (queryParams[field]) {
-                lowerBound = queryParams[field]
-                upperBound = queryParams[field]
-                indexPosition = getIndexPosition(table, field)
-                fieldFound = true
-                break
-            }
-        }
-
-        const tableRowsOptions = {
-            table,
-            code: this.account,
-            scope: table,
-            lower_bound: Name.from(lowerBound),
-            upper_bound: Name.from(upperBound),
-            limit: 1,
-            index_position: getIndexPosition(table, 'name'),
-        }
-
-        const {rows} = await this.client.v1.chain.get_table_rows(tableRowsOptions)
-
-        return rows[0]
-    }
-
-    async all(table, {limit}) {
-        const tableRowsOptions = {
-            table,
-            code: this.account,
-            scope: 'users',
-            limit,
-        }
-
-        const {rows, next_key} = await this.getTableRows(tableRowsOptions)
-
-        return new TableCursor({
-            rows,
-            contract: this,
-            table,
-            options: tableRowsOptions,
-            next_key: String(next_key),
-        })
-    }
-}
 export namespace _Blog {
-    export namespace Types {
+    export namespace types {
+        @Struct.type('users_row')
+        export class UsersRow extends Struct {
+            @Struct.field('id')
+            declare id: UInt64
+            @Struct.field('name')
+            declare name: Name
+            @Struct.field('email')
+            declare email: string
+        }
+
         export interface UsersQueryParams {
             name: {
                 from: string
@@ -140,15 +49,63 @@ export namespace _Blog {
     }
 }
 
-function getIndexPosition(table, keyName) {
-    return {
-        users: {
-            name: 'primary',
-            email: 'secondary',
-        },
-        propsals: {
-            id: 'primary',
-            title: 'secondary',
-        },
-    }[table][keyName]
+export namespace _Blog {
+    export namespace tables {
+        export class Users {
+            static fieldToIndex = {
+                name: {
+                    type: 'name',
+                    index_position: 'primary',
+                },
+                email: {
+                    type: 'string',
+                    index_position: 'secondary',
+                },
+            }
+
+            static where(
+                queryParams: _Blog.types.UsersQueryParams & _Blog.types.ProposalsQueryParams,
+                {limit = 10} = {},
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.UsersRow>> {
+                const usersTable = Table.from({
+                    account: 'blog',
+                    table: 'users',
+                    client,
+                    tableStruct: _Blog.types.UsersRow,
+                })
+
+                return usersTable.where(Users.fieldToIndex, queryParams, {limit})
+            }
+
+            static async find(
+                queryParams: _Blog.types.UsersFindParams & _Blog.types.ProposalsFindParams,
+                client: APIClient
+            ): Promise<_Blog.types.UsersRow> {
+                const usersTable = Table.from({
+                    account: 'blog',
+                    table: 'users',
+                    client,
+                    tableStruct: _Blog.types.UsersRow,
+                })
+
+                return usersTable.find(Users.fieldToIndex, queryParams)
+            }
+
+            static async all({limit}, client): Promise<TableCursor<_Blog.types.UsersRow>> {
+                const usersTable = Table.from({
+                    account: 'blog',
+                    table: 'users',
+                    client,
+                    tableStruct: _Blog.types.UsersRow,
+                })
+
+                return usersTable.all({limit})
+            }
+        }
+    }
+
+    export namespace actions {
+        // Put actions here
+    }
 }

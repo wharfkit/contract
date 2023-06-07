@@ -3,7 +3,7 @@
         "path": "https://eos.greymass.com/v1/chain/get_table_rows",
         "params": {
             "method": "POST",
-            "body": "{\"table\":\"trending\",\"code\":\"decentiumorg\",\"scope\":\"decentiumorg\",\"limit\":2,\"lower_bound\":\"5\",\"upper_bound\":\"10\",\"index_position\":\"primary\",\"key_type\":\"i64\",\"json\":true}"
+            "body": "{\"table\":\"trending\",\"code\":\"decentiumorg\",\"scope\":\"decentiumorg\",\"limit\":2,\"lower_bound\":\"5\",\"upper_bound\":\"7\",\"index_position\":\"primary\",\"key_type\":\"i64\",\"json\":true}"
         }
     },
     "headers": {

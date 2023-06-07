@@ -78,7 +78,7 @@ export class Table<TableRow = any> {
             rows,
             client: this.client,
             tableParams: tableRowsParams,
-            next_key: String(next_key),
+            next_key,
         })
     }
 
@@ -102,7 +102,7 @@ export class Table<TableRow = any> {
                 typeof entryFieldValue === 'string'
                     ? Name.from(entryFieldValue)
                     : UInt64.from(entryFieldValue),
-            index_position: fieldToIndexMapping[fieldName].index_position,
+            index_position: fieldToIndexMapping[fieldName].index_position || 'primary',
         }
 
         const {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
@@ -118,13 +118,21 @@ export class Table<TableRow = any> {
             type: this.tableStruct,
         }
 
-        const {rows, next_key} = await this.client.v1.chain.get_table_rows(tableRowsParams)
+        let response
+
+        try {
+            response = await this.client.v1.chain.get_table_rows(tableRowsParams)
+        } catch (error) {
+            throw new Error(`Error fetching table rows: ${JSON.stringify(error)}`)
+        }
+
+        const {rows, next_key} = response
 
         return new TableCursor({
             rows,
             client: this.client,
             tableParams: tableRowsParams,
-            next_key: String(next_key),
+            next_key,
         })
     }
 

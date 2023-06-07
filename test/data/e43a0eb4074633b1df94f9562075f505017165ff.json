@@ -1,0 +1,39 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"table\":\"trending\",\"limit\":2,\"code\":\"decentiumorg\",\"lower_bound\":\"............2\",\"upper_bound\":\"0\",\"index_position\":\"primary\",\"scope\":\"decentiumorg\",\"key_type\":\"name\",\"json\":true}"
+        }
+    },
+    "headers": {
+        "access-control-allow-headers": "X-Requested-With,Accept,Content-Type,Origin",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "connection": "close",
+        "content-length": "253",
+        "content-type": "application/json",
+        "date": "Wed, 07 Jun 2023 23:06:27 GMT",
+        "server": "nginx",
+        "x-cached": "MISS"
+    },
+    "status": 500,
+    "json": {
+        "code": 500,
+        "message": "Internal Service Error",
+        "error": {
+            "code": 3010001,
+            "name": "name_type_exception",
+            "what": "Invalid name",
+            "details": [
+                {
+                    "message": "Name not properly normalized (name: 0, normalized: ) ",
+                    "file": "name.cpp",
+                    "line_number": 15,
+                    "method": "set"
+                }
+            ]
+        }
+    },
+    "text": "{\"code\":500,\"message\":\"Internal Service Error\",\"error\":{\"code\":3010001,\"name\":\"name_type_exception\",\"what\":\"Invalid name\",\"details\":[{\"message\":\"Name not properly normalized (name: 0, normalized: ) \",\"file\":\"name.cpp\",\"line_number\":15,\"method\":\"set\"}]}}"
+}

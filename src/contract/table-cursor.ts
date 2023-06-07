@@ -1,17 +1,17 @@
-import type {API} from '@wharfkit/session'
+import {API, isInstanceOf, UInt64} from '@wharfkit/session'
 import {APIClient, Name} from '@wharfkit/session'
 
 interface TableCursorParams<TableRow> {
     rows: TableRow[]
     client: APIClient
     tableParams: API.v1.GetTableRowsParams
-    next_key?: string
+    next_key?: Name | UInt64 | undefined
 }
 
 export class TableCursor<TableRow> {
     rows: TableRow[]
     private client: APIClient
-    private next_key: string | undefined
+    private next_key: Name | UInt64 | undefined
     private tableParams: API.v1.GetTableRowsParams
     private currentIndex: number
 
@@ -50,14 +50,30 @@ export class TableCursor<TableRow> {
     }
 
     async more() {
+        if (!this.next_key) {
+            return this
+        }
+
+        let upper_bound
+
+        if (this.tableParams.upper_bound) {
+            upper_bound = isInstanceOf(this.tableParams.upper_bound, Name)
+                ? Name.from(this.tableParams.upper_bound)
+                : UInt64.from(this.tableParams.upper_bound)
+        }
+
         const {rows, next_key} = await this.client.v1.chain.get_table_rows({
             ...this.tableParams,
-            lower_bound: this.next_key ? Name.from(this.next_key) : undefined,
-            upper_bound: undefined,
+            lower_bound:
+                this.next_key instanceof Name
+                    ? Name.from(this.next_key)
+                    : UInt64.from(this.next_key),
+            upper_bound: upper_bound ? upper_bound : undefined,
+            index_position: this.tableParams.index_position || 'primary',
         })
 
         this.rows = this.rows.concat(rows)
-        this.next_key = String(next_key)
+        this.next_key = next_key
 
         return this
     }

@@ -1,12 +1,22 @@
-import {NameType, Name, APIClient} from '@wharfkit/session'
+import {NameType, Name, APIClient, UInt64} from '@wharfkit/session'
 import {TableCursor} from './table-cursor'
-import {Contract} from '../contract'
 
+interface QueryParams {
+    [key: string]: any
+}
+
+interface FieldToIndex {
+    [key: string]: {
+        type: string
+        index_position: string
+    }
+}
 interface TableParams<TableRow = any> {
     account: NameType
-    table: NameType
+    tableName: NameType
     client: APIClient
     tableStruct?: TableRow
+    fieldToIndex?: FieldToIndex
 }
 
 interface GetTableRowsOptions {
@@ -16,14 +26,16 @@ interface GetTableRowsOptions {
 export class Table<TableRow = any> {
     private client: APIClient
     private account: Name
-    private table: Name
+    private tableName: Name
     private tableStruct?: TableRow
+    private fieldToIndex?: any
 
-    constructor({account, table, client, tableStruct}: TableParams<TableRow>) {
+    constructor({account, tableName, client, tableStruct, fieldToIndex}: TableParams<TableRow>) {
         this.account = Name.from(account)
-        this.table = Name.from(table)
+        this.tableName = Name.from(tableName)
         this.client = client
         this.tableStruct = tableStruct
+        this.fieldToIndex = fieldToIndex
     }
 
     static from(tableParams: TableParams) {
@@ -31,29 +43,36 @@ export class Table<TableRow = any> {
     }
 
     async where(
-        fieldToIndex,
-        queryParams: any,
+        queryParams: QueryParams,
         {limit = 10}: GetTableRowsOptions = {}
     ): Promise<TableCursor<TableRow>> {
-        const fieldToIndexMapping = fieldToIndex || (await this.getFieldToIndex())
+        const fieldToIndexMapping = this.fieldToIndex || (await this.getFieldToIndex())
 
-        const {from, to} = queryParams
+        const {from, to} = queryParams[Object.keys(queryParams)[0]]
 
-        const lower_bound = from ? Name.from(from) : undefined
-        const upper_bound = to ? Name.from(to) : undefined
+        const lower_bound = typeof from === 'string' ? Name.from(from) : UInt64.from(from)
+        const upper_bound = typeof to === 'string' ? Name.from(to) : UInt64.from(to)
 
         const tableRowsParams = {
-            table: this.table,
+            table: this.tableName,
             code: this.account,
             scope: this.account,
             type: this.tableStruct,
             limit,
             lower_bound,
             upper_bound,
-            index_position: fieldToIndexMapping[Object.keys(queryParams)[0]],
+            index_position: fieldToIndexMapping[Object.keys(queryParams)[0]].index_position,
         }
 
-        const {rows, next_key} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
+        let response
+
+        try {
+            response = await this.client.v1.chain.get_table_rows(tableRowsParams)
+        } catch (error) {
+            throw new Error(`Error fetching table rows: ${JSON.stringify(error)}`)
+        }
+
+        const {rows, next_key} = response
 
         return new TableCursor({
             rows,
@@ -63,21 +82,27 @@ export class Table<TableRow = any> {
         })
     }
 
-    async find(fieldToIndex, queryParams: any): Promise<TableRow> {
-        const fieldToIndexMapping = fieldToIndex || (await this.getFieldToIndex())
+    async find(queryParams: QueryParams): Promise<TableRow> {
+        const fieldToIndexMapping = this.fieldToIndex || (await this.getFieldToIndex())
 
         const fieldName = Object.keys(queryParams)[0]
         const entryFieldValue = Object.values(queryParams)[0] as string
 
         const tableRowsParams = {
-            table: this.table,
+            table: this.tableName,
             code: this.account,
             scope: this.account,
             type: this.tableStruct,
             limit: 1,
-            lower_bound: Name.from(entryFieldValue),
-            upper_bound: Name.from(entryFieldValue),
-            index_position: fieldToIndexMapping[fieldName],
+            lower_bound:
+                typeof entryFieldValue === 'string'
+                    ? Name.from(entryFieldValue)
+                    : UInt64.from(entryFieldValue),
+            upper_bound:
+                typeof entryFieldValue === 'string'
+                    ? Name.from(entryFieldValue)
+                    : UInt64.from(entryFieldValue),
+            index_position: fieldToIndexMapping[fieldName].index_position,
         }
 
         const {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
@@ -87,7 +112,7 @@ export class Table<TableRow = any> {
 
     async all({limit = 10}: GetTableRowsOptions = {}): Promise<TableCursor<TableRow>> {
         const tableRowsParams = {
-            table: this.table,
+            table: this.tableName,
             limit,
             code: this.account,
             type: this.tableStruct,
@@ -110,10 +135,10 @@ export class Table<TableRow = any> {
             throw new Error(`ABI not found for contract ${this.account}`)
         }
 
-        const table = abi.tables.find((table) => table.name === this.table)
+        const table = abi.tables.find((table) => this.tableName.equals(table.name))
 
         if (!table) {
-            throw new Error(`Table ${this.table} not found in ABI`)
+            throw new Error(`Table ${this.tableName} not found in ABI`)
         }
 
         const fieldToIndex = {}
@@ -124,9 +149,22 @@ export class Table<TableRow = any> {
                 index_position: indexPosition(i),
             }
         }
+
+        return fieldToIndex
     }
 }
 
 function indexPosition(index: number): string {
-    return ['primary', 'secondary', 'tertiary'][index]
+    return [
+        'primary',
+        'secondary',
+        'tertiary',
+        'fourth',
+        'fifth',
+        'sixth',
+        'seventh',
+        'eighth',
+        'ninth',
+        'tenth',
+    ][index]
 }

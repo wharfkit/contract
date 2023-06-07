@@ -15,7 +15,7 @@ export namespace _Blog {
             declare email: string
         }
 
-        export interface UsersQueryParams {
+        export interface UsersWhereQueryParams {
             name: {
                 from: string
                 to: string
@@ -26,25 +26,9 @@ export namespace _Blog {
             }
         }
 
-        export interface UsersFindParams {
+        export interface UsersFindQueryParams {
             name: string
             email: string
-        }
-
-        export interface ProposalsQueryParams {
-            id: {
-                from: number
-                to: number
-            }
-            title: {
-                from: string
-                to: string
-            }
-        }
-
-        export interface ProposalsFindParams {
-            id: number
-            title: string
         }
     }
 }
@@ -64,38 +48,40 @@ export namespace _Blog {
             }
 
             static where(
-                queryParams: _Blog.types.UsersQueryParams & _Blog.types.ProposalsQueryParams,
+                queryParams: _Blog.types.UsersWhereQueryParams,
                 {limit = 10} = {},
                 client: APIClient
             ): Promise<TableCursor<_Blog.types.UsersRow>> {
                 const usersTable = Table.from({
                     account: 'blog',
-                    table: 'users',
+                    tableName: 'users',
                     client,
                     tableStruct: _Blog.types.UsersRow,
+                    fieldToIndex: Users.fieldToIndex,
                 })
 
-                return usersTable.where(Users.fieldToIndex, queryParams, {limit})
+                return usersTable.where(queryParams, {limit})
             }
 
             static async find(
-                queryParams: _Blog.types.UsersFindParams & _Blog.types.ProposalsFindParams,
+                queryParams: _Blog.types.UsersFindQueryParams,
                 client: APIClient
             ): Promise<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
                     account: 'blog',
-                    table: 'users',
+                    tableName: 'users',
                     client,
                     tableStruct: _Blog.types.UsersRow,
+                    fieldToIndex: Users.fieldToIndex,
                 })
 
-                return usersTable.find(Users.fieldToIndex, queryParams)
+                return usersTable.find(queryParams)
             }
 
             static async all({limit}, client): Promise<TableCursor<_Blog.types.UsersRow>> {
                 const usersTable = Table.from({
                     account: 'blog',
-                    table: 'users',
+                    tableName: 'users',
                     client,
                     tableStruct: _Blog.types.UsersRow,
                 })

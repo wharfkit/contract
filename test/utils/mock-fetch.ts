@@ -42,6 +42,7 @@ export async function mockFetch(path, params) {
     if (process.env['MOCK']) {
         const response = await fetch(path, params)
         const json = await response.clone().json()
+
         await writeFile(
             filename,
             JSON.stringify(

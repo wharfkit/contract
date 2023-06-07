@@ -1,5 +1,5 @@
-import type {API, NameType} from '@wharfkit/session'
-import {Name, APIClient} from '@wharfkit/session'
+import type {API} from '@wharfkit/session'
+import {APIClient, Name} from '@wharfkit/session'
 
 interface TableCursorParams<TableRow> {
     rows: TableRow[]

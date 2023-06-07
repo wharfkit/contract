@@ -1,6 +1,6 @@
 import {TableCursor} from './index'
 import {Struct} from '@wharfkit/session'
-import type {APIClient, UInt64, Name} from '@wharfkit/session'
+import type {APIClient, Name, UInt64} from '@wharfkit/session'
 import {Table} from './contract/table'
 
 export namespace _Blog {

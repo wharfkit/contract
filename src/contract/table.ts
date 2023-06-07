@@ -1,4 +1,4 @@
-import {NameType, Name, APIClient, UInt64} from '@wharfkit/session'
+import {APIClient, Name, NameType, UInt64} from '@wharfkit/session'
 import {TableCursor} from './table-cursor'
 
 interface QueryParams {

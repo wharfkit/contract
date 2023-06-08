@@ -15,16 +15,27 @@ export interface ContractOptions {
     client?: APIClient
 }
 
+/**
+ * Represents a smart contract in the blockchain.
+ * Provides methods for interacting with the contract such as
+ * calling actions, reading tables, and getting the ABI of the contract.
+ */
 export class Contract {
     private static _shared: Contract | null = null
     private static account: Name
 
     private abi?: ABI.Def
 
-    /** Account where contract is deployed. */
     readonly account: Name
     readonly client?: APIClient
 
+    /**
+     * Constructs a new `Contract` instance.
+     *
+     * @param {ContractOptions} options - The options for the contract.
+     * @param {NameType} options.name - The name of the contract.
+     * @param {APIClient} options.client - The client to connect to the blockchain.
+     */
     constructor(options?: ContractOptions) {
         if ((this.constructor as typeof Contract).account) {
             if (options?.name) {
@@ -43,11 +54,21 @@ export class Contract {
         }
     }
 
+    /**
+     * Creates a new `Contract` instance with the given options.
+     *
+     * @param {ContractOptions} options - The options for the contract.
+     * @return {Contract} A new contract instance.
+     */
     static from(options?: ContractOptions): Contract {
         return new this(options)
     }
 
-    /** Shared instance of the contract. */
+    /**
+     * Gets the shared instance of the contract.
+     *
+     * @return {Contract} The shared instance of the contract.
+     */
     static shared<T extends {new ()}>(this: T): InstanceType<T> {
         const self = this as unknown as typeof Contract
         if (!self._shared) {
@@ -56,7 +77,14 @@ export class Contract {
         return self._shared as InstanceType<T>
     }
 
-    /** Call a contract action. */
+    /**
+     * Calls a contract action.
+     *
+     * @param {NameType} name - The name of the action.
+     * @param {ABISerializableObject | {[key: string]: any}} data - The data for the action.
+     * @param {Session} session - The session object to use to sign the transaction.
+     * @return {Promise<TransactResult>} A promise that resolves with the transaction data.
+     */
     async call(
         name: NameType,
         data: ABISerializableObject | {[key: string]: any},
@@ -73,7 +101,11 @@ export class Contract {
         return session.transact({action})
     }
 
-    /** get all tables */
+    /**
+     * Gets all the tables for the contract.
+     *
+     * @return {Promise<Table[]>} A promise that resolves with all the tables for the contract.
+     */
     async getTables(): Promise<Table[]> {
         const abi = await this.getAbi()
 
@@ -86,6 +118,12 @@ export class Contract {
         })
     }
 
+    /**
+     * Gets a specific table for the contract.
+     *
+     * @param {NameType} name - The name of the table.
+     * @return {Promise<Table>} A promise that resolves with the specified table.
+     */
     async getTable(name: NameType): Promise<Table> {
         const tables = await this.getTables()
 
@@ -98,6 +136,11 @@ export class Contract {
         return table
     }
 
+    /**
+     * Gets the ABI for the contract.
+     *
+     * @return {Promise<ABI.Def>} A promise that resolves with the ABI for the contract.
+     */
     async getAbi(): Promise<ABI.Def> {
         if (this.abi) {
             return this.abi

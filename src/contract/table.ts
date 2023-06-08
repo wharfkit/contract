@@ -24,6 +24,12 @@ interface GetTableRowsOptions {
     limit?: number
 }
 
+/**
+ * Represents a table in a smart contract.
+ * Provides methods for querying rows in the table.
+ *
+ * @typeparam TableRow The type of rows in the table.
+ */
 export class Table<TableRow = any> {
     readonly name: Name
     readonly contract: Contract
@@ -34,7 +40,13 @@ export class Table<TableRow = any> {
     /**
      * Constructs a new `Table` instance.
      *
-     * @param {TableParams<TableRow>} tableParams - The parameters for the table.
+     * @param {TableParams<TableRow>} tableParams - Parameters for the table.
+     * The parameters should include:
+     *  - `contract`: Name of the contract that this table is associated with.
+     *  - `name`: Name of the table.
+     *  - `client`: Client object to interact with the network.
+     *  - `rowType`: (optional) Custom row type.
+     *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      */
     constructor({contract, name, client, rowType, fieldToIndex}: TableParams<TableRow>) {
         this.name = Name.from(name)
@@ -43,10 +55,32 @@ export class Table<TableRow = any> {
         this.contract = Contract.from({name: contract, client})
     }
 
+    /**
+     * Creates a new `Table` instance from the given parameters.
+     *
+     * @param {TableParams} tableParams - Parameters for the table.
+     * The parameters should include:
+     *  - `contract`: Name of the contract that this table is associated with.
+     *  - `name`: Name of the table.
+     *  - `client`: Client object to interact with the network.
+     *  - `rowType`: (optional) Custom row type.
+     *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
+     * @returns {Table} A new Table instance.
+     */
     static from(tableParams: TableParams) {
         return new Table(tableParams)
     }
 
+    /**
+     * Retrieves the rows from the table that match the given parameters.
+     *
+     * @param {QueryParams} queryParams - Query parameters to filter rows (eg. `{id: {from: 1, to: 10}}`)
+     *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
+     * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
+     *  May include:
+     *  - `limit`: Maximum number of rows to return.
+     * @returns {Promise<TableCursor<TableRow>>} Promise resolving to a `TableCursor` of the filtered table rows.
+     */
     async where(
         queryParams: QueryParams,
         {limit = 10}: GetTableRowsOptions = {}
@@ -87,6 +121,13 @@ export class Table<TableRow = any> {
         })
     }
 
+    /**
+     * Retrieves the row from the table that matches the given parameters.
+     *
+     * @param {QueryParams} queryParams - Query parameters to identify a single row (eg. `{ id: 1 }`).
+     *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
+     * @returns {Promise<TableRow>} Promise resolving to a single table row.
+     */
     async find(queryParams: QueryParams): Promise<TableRow> {
         const fieldToIndexMapping = this.fieldToIndex || (await this.getFieldToIndex())
 
@@ -115,6 +156,14 @@ export class Table<TableRow = any> {
         return rows[0]
     }
 
+    /**
+     * Retrieves all the rows from the table.
+     *
+     * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
+     *  May include:
+     *  - `limit`: Maximum number of rows to return.
+     * @returns {Promise<TableCursor<TableRow>>} Promise resolving to a `TableCursor` of the table rows.
+     */
     async all({limit = 10}: GetTableRowsOptions = {}): Promise<TableCursor<TableRow>> {
         const tableRowsParams = {
             table: this.name,
@@ -141,7 +190,28 @@ export class Table<TableRow = any> {
         })
     }
 
-    async getFieldToIndex() {
+    /**
+     * Retrieves the rows from the table using the given parameters.
+     *
+     * @param {Object} tableRowsParams - Parameters for retrieving the table rows.
+     *  The parameters should include:
+     *  - `table`: Name of the table.
+     *  - `limit`: Maximum number of rows to return.
+     *  - `code`: Contract that this table is associated with.
+     *  - `type`: (optional) Type of the rows.
+     * @returns {Promise<Object>} Promise resolving to the retrieved table rows.
+     */
+    getTableRows(tableRowsParams) {
+        if (!this.contract.client) {
+            throw new Error(
+                'Client must be passed as a parameter in order for getTableRows to be called.'
+            )
+        }
+
+        return this.contract.client.v1.chain.get_table_rows(tableRowsParams)
+    }
+
+    private async getFieldToIndex() {
         const abi = await this.getAbi()
 
         const table = abi.tables.find((table) => this.name.equals(table.name))
@@ -162,17 +232,7 @@ export class Table<TableRow = any> {
         return fieldToIndex
     }
 
-    getTableRows(tableRowsParams) {
-        if (!this.contract.client) {
-            throw new Error(
-                'Client must be passed as a parameter in order for getTableRows to be called.'
-            )
-        }
-
-        return this.contract.client.v1.chain.get_table_rows(tableRowsParams)
-    }
-
-    async getAbi(): Promise<ABI.Def> {
+    private async getAbi(): Promise<ABI.Def> {
         if (!this.contract) {
             throw new Error(
                 'Contract must be passed as a parameter in order for getAbi to be called.'

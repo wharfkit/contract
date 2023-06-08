@@ -1,6 +1,6 @@
 import {assert} from 'chai'
 
-import {Table, TableCursor} from '$lib'
+import {Table} from '$lib'
 
 import {makeClient} from '../utils/mock-client'
 

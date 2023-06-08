@@ -10,7 +10,7 @@ suite('Contract', () => {
 
     setup(async function () {
         mockContract = new Contract({
-            account: 'eosio.forum',
+            name: 'decentiumorg',
             client: mockClient,
         })
     })
@@ -19,12 +19,19 @@ suite('Contract', () => {
 
     suite('call', () => {})
 
-    suite('tables', () => {
-        test('has tables', () => {
-            assert.lengthOf(mockContract.tables, 3)
-            assert.instanceOf(mockContract.tables.proposal, Table)
-            assert.instanceOf(mockContract.tables.status, Table)
-            assert.instanceOf(mockContract.tables.vote, Table)
+    suite('getTables', () => {
+        test('returns list of tables', async () => {
+            const tables = await mockContract.getTables()
+            assert.lengthOf(tables, 5)
+            assert.instanceOf(tables[0], Table)
+        })
+    })
+
+    suite('getTable', () => {
+        test('returns single table', async () => {
+            assert.instanceOf(await mockContract.getTable('blogs'), Table)
+            assert.instanceOf(await mockContract.getTable('links'), Table)
+            assert.instanceOf(await mockContract.getTable('posts'), Table)
         })
     })
 })

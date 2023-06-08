@@ -1,4 +1,5 @@
-import {APIClient, Name, NameType, UInt64} from '@wharfkit/session'
+import {ABI, APIClient, Name, NameType, UInt64, API} from '@wharfkit/session'
+import {Contract} from '../contract'
 import {TableCursor} from './table-cursor'
 
 interface QueryParams {
@@ -24,10 +25,10 @@ interface GetTableRowsOptions {
 }
 
 export class Table<TableRow = any> {
-    private client: APIClient
-    private contract: Name
-    private name: Name
-    private rowType?: TableRow
+    readonly name: Name
+    readonly contract: Contract
+    readonly rowType?: TableRow
+
     private fieldToIndex?: any
 
     /**
@@ -36,11 +37,10 @@ export class Table<TableRow = any> {
      * @param {TableParams<TableRow>} tableParams - The parameters for the table.
      */
     constructor({contract, name, client, rowType, fieldToIndex}: TableParams<TableRow>) {
-        this.contract = Name.from(contract)
         this.name = Name.from(name)
-        this.client = client
         this.rowType = rowType
         this.fieldToIndex = fieldToIndex
+        this.contract = Contract.from({name: contract, client})
     }
 
     static from(tableParams: TableParams) {
@@ -60,8 +60,8 @@ export class Table<TableRow = any> {
 
         const tableRowsParams = {
             table: this.name,
-            code: this.contract,
-            scope: this.contract,
+            code: this.contract.account,
+            scope: this.contract.account,
             type: this.rowType,
             limit,
             lower_bound,
@@ -72,7 +72,7 @@ export class Table<TableRow = any> {
         let response
 
         try {
-            response = await this.client.v1.chain.get_table_rows(tableRowsParams)
+            response = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
         } catch (error) {
             throw new Error(`Error fetching table rows: ${JSON.stringify(error)}`)
         }
@@ -81,7 +81,7 @@ export class Table<TableRow = any> {
 
         return new TableCursor({
             rows,
-            client: this.client,
+            table: this,
             tableParams: tableRowsParams,
             next_key,
         })
@@ -95,8 +95,8 @@ export class Table<TableRow = any> {
 
         const tableRowsParams = {
             table: this.name,
-            code: this.contract,
-            scope: this.contract,
+            code: this.contract.account,
+            scope: this.contract.account,
             type: this.rowType,
             limit: 1,
             lower_bound:
@@ -110,7 +110,7 @@ export class Table<TableRow = any> {
             index_position: fieldToIndexMapping[fieldName].index_position || 'primary',
         }
 
-        const {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
+        const {rows} = await this.getTableRows(tableRowsParams)
 
         return rows[0]
     }
@@ -119,14 +119,14 @@ export class Table<TableRow = any> {
         const tableRowsParams = {
             table: this.name,
             limit,
-            code: this.contract,
+            code: this.contract.account,
             type: this.rowType,
         }
 
         let response
 
         try {
-            response = await this.client.v1.chain.get_table_rows(tableRowsParams)
+            response = await this.getTableRows(tableRowsParams)
         } catch (error) {
             throw new Error(`Error fetching table rows: ${JSON.stringify(error)}`)
         }
@@ -135,18 +135,14 @@ export class Table<TableRow = any> {
 
         return new TableCursor({
             rows,
-            client: this.client,
+            table: this,
             tableParams: tableRowsParams,
             next_key,
         })
     }
 
     async getFieldToIndex() {
-        const {abi} = await this.client.v1.chain.get_abi(this.contract)
-
-        if (!abi) {
-            throw new Error(`ABI not found for contract ${this.contract}`)
-        }
+        const abi = await this.getAbi()
 
         const table = abi.tables.find((table) => this.name.equals(table.name))
 
@@ -164,6 +160,25 @@ export class Table<TableRow = any> {
         }
 
         return fieldToIndex
+    }
+
+    getTableRows(tableRowsParams) {
+        if (!this.contract.client) {
+            throw new Error(
+                'Client must be passed as a parameter in order for getTableRows to be called.'
+            )
+        }
+
+        return this.contract.client.v1.chain.get_table_rows(tableRowsParams)
+    }
+
+    async getAbi(): Promise<ABI.Def> {
+        if (!this.contract) {
+            throw new Error(
+                'Contract must be passed as a parameter in order for getAbi to be called.'
+            )
+        }
+        return this.contract.getAbi()
     }
 }
 

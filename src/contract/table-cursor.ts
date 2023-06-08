@@ -1,23 +1,24 @@
 import {API, isInstanceOf, UInt64} from '@wharfkit/session'
 import {APIClient, Name} from '@wharfkit/session'
+import {Table} from './table'
 
 interface TableCursorParams<TableRow> {
     rows: TableRow[]
-    client: APIClient
+    table: Table
     tableParams: API.v1.GetTableRowsParams
     next_key?: Name | UInt64 | undefined
 }
 
 export class TableCursor<TableRow> {
     rows: TableRow[]
-    private client: APIClient
+    private table: Table
     private next_key: Name | UInt64 | undefined
     private tableParams: API.v1.GetTableRowsParams
     private currentIndex: number
 
-    constructor({rows, client, tableParams, next_key}: TableCursorParams<TableRow>) {
+    constructor({rows, table, tableParams, next_key}: TableCursorParams<TableRow>) {
         this.rows = rows
-        this.client = client
+        this.table = table
         this.tableParams = tableParams
         this.next_key = next_key
         this.currentIndex = 0
@@ -62,7 +63,7 @@ export class TableCursor<TableRow> {
                 : UInt64.from(this.tableParams.upper_bound)
         }
 
-        const {rows, next_key} = await this.client.v1.chain.get_table_rows({
+        const {rows, next_key} = await this.table.getTableRows({
             ...this.tableParams,
             lower_bound:
                 this.next_key instanceof Name

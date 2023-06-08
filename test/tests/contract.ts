@@ -1,6 +1,6 @@
 import {assert} from 'chai'
 
-import {Contract} from '$lib'
+import {Contract, Table} from '$lib'
 import {makeClient} from '../utils/mock-client'
 
 const mockClient = makeClient('https://eos.greymass.com')
@@ -18,4 +18,13 @@ suite('Contract', () => {
     suite('shared', () => {})
 
     suite('call', () => {})
+
+    suite('tables', () => {
+        test('has tables', () => {
+            assert.lengthOf(mockContract.tables, 3)
+            assert.instanceOf(mockContract.tables.proposal, Table)
+            assert.instanceOf(mockContract.tables.status, Table)
+            assert.instanceOf(mockContract.tables.vote, Table)
+        })
+    })
 })

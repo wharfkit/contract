@@ -12,10 +12,10 @@ interface FieldToIndex {
     }
 }
 interface TableParams<TableRow = any> {
-    account: NameType
-    tableName: NameType
+    contract: NameType
+    name: NameType
     client: APIClient
-    tableStruct?: TableRow
+    rowType?: TableRow
     fieldToIndex?: FieldToIndex
 }
 
@@ -25,16 +25,21 @@ interface GetTableRowsOptions {
 
 export class Table<TableRow = any> {
     private client: APIClient
-    private account: Name
-    private tableName: Name
-    private tableStruct?: TableRow
+    private contract: Name
+    private name: Name
+    private rowType?: TableRow
     private fieldToIndex?: any
 
-    constructor({account, tableName, client, tableStruct, fieldToIndex}: TableParams<TableRow>) {
-        this.account = Name.from(account)
-        this.tableName = Name.from(tableName)
+    /**
+     * Constructs a new `Table` instance.
+     *
+     * @param {TableParams<TableRow>} tableParams - The parameters for the table.
+     */
+    constructor({contract, name, client, rowType, fieldToIndex}: TableParams<TableRow>) {
+        this.contract = Name.from(contract)
+        this.name = Name.from(name)
         this.client = client
-        this.tableStruct = tableStruct
+        this.rowType = rowType
         this.fieldToIndex = fieldToIndex
     }
 
@@ -54,10 +59,10 @@ export class Table<TableRow = any> {
         const upper_bound = typeof to === 'string' ? Name.from(to) : UInt64.from(to)
 
         const tableRowsParams = {
-            table: this.tableName,
-            code: this.account,
-            scope: this.account,
-            type: this.tableStruct,
+            table: this.name,
+            code: this.contract,
+            scope: this.contract,
+            type: this.rowType,
             limit,
             lower_bound,
             upper_bound,
@@ -89,10 +94,10 @@ export class Table<TableRow = any> {
         const entryFieldValue = Object.values(queryParams)[0] as string
 
         const tableRowsParams = {
-            table: this.tableName,
-            code: this.account,
-            scope: this.account,
-            type: this.tableStruct,
+            table: this.name,
+            code: this.contract,
+            scope: this.contract,
+            type: this.rowType,
             limit: 1,
             lower_bound:
                 typeof entryFieldValue === 'string'
@@ -112,10 +117,10 @@ export class Table<TableRow = any> {
 
     async all({limit = 10}: GetTableRowsOptions = {}): Promise<TableCursor<TableRow>> {
         const tableRowsParams = {
-            table: this.tableName,
+            table: this.name,
             limit,
-            code: this.account,
-            type: this.tableStruct,
+            code: this.contract,
+            type: this.rowType,
         }
 
         let response
@@ -137,16 +142,16 @@ export class Table<TableRow = any> {
     }
 
     async getFieldToIndex() {
-        const {abi} = await this.client.v1.chain.get_abi(this.account)
+        const {abi} = await this.client.v1.chain.get_abi(this.contract)
 
         if (!abi) {
-            throw new Error(`ABI not found for contract ${this.account}`)
+            throw new Error(`ABI not found for contract ${this.contract}`)
         }
 
-        const table = abi.tables.find((table) => this.tableName.equals(table.name))
+        const table = abi.tables.find((table) => this.name.equals(table.name))
 
         if (!table) {
-            throw new Error(`Table ${this.tableName} not found in ABI`)
+            throw new Error(`Table ${this.name} not found in ABI`)
         }
 
         const fieldToIndex = {}

@@ -11,8 +11,8 @@ suite('Table', () => {
 
     setup(async function () {
         mockTable = new Table({
-            account: 'decentiumorg',
-            tableName: 'trending',
+            contract: 'decentiumorg',
+            name: 'trending',
             client: mockClient,
         })
     })
@@ -44,10 +44,10 @@ suite('Table', () => {
                 [5, 6]
             )
 
-            const nextTableCursor = await tableCursor.more()
+            await tableCursor.more()
 
             assert.deepEqual(
-                nextTableCursor.map((row) => row.id),
+                tableCursor.map((row) => row.id),
                 [5, 6, 7]
             )
         })
@@ -112,10 +112,10 @@ suite('Table', () => {
                 [0, 1]
             )
 
-            const nextTableCursor = await tableCursor.more()
+            await tableCursor.more()
 
             assert.deepEqual(
-                nextTableCursor.map((row) => row.id),
+                tableCursor.map((row) => row.id),
                 [0, 1, 2, 3]
             )
         })

@@ -53,10 +53,10 @@ export namespace _Blog {
                 client: APIClient
             ): Promise<TableCursor<_Blog.types.UsersRow>> {
                 const usersTable = Table.from({
-                    account: 'blog',
-                    tableName: 'users',
+                    contract: 'blog',
+                    name: 'users',
                     client,
-                    tableStruct: _Blog.types.UsersRow,
+                    rowType: _Blog.types.UsersRow,
                     fieldToIndex: Users.fieldToIndex,
                 })
 
@@ -68,10 +68,10 @@ export namespace _Blog {
                 client: APIClient
             ): Promise<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    account: 'blog',
-                    tableName: 'users',
+                    contract: 'blog',
+                    name: 'users',
                     client,
-                    tableStruct: _Blog.types.UsersRow,
+                    rowType: _Blog.types.UsersRow,
                     fieldToIndex: Users.fieldToIndex,
                 })
 
@@ -80,10 +80,10 @@ export namespace _Blog {
 
             static async all({limit}, client): Promise<TableCursor<_Blog.types.UsersRow>> {
                 const usersTable = Table.from({
-                    account: 'blog',
-                    tableName: 'users',
+                    contract: 'blog',
+                    name: 'users',
                     client,
-                    tableStruct: _Blog.types.UsersRow,
+                    rowType: _Blog.types.UsersRow,
                 })
 
                 return usersTable.all({limit})

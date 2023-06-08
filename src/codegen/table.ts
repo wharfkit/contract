@@ -1,13 +1,18 @@
+import {ABI} from '@greymass/eosio'
 import * as ts from 'typescript'
 
-// import {generateClassDeclaration} from './helpers'
+import {generateClassDeclaration} from './helpers'
 
 export function generateTableClass(table, abi) {
     const tableName = table.name
 
     const struct = abi.structs.find((struct) => struct.name === table.type)
 
+    console.log({struct})
+
     const members: ts.ClassElement[] = []
+
+    console.log({table})
 
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(
@@ -162,7 +167,7 @@ export function generateTableClass(table, abi) {
     })
 
     // Construct class declaration
-    // const classDeclaration = generateClassDeclaration(tableName, members, {export: true})
+    const classDeclaration = generateClassDeclaration(tableName, members, {export: true})
 
     return classDeclaration
 }

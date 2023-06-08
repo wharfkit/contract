@@ -107,11 +107,19 @@ export class Contract {
             throw new Error('Cannot get ABI without client')
         }
 
-        const {abi} = await this.client.v1.chain.get_abi(this.account)
+        let response
 
-        if (!abi) {
-            throw new Error(`No ABI found for ${this.account}`)
+        try {
+            response = await this.client.v1.chain.get_abi(this.account)
+        } catch (error: any) {
+            if (error.message.includes('Account not found')) {
+                throw new Error(`No ABI found for ${this.account}`)
+            } else {
+                throw new Error(`Error fetching ABI: ${JSON.stringify(error)}`)
+            }
         }
+
+        const {abi} = response
 
         this.abi = abi
 

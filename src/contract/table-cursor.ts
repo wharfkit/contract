@@ -1,5 +1,5 @@
 import {API, isInstanceOf, UInt64} from '@wharfkit/session'
-import {APIClient, Name} from '@wharfkit/session'
+import {Name} from '@wharfkit/session'
 import {Table} from './table'
 
 interface TableCursorParams<TableRow> {

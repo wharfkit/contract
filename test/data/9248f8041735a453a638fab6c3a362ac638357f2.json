@@ -1,0 +1,39 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_abi",
+        "params": {
+            "method": "POST",
+            "body": "{\"account_name\":\"non.xistent\"}"
+        }
+    },
+    "headers": {
+        "access-control-allow-headers": "X-Requested-With,Accept,Content-Type,Origin",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "connection": "close",
+        "content-length": "249",
+        "content-type": "application/json",
+        "date": "Thu, 08 Jun 2023 20:05:22 GMT",
+        "server": "nginx",
+        "x-cached": "MISS"
+    },
+    "status": 500,
+    "json": {
+        "code": 500,
+        "message": "Internal Service Error",
+        "error": {
+            "code": 0,
+            "name": "exception",
+            "what": "unspecified",
+            "details": [
+                {
+                    "message": "unknown key (eosio::chain::name): non.xistent",
+                    "file": "http_plugin.cpp",
+                    "line_number": 947,
+                    "method": "handle_exception"
+                }
+            ]
+        }
+    },
+    "text": "{\"code\":500,\"message\":\"Internal Service Error\",\"error\":{\"code\":0,\"name\":\"exception\",\"what\":\"unspecified\",\"details\":[{\"message\":\"unknown key (eosio::chain::name): non.xistent\",\"file\":\"http_plugin.cpp\",\"line_number\":947,\"method\":\"handle_exception\"}]}}"
+}

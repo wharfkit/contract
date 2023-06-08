@@ -1,4 +1,4 @@
-import {ABI, APIClient, Name, NameType, UInt64, API} from '@wharfkit/session'
+import {ABI, APIClient, Name, NameType, UInt64} from '@wharfkit/session'
 import {Contract} from '../contract'
 import {TableCursor} from './table-cursor'
 

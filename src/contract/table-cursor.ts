@@ -96,7 +96,6 @@ export class TableCursor<TableRow> {
      *
      * @returns This cursor with the updated rows.
      */
-
     async more() {
         if (!this.next_key) {
             return this
@@ -110,7 +109,7 @@ export class TableCursor<TableRow> {
                 : UInt64.from(this.tableParams.upper_bound)
         }
 
-        const {rows, next_key} = await this.table.getTableRows({
+        const {rows, next_key} = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
             lower_bound:
                 this.next_key instanceof Name

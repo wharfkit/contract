@@ -1,4 +1,4 @@
-import {ABI, APIClient, Name, NameType, UInt64} from '@wharfkit/session'
+import {ABI, ABISerializableConstructor, APIClient, Name, NameType, UInt64} from '@wharfkit/session'
 import {Contract} from '../contract'
 import {TableCursor} from './table-cursor'
 
@@ -30,7 +30,7 @@ interface GetTableRowsOptions {
  *
  * @typeparam TableRow The type of rows in the table.
  */
-export class Table<TableRow = any> {
+export class Table<TableRow extends ABISerializableConstructor = ABISerializableConstructor> {
     readonly name: Name
     readonly contract: Contract
     readonly rowType?: TableRow
@@ -151,7 +151,7 @@ export class Table<TableRow = any> {
             index_position: fieldToIndexMapping[fieldName].index_position || 'primary',
         }
 
-        const {rows} = await this.getTableRows(tableRowsParams)
+        const {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
 
         return rows[0]
     }
@@ -175,7 +175,7 @@ export class Table<TableRow = any> {
         let response
 
         try {
-            response = await this.getTableRows(tableRowsParams)
+            response = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
         } catch (error) {
             throw new Error(`Error fetching table rows: ${JSON.stringify(error)}`)
         }
@@ -188,27 +188,6 @@ export class Table<TableRow = any> {
             tableParams: tableRowsParams,
             next_key,
         })
-    }
-
-    /**
-     * Retrieves the rows from the table using the given parameters.
-     *
-     * @param {Object} tableRowsParams - Parameters for retrieving the table rows.
-     *  The parameters should include:
-     *  - `table`: Name of the table.
-     *  - `limit`: Maximum number of rows to return.
-     *  - `code`: Contract that this table is associated with.
-     *  - `type`: (optional) Type of the rows.
-     * @returns {Promise<Object>} Promise resolving to the retrieved table rows.
-     */
-    getTableRows(tableRowsParams) {
-        if (!this.contract.client) {
-            throw new Error(
-                'Client must be passed as a parameter in order for getTableRows to be called.'
-            )
-        }
-
-        return this.contract.client.v1.chain.get_table_rows(tableRowsParams)
     }
 
     private async getFieldToIndex() {

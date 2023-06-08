@@ -34,7 +34,7 @@ suite('Contract', () => {
                 transact: async (transactParam) => {
                     calledWith = transactParam
                 },
-            } // You may need to provide valid session here
+            }
             const actionName = 'testAction'
             const data = makeMockTransfer({
                 from: 'blockone',
@@ -67,9 +67,6 @@ suite('Contract', () => {
         test('returns ABI for the contract', async () => {
             const abi = await mockContract.getAbi()
 
-            // Check that the returned object has a format similar to an ABI.
-            // This depends on the structure of your ABI object.
-            // Update the assertions accordingly.
             assert.isObject(abi)
             assert.hasAllKeys(abi, [
                 'version',
@@ -84,7 +81,6 @@ suite('Contract', () => {
                 'variants',
             ])
 
-            // Check that the ABI is correctly cached.
             const abiSecondCall = await mockContract.getAbi()
             assert.strictEqual(
                 abi,

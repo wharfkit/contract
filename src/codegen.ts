@@ -420,7 +420,7 @@ export async function codegen(contractName, abi) {
     }
 
     // Add your custom namespace and export namespace
-    const exportNamespace = createNamespace('Types', structDeclarations)
+    const exportNamespace = createNamespace('types', structDeclarations)
 
     const namespace = createNamespace(namespaceName, [exportNamespace])
 

@@ -39,7 +39,7 @@ async function codegenCli() {
             log(`Generated Contract helper for ${contractName} saved to ${contractFilePath}`)
         } else {
             log(`Generated Contract helper class:`)
-            // log(generatedCode)
+            log(generatedCode)
         }
     }
 }

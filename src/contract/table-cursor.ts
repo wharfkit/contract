@@ -2,7 +2,7 @@ import {API, isInstanceOf, UInt64} from '@wharfkit/session'
 import {Name} from '@wharfkit/session'
 import {Table} from './table'
 
-interface TableCursorParams<TableRow> {
+interface TableCursorParams {
     table: Table
     tableParams: API.v1.GetTableRowsParams
     next_key?: Name | UInt64 | undefined
@@ -19,12 +19,12 @@ export class TableCursor<TableRow> {
     private table: Table
     private next_key: Name | UInt64 | undefined
     private tableParams: API.v1.GetTableRowsParams
-    private endReached: boolean = false
+    private endReached = false
     private indexPositionField?: string
-    private rowsCount: number = 0
+    private rowsCount = 0
 
     /**
-     * @param {TableCursorParams<TableRow>} params - Parameters for creating a new table cursor.
+     * @param {TableCursorParams} params - Parameters for creating a new table cursor.
      *
      * @param {TableRow[]} params.rows - An array of rows that the cursor will iterate over.
      * Each row represents an entry in the table.
@@ -38,7 +38,7 @@ export class TableCursor<TableRow> {
      * that the cursor can fetch. This is used for pagination when there are more rows than can be
      * fetched in a single API call.
      */
-    constructor({table, tableParams, indexPositionField, next_key}: TableCursorParams<TableRow>) {
+    constructor({table, tableParams, indexPositionField, next_key}: TableCursorParams) {
         this.table = table
         this.tableParams = tableParams
         this.next_key = next_key

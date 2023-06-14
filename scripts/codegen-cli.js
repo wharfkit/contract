@@ -2,7 +2,7 @@
 
 const fs = require('fs')
 
-const {codegen, fetchAbi} = require('../lib/contract.js')
+const {codegen, Contract} = require('../lib/contract.js')
 
 async function codegenCli() {
     // Check if the contractName argument is provided
@@ -16,7 +16,9 @@ async function codegenCli() {
 
     log(`Fetching ABI for ${contractName}...`)
 
-    const abi = await fetchAbi(contractName)
+    const contract = Contract.from(contractName)
+
+    const abi = await contract.getAbi()
 
     if (!abi) {
         log(`No ABI found for ${contractName}`)

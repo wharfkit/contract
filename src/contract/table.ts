@@ -81,16 +81,11 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {Promise<TableCursor<TableRow>>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    async where(
-        queryParams: QueryParams,
-        {limit = 10}: GetTableRowsOptions = {}
-    ): Promise<TableCursor<TableRow>> {
-        const fieldToIndexMapping = this.fieldToIndex || (await this.getFieldToIndex())
-
+    where(queryParams: QueryParams, {limit = 10}: GetTableRowsOptions = {}): TableCursor<TableRow> {
         const {from, to} = queryParams[Object.keys(queryParams)[0]]
 
-        const lower_bound = typeof from === 'string' ? Name.from(from) : UInt64.from(from)
-        const upper_bound = typeof to === 'string' ? Name.from(to) : UInt64.from(to)
+        const lower_bound = from && (typeof from === 'string' ? Name.from(from) : UInt64.from(from))
+        const upper_bound = to && (typeof to === 'string' ? Name.from(to) : UInt64.from(to))
 
         const tableRowsParams = {
             table: this.name,
@@ -100,24 +95,12 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             limit,
             lower_bound,
             upper_bound,
-            index_position: fieldToIndexMapping[Object.keys(queryParams)[0]].index_position,
         }
-
-        let response
-
-        try {
-            response = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
-        } catch (error) {
-            throw new Error(`Error fetching table rows: ${JSON.stringify(error)}`)
-        }
-
-        const {rows, next_key} = response
 
         return new TableCursor({
-            rows,
             table: this,
             tableParams: tableRowsParams,
-            next_key,
+            indexPositionField: Object.keys(queryParams)[0],
         })
     }
 
@@ -129,7 +112,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
     async find(queryParams: QueryParams): Promise<TableRow> {
-        const fieldToIndexMapping = this.fieldToIndex || (await this.getFieldToIndex())
+        const fieldToIndexMapping = await this.getFieldToIndex()
 
         const fieldName = Object.keys(queryParams)[0]
         const entryFieldValue = Object.values(queryParams)[0] as string
@@ -164,7 +147,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {Promise<TableCursor<TableRow>>} Promise resolving to a `TableCursor` of the table rows.
      */
-    async all({limit = 10}: GetTableRowsOptions = {}): Promise<TableCursor<TableRow>> {
+    first(limit: number): TableCursor<TableRow> {
         const tableRowsParams = {
             table: this.name,
             limit,
@@ -172,25 +155,17 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             type: this.rowType,
         }
 
-        let response
-
-        try {
-            response = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
-        } catch (error) {
-            throw new Error(`Error fetching table rows: ${JSON.stringify(error)}`)
-        }
-
-        const {rows, next_key} = response
-
         return new TableCursor({
-            rows,
             table: this,
             tableParams: tableRowsParams,
-            next_key,
         })
     }
 
-    private async getFieldToIndex() {
+    async getFieldToIndex() {
+        if (this.fieldToIndex) {
+            return this.fieldToIndex
+        }
+
         const abi = await this.getAbi()
 
         const table = abi.tables.find((table) => this.name.equals(table.name))

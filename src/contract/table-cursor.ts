@@ -3,10 +3,10 @@ import {Name} from '@wharfkit/session'
 import {Table} from './table'
 
 interface TableCursorParams<TableRow> {
-    rows: TableRow[]
     table: Table
     tableParams: API.v1.GetTableRowsParams
     next_key?: Name | UInt64 | undefined
+    indexPositionField?: string
 }
 
 /**
@@ -16,11 +16,12 @@ interface TableCursorParams<TableRow> {
  * @typeparam TableRow The type of rows in the table.
  */
 export class TableCursor<TableRow> {
-    rows: TableRow[]
     private table: Table
     private next_key: Name | UInt64 | undefined
     private tableParams: API.v1.GetTableRowsParams
-    private currentIndex: number
+    private endReached: boolean = false
+    private indexPositionField?: string
+    private rowsCount: number = 0
 
     /**
      * @param {TableCursorParams<TableRow>} params - Parameters for creating a new table cursor.
@@ -37,71 +38,57 @@ export class TableCursor<TableRow> {
      * that the cursor can fetch. This is used for pagination when there are more rows than can be
      * fetched in a single API call.
      */
-    constructor({rows, table, tableParams, next_key}: TableCursorParams<TableRow>) {
-        this.rows = rows
+    constructor({table, tableParams, indexPositionField, next_key}: TableCursorParams<TableRow>) {
         this.table = table
         this.tableParams = tableParams
         this.next_key = next_key
-        this.currentIndex = 0
+        this.indexPositionField = indexPositionField
     }
 
     /**
-     * Implements the iterator protocol for the cursor.
+     * Implements the async iterator protocol for the cursor.
      *
      * @returns An iterator for the rows in the table.
      */
-    [Symbol.iterator]() {
-        return {
-            next: () => {
-                if (this.currentIndex < this.rows.length) {
-                    return {value: this.rows[this.currentIndex++], done: false}
-                } else {
-                    this.currentIndex = 0
-                    return {done: true}
-                }
-            },
+    async *[Symbol.asyncIterator]() {
+        while (true) {
+            const rows = await this.next()
+
+            for (const row of rows) {
+                yield row
+            }
+
+            // If no rows are returned or next_key is undefined, we have exhausted all rows
+            if (rows.length === 0 || !this.next_key) {
+                return
+            }
         }
-    }
-
-    /**
-     * The number of rows currently in the cursor.
-     *
-     * @type {number}
-     */
-    get length() {
-        return this.rows.length
-    }
-
-    /**
-     * Executes a provided function once for each table row.
-     *
-     * @param {function(row: TableRow, index: number, array: TableRow[]): void} callback - Function to execute for each row.
-     */
-    forEach(callback: (row: TableRow, index: number, array: TableRow[]) => void) {
-        this.rows.forEach(callback)
-    }
-
-    /**
-     * Creates a new array with the results of calling a provided function on every element in the array of rows.
-     *
-     * @param {function(row: TableRow, index: number, array: TableRow[]): any} callback - Function to call for each row.
-     * @returns The new array with the results of the callback function.
-     */
-    map(callback: (row: TableRow, index: number, array: TableRow[]) => any) {
-        return this.rows.map(callback)
     }
 
     /**
      * Fetches more rows from the table and appends them to the cursor.
      *
-     * @returns This cursor with the updated rows.
+     * @returns The new rows.
      */
-    async more() {
-        if (!this.next_key) {
-            return this
+    async next(): Promise<TableRow[]> {
+        if (this.endReached) {
+            return []
         }
 
+        let lower_bound
         let upper_bound
+
+        if (this.tableParams.lower_bound) {
+            lower_bound = isInstanceOf(this.tableParams.lower_bound, Name)
+                ? Name.from(this.tableParams.lower_bound)
+                : UInt64.from(this.tableParams.lower_bound)
+        }
+
+        if (this.next_key) {
+            lower_bound = isInstanceOf(this.next_key, Name)
+                ? Name.from(this.next_key)
+                : UInt64.from(this.next_key)
+        }
 
         if (this.tableParams.upper_bound) {
             upper_bound = isInstanceOf(this.tableParams.upper_bound, Name)
@@ -109,19 +96,54 @@ export class TableCursor<TableRow> {
                 : UInt64.from(this.tableParams.upper_bound)
         }
 
+        let indexPosition = this.tableParams.index_position || 'primary'
+
+        if (this.indexPositionField) {
+            const fieldToIndexMapping = await this.table.getFieldToIndex()
+
+            indexPosition = fieldToIndexMapping[this.indexPositionField].index_position
+        }
+
         const {rows, next_key} = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
-            lower_bound:
-                this.next_key instanceof Name
-                    ? Name.from(this.next_key)
-                    : UInt64.from(this.next_key),
+            limit: Math.min(this.tableParams.limit - this.rowsCount, 50),
+            lower_bound: lower_bound ? lower_bound : undefined,
             upper_bound: upper_bound ? upper_bound : undefined,
-            index_position: this.tableParams.index_position || 'primary',
+            index_position: indexPosition,
         })
 
-        this.rows = this.rows.concat(rows)
         this.next_key = next_key
 
-        return this
+        if (!next_key || this.rowsCount === this.tableParams.limit) {
+            this.endReached = true
+        }
+
+        this.rowsCount += rows.length
+
+        return rows
+    }
+
+    /**
+     * Resets the cursor to the beginning of the table and returns the first rows.
+     *
+     * @returns The first rows in the table.
+     */
+    async reset() {
+        this.next_key = undefined
+        this.endReached = false
+        this.rowsCount = 0
+    }
+
+    /**
+     * Returns all rows in the cursor query.
+     *
+     * @returns All rows in the cursor query.
+     */
+    async all() {
+        const rows: TableRow[] = []
+        for await (const row of this) {
+            rows.push(row)
+        }
+        return rows
     }
 }

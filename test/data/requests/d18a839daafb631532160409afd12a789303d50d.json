@@ -955,40 +955,22 @@
                 {
                     "name": "blogs",
                     "index_type": "i64",
-                    "key_names": [
-                        "author"
-                    ],
-                    "key_types": [
-                        "name"
-                    ],
+                    "key_names": ["author"],
+                    "key_types": ["name"],
                     "type": "blog_row"
                 },
                 {
                     "name": "links",
                     "index_type": "i64",
-                    "key_names": [
-                        "id",
-                        "from",
-                        "to"
-                    ],
-                    "key_types": [
-                        "uint64",
-                        "uint128",
-                        "uint128"
-                    ],
+                    "key_names": ["id", "from", "to"],
+                    "key_types": ["uint64", "uint128", "uint128"],
                     "type": "link_row"
                 },
                 {
                     "name": "posts",
                     "index_type": "i64",
-                    "key_names": [
-                        "slug",
-                        "updated"
-                    ],
-                    "key_types": [
-                        "name",
-                        "uint64"
-                    ],
+                    "key_names": ["slug", "updated"],
+                    "key_types": ["name", "uint64"],
                     "type": "post_row"
                 },
                 {
@@ -1001,18 +983,8 @@
                 {
                     "name": "trending",
                     "index_type": "i64",
-                    "key_names": [
-                        "id",
-                        "score",
-                        "cscore",
-                        "permlink"
-                    ],
-                    "key_types": [
-                        "uint64",
-                        "uint64",
-                        "uint128",
-                        "uint128"
-                    ],
+                    "key_names": ["id", "score", "cscore", "permlink"],
+                    "key_types": ["uint64", "uint64", "uint128", "uint128"],
                     "type": "trending_row"
                 }
             ],
@@ -1027,20 +999,11 @@
             "variants": [
                 {
                     "name": "variant_placeholder",
-                    "types": [
-                        "color",
-                        "geometrize_triangles"
-                    ]
+                    "types": ["color", "geometrize_triangles"]
                 },
                 {
                     "name": "variant_mark_nodes",
-                    "types": [
-                        "link",
-                        "bold",
-                        "italic",
-                        "code",
-                        "strike"
-                    ]
+                    "types": ["link", "bold", "italic", "code", "strike"]
                 },
                 {
                     "name": "variant_block_nodes",
@@ -1057,10 +1020,7 @@
                 },
                 {
                     "name": "variant_inline_nodes",
-                    "types": [
-                        "text",
-                        "hard_break"
-                    ]
+                    "types": ["text", "hard_break"]
                 }
             ],
             "action_results": []

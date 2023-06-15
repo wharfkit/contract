@@ -11,7 +11,7 @@ function getFilename(path: string, params?: unknown) {
     const digest = Checksum160.hash(
         Bytes.from(path + (params ? JSON.stringify(params) : ''), 'utf8')
     ).hexString
-    return joinPath(__dirname, '../data', digest + '.json')
+    return joinPath(__dirname, '../data/requests', digest + '.json')
 }
 
 async function getExisting(filename: string) {

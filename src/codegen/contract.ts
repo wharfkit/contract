@@ -5,8 +5,8 @@ import * as ts from 'typescript'
 import {
     generateClassDeclaration,
     generatePropertyDeclarationForField,
-    cleanupParam,
-    cleanupType,
+    generateInterface,
+    findExternalType,
 } from './helpers'
 import {pascalCase, capitalize} from '../utils'
 
@@ -86,6 +86,8 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
     }
 
     const members: ts.ClassElement[] = []
+    const interfaces: ts.InterfaceDeclaration[] = []
+
     // add a method for each action
     for (const action of abi.actions) {
         const actionStruct = resolved.structs.find((struct) =>
@@ -94,26 +96,49 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
         if (!actionStruct) {
             throw Error(`Action Struct not found for ${action.name}`)
         }
-        const actionNameIdentifier = ts.factory.createIdentifier(String(action.name))
+        const actionName = String(action.name)
+        const actionNameIdentifier = ts.factory.createIdentifier(actionName)
         const fields = actionStruct.fields || []
+
+        const interfaceMembers = fields.map((field) =>
+            ts.factory.createPropertySignature(
+                undefined,
+                field.name,
+                undefined,
+                ts.factory.createTypeReferenceNode(findExternalType(field.type.name))
+            )
+        )
+
+        interfaces.push(
+            generateInterface(`${capitalize(actionName)}Params`, true, interfaceMembers)
+        )
+
         const actionMethod = ts.factory.createMethodDeclaration(
             undefined, // decorators
             undefined, // asterisk token
             actionNameIdentifier, // name
             undefined, // question token
             undefined, // type parameters
-            fields.map((field) => {
-                return ts.factory.createParameterDeclaration(
+            [
+                ts.factory.createParameterDeclaration(
                     undefined, // decorators
                     undefined, // dot dot dot token
-                    ts.factory.createIdentifier(field.name), // name
+                    ts.factory.createIdentifier(`${actionName}Params`), // name
                     undefined, // question token
                     ts.factory.createTypeReferenceNode(
-                        cleanupType(cleanupParam(field.type), `${namespaceName}.types`, structNames)
+                        `${namespaceName}.types.${capitalize(actionName)}Params`
                     ), // type
                     undefined // initializer
-                )
-            }) || [],
+                ),
+                ts.factory.createParameterDeclaration(
+                    undefined, // decorators
+                    undefined, // dot dot dot token
+                    ts.factory.createIdentifier('session'), // name
+                    undefined, // question token
+                    ts.factory.createTypeReferenceNode('Session'), // type
+                    undefined // initializer
+                ),
+            ],
             ts.factory.createTypeReferenceNode('Promise', [
                 ts.factory.createTypeReferenceNode('TransactResult'),
             ]), // type
@@ -136,23 +161,15 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
                                                 ts.factory.createIdentifier('types')
                                             ),
                                             ts.factory.createIdentifier(
-                                                capitalize(actionStruct.name)
+                                                capitalize(actionStruct?.name)
                                             )
                                         ),
                                         ts.factory.createIdentifier('from')
                                     ),
                                     undefined,
-                                    [
-                                        ts.factory.createObjectLiteralExpression(
-                                            fields.map((field) =>
-                                                ts.factory.createPropertyAssignment(
-                                                    ts.factory.createIdentifier(field.name),
-                                                    ts.factory.createIdentifier(field.name)
-                                                )
-                                            )
-                                        ),
-                                    ]
+                                    [ts.factory.createIdentifier(`${actionName}Params`)]
                                 ),
+                                ts.factory.createIdentifier('session'),
                             ]
                         )
                     ),
@@ -168,5 +185,5 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
         export: true,
     })
 
-    return classDeclaration
+    return {classDeclaration, interfaces}
 }

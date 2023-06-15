@@ -21,7 +21,7 @@ interface TableParams<TableRow = any> {
     fieldToIndex?: FieldToIndex
 }
 
-interface GetTableRowsOptions {
+export interface GetTableRowsOptions {
     limit?: number
 }
 

@@ -1,13 +1,39 @@
 import * as ts from 'typescript'
 
-import {generateClassDeclaration} from './helpers'
+import {findExternalType, generateClassDeclaration, generateInterface} from './helpers'
 import {indexPositionInWords, capitalize} from '../utils'
 
-export function generateTableClass(namespaceName, table, abi) {
+export function generateTableClass(contractName, namespaceName, table, abi) {
     const tableName = table.name
     const struct = abi.structs.find((struct) => struct.name === table.type)
+    const structNames = abi.structs.map((struct) => struct.name)
     const members: ts.ClassElement[] = []
     const rowType = `${namespaceName}.types.${capitalize(struct.name)}`
+
+    // Define static contract property
+    const contract = ts.factory.createPropertyDeclaration(
+        undefined,
+        [ts.factory.createModifier(ts.SyntaxKind.StaticKeyword)],
+        'contract',
+        undefined,
+        undefined,
+        ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier('Contract'),
+                ts.factory.createIdentifier('from')
+            ),
+            undefined,
+            [
+                ts.factory.createObjectLiteralExpression([
+                    ts.factory.createPropertyAssignment(
+                        'name',
+                        ts.factory.createStringLiteral(contractName)
+                    ),
+                ]),
+            ]
+        )
+    )
+    members.push(contract)
 
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(
@@ -37,18 +63,64 @@ export function generateTableClass(namespaceName, table, abi) {
     members.push(fieldToIndex)
 
     // Create 'where', 'find' and 'all' methods
-    ;['where', 'find', 'all'].forEach((method) => {
-        const parameters = [
-            ts.factory.createParameterDeclaration(
-                undefined,
-                undefined,
-                ts.factory.createIdentifier('queryParams'),
-                undefined,
-                ts.factory.createTypeReferenceNode(
-                    `${namespaceName}.types.${tableName}QueryParams`
+    ;['where', 'find', 'first'].forEach((method) => {
+        const parameters: ts.ParameterDeclaration[] = []
+        const baseClassParameters: ts.Identifier[] = []
+
+        if (method === 'where') {
+            parameters.push(
+                ts.factory.createParameterDeclaration(
+                    undefined,
+                    undefined,
+                    ts.factory.createIdentifier('queryParams'),
+                    undefined,
+                    ts.factory.createTypeReferenceNode(
+                        `${namespaceName}.types.${capitalize(tableName)}WhereQueryParams`
+                    ),
+                    undefined
                 ),
-                undefined
-            ),
+                ts.factory.createParameterDeclaration(
+                    undefined,
+                    undefined,
+                    ts.factory.createIdentifier('getTableRowsOptions'),
+                    undefined,
+                    ts.factory.createTypeReferenceNode('GetTableRowsOptions'),
+                    undefined
+                )
+            )
+            baseClassParameters.push(
+                ts.factory.createIdentifier('queryParams'),
+                ts.factory.createIdentifier('getTableRowsOptions')
+            )
+        } else if (method === 'find') {
+            parameters.push(
+                ts.factory.createParameterDeclaration(
+                    undefined,
+                    undefined,
+                    ts.factory.createIdentifier('queryParams'),
+                    undefined,
+                    ts.factory.createTypeReferenceNode(
+                        `${namespaceName}.types.${capitalize(tableName)}FindQueryParams`
+                    ),
+                    undefined
+                )
+            )
+            baseClassParameters.push(ts.factory.createIdentifier('queryParams'))
+        } else {
+            parameters.push(
+                ts.factory.createParameterDeclaration(
+                    undefined,
+                    undefined,
+                    ts.factory.createIdentifier('limit'),
+                    undefined,
+                    ts.factory.createTypeReferenceNode('number'),
+                    undefined
+                )
+            )
+            baseClassParameters.push(ts.factory.createIdentifier('limit'))
+        }
+
+        parameters.push(
             ts.factory.createParameterDeclaration(
                 undefined,
                 undefined,
@@ -56,26 +128,8 @@ export function generateTableClass(namespaceName, table, abi) {
                 undefined,
                 ts.factory.createTypeReferenceNode('APIClient'),
                 undefined
-            ),
-        ]
-
-        if (method === 'where' || method === 'first') {
-            parameters.unshift(
-                ts.factory.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    ts.factory.createObjectBindingPattern([
-                        ts.factory.createBindingElement(
-                            undefined,
-                            undefined,
-                            ts.factory.createIdentifier('limit'),
-                            ts.factory.createNumericLiteral('10')
-                        ),
-                    ]),
-                    undefined
-                )
             )
-        }
+        )
 
         const methodBody = ts.factory.createBlock(
             [
@@ -97,7 +151,10 @@ export function generateTableClass(namespaceName, table, abi) {
                                         ts.factory.createObjectLiteralExpression([
                                             ts.factory.createPropertyAssignment(
                                                 'contract',
-                                                ts.factory.createStringLiteral('blog')
+                                                ts.factory.createPropertyAccessExpression(
+                                                    ts.factory.createIdentifier(tableName),
+                                                    ts.factory.createIdentifier('contract')
+                                                )
                                             ),
                                             ts.factory.createPropertyAssignment(
                                                 'name',
@@ -135,7 +192,7 @@ export function generateTableClass(namespaceName, table, abi) {
                             ts.factory.createIdentifier(method)
                         ),
                         undefined,
-                        [ts.factory.createIdentifier('queryParams')]
+                        baseClassParameters
                     )
                 ),
             ],
@@ -150,7 +207,7 @@ export function generateTableClass(namespaceName, table, abi) {
             undefined, // questionToken
             parameters, // parameters
             ts.factory.createTypeReferenceNode(
-                `Promise<${method === 'find' ? rowType : `TableCursor<${rowType}>`}>`
+                method === 'find' ? `Promise<${rowType}>` : `TableCursor<${rowType}>`
             ), // return type
             methodBody
         )
@@ -160,5 +217,45 @@ export function generateTableClass(namespaceName, table, abi) {
     // Construct class declaration
     const classDeclaration = generateClassDeclaration(tableName, members, {export: true})
 
-    return classDeclaration
+    const interfaces: ts.InterfaceDeclaration[] = [
+        generateInterface(
+            `${capitalize(tableName)}WhereQueryParams`,
+            true,
+            struct.fields.map((field) =>
+                ts.factory.createPropertySignature(
+                    undefined,
+                    field.name,
+                    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+                    ts.factory.createTypeLiteralNode([
+                        ts.factory.createPropertySignature(
+                            undefined,
+                            'from',
+                            undefined,
+                            ts.factory.createTypeReferenceNode(findExternalType(field.type))
+                        ),
+                        ts.factory.createPropertySignature(
+                            undefined,
+                            'to',
+                            undefined,
+                            ts.factory.createTypeReferenceNode(findExternalType(field.type))
+                        ),
+                    ])
+                )
+            )
+        ),
+        generateInterface(
+            `${capitalize(tableName)}FindQueryParams`,
+            true,
+            struct.fields.map((field) =>
+                ts.factory.createPropertySignature(
+                    undefined,
+                    field.name,
+                    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+                    ts.factory.createTypeReferenceNode(findExternalType(field.type))
+                )
+            )
+        ),
+    ]
+
+    return {classDeclaration, interfaces}
 }

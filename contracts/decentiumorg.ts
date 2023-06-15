@@ -1,10 +1,15 @@
-import {Contract, Table, TableCursor} from '@wharfkit/contract'
+import {Contract, Table, TableCursor, GetTableRowsOptions} from '../src/index'
 import {
-    Struct,
-    Name,
-    NameType,
+    APIClient,
     Asset,
     AssetType,
+    Checksum256,
+    Name,
+    NameType,
+    Session,
+    Struct,
+    TimePointSec,
+    TransactResult,
     UInt16,
     UInt16Type,
     UInt32,
@@ -13,184 +18,215 @@ import {
     UInt64Type,
     UInt8,
     UInt8Type,
-    TransactResult,
-    APIClient,
-    Checksum256,
-    TimePointSec,
 } from '@wharfkit/session'
 export class _Decentiumorg extends Contract {
-    addcategory(category: NameType): Promise<TransactResult> {
+    addcategory(
+        addcategoryParams: _Decentiumorg.types.AddcategoryParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'addcategory',
-            _Decentiumorg.types.Action_addcategory.from({category: category})
+            _Decentiumorg.types.Action_addcategory.from(addcategoryParams),
+            session
         )
     }
-    addmoderator(account: NameType): Promise<TransactResult> {
+    addmoderator(
+        addmoderatorParams: _Decentiumorg.types.AddmoderatorParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'addmoderator',
-            _Decentiumorg.types.Action_addmoderator.from({account: account})
+            _Decentiumorg.types.Action_addmoderator.from(addmoderatorParams),
+            session
         )
     }
-    createblog(author: NameType): Promise<TransactResult> {
-        return this.call('createblog', _Decentiumorg.types.Action_createblog.from({author: author}))
+    createblog(
+        createblogParams: _Decentiumorg.types.CreateblogParams,
+        session: Session
+    ): Promise<TransactResult> {
+        return this.call(
+            'createblog',
+            _Decentiumorg.types.Action_createblog.from(createblogParams),
+            session
+        )
     }
-    delcategory(category: NameType): Promise<TransactResult> {
+    delcategory(
+        delcategoryParams: _Decentiumorg.types.DelcategoryParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'delcategory',
-            _Decentiumorg.types.Action_delcategory.from({category: category})
+            _Decentiumorg.types.Action_delcategory.from(delcategoryParams),
+            session
         )
     }
-    deleteblog(author: NameType, max_itr: UInt32Type): Promise<TransactResult> {
+    deleteblog(
+        deleteblogParams: _Decentiumorg.types.DeleteblogParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'deleteblog',
-            _Decentiumorg.types.Action_deleteblog.from({author: author, max_itr: max_itr})
+            _Decentiumorg.types.Action_deleteblog.from(deleteblogParams),
+            session
         )
     }
-    delmoderator(account: NameType): Promise<TransactResult> {
+    delmoderator(
+        delmoderatorParams: _Decentiumorg.types.DelmoderatorParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'delmoderator',
-            _Decentiumorg.types.Action_delmoderator.from({account: account})
+            _Decentiumorg.types.Action_delmoderator.from(delmoderatorParams),
+            session
         )
     }
-    freezeblog(author: NameType, reason: string): Promise<TransactResult> {
+    freezeblog(
+        freezeblogParams: _Decentiumorg.types.FreezeblogParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'freezeblog',
-            _Decentiumorg.types.Action_freezeblog.from({author: author, reason: reason})
+            _Decentiumorg.types.Action_freezeblog.from(freezeblogParams),
+            session
         )
     }
-    housekeeping(max_itr: UInt32Type): Promise<TransactResult> {
+    housekeeping(
+        housekeepingParams: _Decentiumorg.types.HousekeepingParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'housekeeping',
-            _Decentiumorg.types.Action_housekeeping.from({max_itr: max_itr})
+            _Decentiumorg.types.Action_housekeeping.from(housekeepingParams),
+            session
         )
     }
-    pinpost(author: NameType, slug: NameType): Promise<TransactResult> {
-        return this.call(
-            'pinpost',
-            _Decentiumorg.types.Action_pinpost.from({author: author, slug: slug})
-        )
+    pinpost(
+        pinpostParams: _Decentiumorg.types.PinpostParams,
+        session: Session
+    ): Promise<TransactResult> {
+        return this.call('pinpost', _Decentiumorg.types.Action_pinpost.from(pinpostParams), session)
     }
-    post(author: NameType, slug: NameType): Promise<TransactResult> {
-        return this.call(
-            'post',
-            _Decentiumorg.types.Action_pinpost.from({author: author, slug: slug})
-        )
+    post(postParams: _Decentiumorg.types.PostParams, session: Session): Promise<TransactResult> {
+        return this.call('post', _Decentiumorg.types.Action_pinpost.from(postParams), session)
     }
     postedit(
-        author: NameType,
-        new_title: string,
-        patch: string,
-        new_metadata: _Decentiumorg.types.Metadata
+        posteditParams: _Decentiumorg.types.PosteditParams,
+        session: Session
     ): Promise<TransactResult> {
         return this.call(
             'postedit',
-            _Decentiumorg.types.Action_postedit.from({
-                author: author,
-                new_title: new_title,
-                patch: patch,
-                new_metadata: new_metadata,
-            })
+            _Decentiumorg.types.Action_postedit.from(posteditParams),
+            session
         )
     }
-    profile(author: NameType, name: string, bio: string, image: string): Promise<TransactResult> {
-        return this.call(
-            'profile',
-            _Decentiumorg.types.Action_profile.from({
-                author: author,
-                name: name,
-                bio: bio,
-                image: image,
-            })
-        )
+    profile(
+        profileParams: _Decentiumorg.types.ProfileParams,
+        session: Session
+    ): Promise<TransactResult> {
+        return this.call('profile', _Decentiumorg.types.Action_profile.from(profileParams), session)
     }
     publish(
-        permlink: _Decentiumorg.types.Permlink,
-        tx: _Decentiumorg.types.Tx_ref,
-        category: NameType,
-        options: post_options,
-        links: _Decentiumorg.types.Permlink
+        publishParams: _Decentiumorg.types.PublishParams,
+        session: Session
     ): Promise<TransactResult> {
-        return this.call(
-            'publish',
-            _Decentiumorg.types.Action_publish.from({
-                permlink: permlink,
-                tx: tx,
-                category: category,
-                options: options,
-                links: links,
-            })
-        )
+        return this.call('publish', _Decentiumorg.types.Action_publish.from(publishParams), session)
     }
     publishedit(
-        permlink: _Decentiumorg.types.Permlink,
-        edit_tx: _Decentiumorg.types.Tx_ref
+        publisheditParams: _Decentiumorg.types.PublisheditParams,
+        session: Session
     ): Promise<TransactResult> {
         return this.call(
             'publishedit',
-            _Decentiumorg.types.Action_publishedit.from({permlink: permlink, edit_tx: edit_tx})
+            _Decentiumorg.types.Action_publishedit.from(publisheditParams),
+            session
         )
     }
-    setlinkflags(link_id: UInt64Type, new_flags: link_flags): Promise<TransactResult> {
+    setlinkflags(
+        setlinkflagsParams: _Decentiumorg.types.SetlinkflagsParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'setlinkflags',
-            _Decentiumorg.types.Action_setlinkflags.from({link_id: link_id, new_flags: new_flags})
+            _Decentiumorg.types.Action_setlinkflags.from(setlinkflagsParams),
+            session
         )
     }
-    setprofile(author: NameType, profile: _Decentiumorg.types.Tx_ref): Promise<TransactResult> {
+    setprofile(
+        setprofileParams: _Decentiumorg.types.SetprofileParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'setprofile',
-            _Decentiumorg.types.Action_setprofile.from({author: author, profile: profile})
+            _Decentiumorg.types.Action_setprofile.from(setprofileParams),
+            session
         )
     }
-    unfreezeblog(author: NameType): Promise<TransactResult> {
+    unfreezeblog(
+        unfreezeblogParams: _Decentiumorg.types.UnfreezeblogParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'unfreezeblog',
-            _Decentiumorg.types.Action_unfreezeblog.from({author: author})
+            _Decentiumorg.types.Action_unfreezeblog.from(unfreezeblogParams),
+            session
         )
     }
-    unpinpost(author: NameType, slug: NameType): Promise<TransactResult> {
+    unpinpost(
+        unpinpostParams: _Decentiumorg.types.UnpinpostParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'unpinpost',
-            _Decentiumorg.types.Action_unpinpost.from({author: author, slug: slug})
+            _Decentiumorg.types.Action_unpinpost.from(unpinpostParams),
+            session
         )
     }
-    unpublish(permlink: _Decentiumorg.types.Permlink): Promise<TransactResult> {
+    unpublish(
+        unpublishParams: _Decentiumorg.types.UnpublishParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'unpublish',
-            _Decentiumorg.types.Action_unpublish.from({permlink: permlink})
+            _Decentiumorg.types.Action_unpublish.from(unpublishParams),
+            session
         )
     }
-    updatescore(post_permlink: _Decentiumorg.types.Permlink): Promise<TransactResult> {
+    updatescore(
+        updatescoreParams: _Decentiumorg.types.UpdatescoreParams,
+        session: Session
+    ): Promise<TransactResult> {
         return this.call(
             'updatescore',
-            _Decentiumorg.types.Action_updatescore.from({post_permlink: post_permlink})
+            _Decentiumorg.types.Action_updatescore.from(updatescoreParams),
+            session
         )
     }
 }
 export namespace _Decentiumorg {
     export namespace tables {
         export class blogs {
+            static contract = Contract.from({name: 'decentiumorg'})
             static fieldToIndex = {author: {type: 'name', index_position: 'primary'}}
             static where(
-                {limit = 10},
-                queryParams: _Decentiumorg.types.blogsQueryParams,
+                queryParams: _Decentiumorg.types.BlogsWhereQueryParams,
+                getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.Blog_row>> {
+            ): TableCursor<_Decentiumorg.types.Blog_row> {
                 const blogsTable = Table.from({
-                    contract: 'blog',
+                    contract: blogs.contract,
                     name: 'blogs',
                     client: client,
                     rowType: _Decentiumorg.types.Blog_row,
                     fieldToIndex: blogs.fieldToIndex,
                 })
-                return blogsTable.where(queryParams)
+                return blogsTable.where(queryParams, getTableRowsOptions)
             }
             static find(
-                queryParams: _Decentiumorg.types.blogsQueryParams,
+                queryParams: _Decentiumorg.types.BlogsFindQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.Blog_row> {
                 const blogsTable = Table.from({
-                    contract: 'blog',
+                    contract: blogs.contract,
                     name: 'blogs',
                     client: client,
                     rowType: _Decentiumorg.types.Blog_row,
@@ -198,46 +234,47 @@ export namespace _Decentiumorg {
                 })
                 return blogsTable.find(queryParams)
             }
-            static all(
-                queryParams: _Decentiumorg.types.blogsQueryParams,
+            static first(
+                limit: number,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.Blog_row>> {
+            ): TableCursor<_Decentiumorg.types.Blog_row> {
                 const blogsTable = Table.from({
-                    contract: 'blog',
+                    contract: blogs.contract,
                     name: 'blogs',
                     client: client,
                     rowType: _Decentiumorg.types.Blog_row,
                     fieldToIndex: blogs.fieldToIndex,
                 })
-                return blogsTable.all(queryParams)
+                return blogsTable.first(limit)
             }
         }
         export class links {
+            static contract = Contract.from({name: 'decentiumorg'})
             static fieldToIndex = {
                 id: {type: 'uint64', index_position: 'primary'},
                 from: {type: 'uint128', index_position: 'secondary'},
                 to: {type: 'uint128', index_position: 'tertiary'},
             }
             static where(
-                {limit = 10},
-                queryParams: _Decentiumorg.types.linksQueryParams,
+                queryParams: _Decentiumorg.types.LinksWhereQueryParams,
+                getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.Link_row>> {
+            ): TableCursor<_Decentiumorg.types.Link_row> {
                 const linksTable = Table.from({
-                    contract: 'blog',
+                    contract: links.contract,
                     name: 'links',
                     client: client,
                     rowType: _Decentiumorg.types.Link_row,
                     fieldToIndex: links.fieldToIndex,
                 })
-                return linksTable.where(queryParams)
+                return linksTable.where(queryParams, getTableRowsOptions)
             }
             static find(
-                queryParams: _Decentiumorg.types.linksQueryParams,
+                queryParams: _Decentiumorg.types.LinksFindQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.Link_row> {
                 const linksTable = Table.from({
-                    contract: 'blog',
+                    contract: links.contract,
                     name: 'links',
                     client: client,
                     rowType: _Decentiumorg.types.Link_row,
@@ -245,45 +282,46 @@ export namespace _Decentiumorg {
                 })
                 return linksTable.find(queryParams)
             }
-            static all(
-                queryParams: _Decentiumorg.types.linksQueryParams,
+            static first(
+                limit: number,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.Link_row>> {
+            ): TableCursor<_Decentiumorg.types.Link_row> {
                 const linksTable = Table.from({
-                    contract: 'blog',
+                    contract: links.contract,
                     name: 'links',
                     client: client,
                     rowType: _Decentiumorg.types.Link_row,
                     fieldToIndex: links.fieldToIndex,
                 })
-                return linksTable.all(queryParams)
+                return linksTable.first(limit)
             }
         }
         export class posts {
+            static contract = Contract.from({name: 'decentiumorg'})
             static fieldToIndex = {
                 slug: {type: 'name', index_position: 'primary'},
                 updated: {type: 'uint64', index_position: 'secondary'},
             }
             static where(
-                {limit = 10},
-                queryParams: _Decentiumorg.types.postsQueryParams,
+                queryParams: _Decentiumorg.types.PostsWhereQueryParams,
+                getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.Post_row>> {
+            ): TableCursor<_Decentiumorg.types.Post_row> {
                 const postsTable = Table.from({
-                    contract: 'blog',
+                    contract: posts.contract,
                     name: 'posts',
                     client: client,
                     rowType: _Decentiumorg.types.Post_row,
                     fieldToIndex: posts.fieldToIndex,
                 })
-                return postsTable.where(queryParams)
+                return postsTable.where(queryParams, getTableRowsOptions)
             }
             static find(
-                queryParams: _Decentiumorg.types.postsQueryParams,
+                queryParams: _Decentiumorg.types.PostsFindQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.Post_row> {
                 const postsTable = Table.from({
-                    contract: 'blog',
+                    contract: posts.contract,
                     name: 'posts',
                     client: client,
                     rowType: _Decentiumorg.types.Post_row,
@@ -291,42 +329,43 @@ export namespace _Decentiumorg {
                 })
                 return postsTable.find(queryParams)
             }
-            static all(
-                queryParams: _Decentiumorg.types.postsQueryParams,
+            static first(
+                limit: number,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.Post_row>> {
+            ): TableCursor<_Decentiumorg.types.Post_row> {
                 const postsTable = Table.from({
-                    contract: 'blog',
+                    contract: posts.contract,
                     name: 'posts',
                     client: client,
                     rowType: _Decentiumorg.types.Post_row,
                     fieldToIndex: posts.fieldToIndex,
                 })
-                return postsTable.all(queryParams)
+                return postsTable.first(limit)
             }
         }
         export class state {
+            static contract = Contract.from({name: 'decentiumorg'})
             static fieldToIndex = {}
             static where(
-                {limit = 10},
-                queryParams: _Decentiumorg.types.stateQueryParams,
+                queryParams: _Decentiumorg.types.StateWhereQueryParams,
+                getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.State>> {
+            ): TableCursor<_Decentiumorg.types.State> {
                 const stateTable = Table.from({
-                    contract: 'blog',
+                    contract: state.contract,
                     name: 'state',
                     client: client,
                     rowType: _Decentiumorg.types.State,
                     fieldToIndex: state.fieldToIndex,
                 })
-                return stateTable.where(queryParams)
+                return stateTable.where(queryParams, getTableRowsOptions)
             }
             static find(
-                queryParams: _Decentiumorg.types.stateQueryParams,
+                queryParams: _Decentiumorg.types.StateFindQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.State> {
                 const stateTable = Table.from({
-                    contract: 'blog',
+                    contract: state.contract,
                     name: 'state',
                     client: client,
                     rowType: _Decentiumorg.types.State,
@@ -334,21 +373,19 @@ export namespace _Decentiumorg {
                 })
                 return stateTable.find(queryParams)
             }
-            static all(
-                queryParams: _Decentiumorg.types.stateQueryParams,
-                client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.State>> {
+            static first(limit: number, client: APIClient): TableCursor<_Decentiumorg.types.State> {
                 const stateTable = Table.from({
-                    contract: 'blog',
+                    contract: state.contract,
                     name: 'state',
                     client: client,
                     rowType: _Decentiumorg.types.State,
                     fieldToIndex: state.fieldToIndex,
                 })
-                return stateTable.all(queryParams)
+                return stateTable.first(limit)
             }
         }
         export class trending {
+            static contract = Contract.from({name: 'decentiumorg'})
             static fieldToIndex = {
                 id: {type: 'uint64', index_position: 'primary'},
                 score: {type: 'uint64', index_position: 'secondary'},
@@ -356,25 +393,25 @@ export namespace _Decentiumorg {
                 permlink: {type: 'uint128', index_position: 'fourth'},
             }
             static where(
-                {limit = 10},
-                queryParams: _Decentiumorg.types.trendingQueryParams,
+                queryParams: _Decentiumorg.types.TrendingWhereQueryParams,
+                getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.Trending_row>> {
+            ): TableCursor<_Decentiumorg.types.Trending_row> {
                 const trendingTable = Table.from({
-                    contract: 'blog',
+                    contract: trending.contract,
                     name: 'trending',
                     client: client,
                     rowType: _Decentiumorg.types.Trending_row,
                     fieldToIndex: trending.fieldToIndex,
                 })
-                return trendingTable.where(queryParams)
+                return trendingTable.where(queryParams, getTableRowsOptions)
             }
             static find(
-                queryParams: _Decentiumorg.types.trendingQueryParams,
+                queryParams: _Decentiumorg.types.TrendingFindQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.Trending_row> {
                 const trendingTable = Table.from({
-                    contract: 'blog',
+                    contract: trending.contract,
                     name: 'trending',
                     client: client,
                     rowType: _Decentiumorg.types.Trending_row,
@@ -382,24 +419,217 @@ export namespace _Decentiumorg {
                 })
                 return trendingTable.find(queryParams)
             }
-            static all(
-                queryParams: _Decentiumorg.types.trendingQueryParams,
+            static first(
+                limit: number,
                 client: APIClient
-            ): Promise<TableCursor<_Decentiumorg.types.Trending_row>> {
+            ): TableCursor<_Decentiumorg.types.Trending_row> {
                 const trendingTable = Table.from({
-                    contract: 'blog',
+                    contract: trending.contract,
                     name: 'trending',
                     client: client,
                     rowType: _Decentiumorg.types.Trending_row,
                     fieldToIndex: trending.fieldToIndex,
                 })
-                return trendingTable.all(queryParams)
+                return trendingTable.first(limit)
             }
         }
     }
 }
 export namespace _Decentiumorg {
     export namespace types {
+        export interface AddcategoryParams {
+            category: NameType
+        }
+        export interface AddmoderatorParams {
+            account: NameType
+        }
+        export interface CreateblogParams {
+            author: NameType
+        }
+        export interface DelcategoryParams {
+            category: NameType
+        }
+        export interface DeleteblogParams {
+            author: NameType
+            max_itr: UInt32Type
+        }
+        export interface DelmoderatorParams {
+            account: NameType
+        }
+        export interface FreezeblogParams {
+            author: NameType
+            reason: String
+        }
+        export interface HousekeepingParams {
+            max_itr: UInt32Type
+        }
+        export interface PinpostParams {
+            author: NameType
+            slug: NameType
+        }
+        export interface PostParams {
+            author: NameType
+            slug: NameType
+        }
+        export interface PosteditParams {
+            author: NameType
+            new_title: String
+            patch: String
+            new_metadata: Metadata
+        }
+        export interface ProfileParams {
+            author: NameType
+            name: String
+            bio: String
+            image: String
+        }
+        export interface PublishParams {
+            permlink: Permlink
+            tx: Tx_ref
+            category: NameType
+            options: Post_options
+            links: Permlink
+        }
+        export interface PublisheditParams {
+            permlink: Permlink
+            edit_tx: Tx_ref
+        }
+        export interface SetlinkflagsParams {
+            link_id: UInt64Type
+            new_flags: Link_flags
+        }
+        export interface SetprofileParams {
+            author: NameType
+            profile: Tx_ref
+        }
+        export interface UnfreezeblogParams {
+            author: NameType
+        }
+        export interface UnpinpostParams {
+            author: NameType
+            slug: NameType
+        }
+        export interface UnpublishParams {
+            permlink: Permlink
+        }
+        export interface UpdatescoreParams {
+            post_permlink: Permlink
+        }
+        export interface BlogsWhereQueryParams {
+            author?: {
+                from: NameType
+                to: NameType
+            }
+            flags?: {
+                from: Blog_flags
+                to: Blog_flags
+            }
+            pinned?: {
+                from: NameType
+                to: NameType
+            }
+            stats?: {
+                from: Blog_stats
+                to: Blog_stats
+            }
+            profile?: {
+                from: Tx_ref
+                to: Tx_ref
+            }
+            extensions?: {
+                from: Future_extensions
+                to: Future_extensions
+            }
+        }
+        export interface BlogsFindQueryParams {
+            author?: NameType
+            flags?: Blog_flags
+            pinned?: NameType
+            stats?: Blog_stats
+            profile?: Tx_ref
+            extensions?: Future_extensions
+        }
+        export interface LinksWhereQueryParams {
+            id?: {
+                from: UInt64Type
+                to: UInt64Type
+            }
+            from?: {
+                from: Permlink
+                to: Permlink
+            }
+            to?: {
+                from: Permlink
+                to: Permlink
+            }
+            flags?: {
+                from: Link_flags
+                to: Link_flags
+            }
+            payment?: {
+                from: AssetType
+                to: AssetType
+            }
+        }
+        export interface LinksFindQueryParams {
+            id?: UInt64Type
+            from?: Permlink
+            to?: Permlink
+            flags?: Link_flags
+            payment?: AssetType
+        }
+        export interface PostsWhereQueryParams {
+            ref?: {
+                from: Post_ref
+                to: Post_ref
+            }
+            extensions?: {
+                from: Future_extensions
+                to: Future_extensions
+            }
+        }
+        export interface PostsFindQueryParams {
+            ref?: Post_ref
+            extensions?: Future_extensions
+        }
+        export interface StateWhereQueryParams {
+            moderators?: {
+                from: NameType
+                to: NameType
+            }
+            categories?: {
+                from: Pair_name_category_stat
+                to: Pair_name_category_stat
+            }
+        }
+        export interface StateFindQueryParams {
+            moderators?: NameType
+            categories?: Pair_name_category_stat
+        }
+        export interface TrendingWhereQueryParams {
+            id?: {
+                from: UInt64Type
+                to: UInt64Type
+            }
+            score?: {
+                from: UInt64Type
+                to: UInt64Type
+            }
+            ref?: {
+                from: Post_ref
+                to: Post_ref
+            }
+            extensions?: {
+                from: Future_extensions
+                to: Future_extensions
+            }
+        }
+        export interface TrendingFindQueryParams {
+            id?: UInt64Type
+            score?: UInt64Type
+            ref?: Post_ref
+            extensions?: Future_extensions
+        }
         @Struct.type('action_addcategory')
         export class Action_addcategory extends Struct {
             @Struct.field('category')
@@ -460,18 +690,18 @@ export namespace _Decentiumorg {
             @Struct.field('doc')
             declare doc: _Decentiumorg.types.Document
             @Struct.field('metadata')
-            declare metadata: _Decentiumorg.types.Metadata?
+            declare metadata: _Decentiumorg.types.Metadata
         }
         @Struct.type('action_postedit')
         export class Action_postedit extends Struct {
             @Struct.field('author')
             declare author: Name
             @Struct.field('new_title')
-            declare new_title: String?
+            declare new_title: String
             @Struct.field('patch')
-            declare patch: String?
+            declare patch: String
             @Struct.field('new_metadata')
-            declare new_metadata: _Decentiumorg.types.Metadata?
+            declare new_metadata: _Decentiumorg.types.Metadata
         }
         @Struct.type('action_profile')
         export class Action_profile extends Struct {
@@ -482,7 +712,7 @@ export namespace _Decentiumorg {
             @Struct.field('bio')
             declare bio: String
             @Struct.field('image')
-            declare image: String?
+            declare image: String
         }
         @Struct.type('action_publish')
         export class Action_publish extends Struct {
@@ -495,7 +725,7 @@ export namespace _Decentiumorg {
             @Struct.field('options')
             declare options: Post_options
             @Struct.field('links')
-            declare links: _Decentiumorg.types.Permlink[]
+            declare links: _Decentiumorg.types.Permlink
         }
         @Struct.type('action_publishedit')
         export class Action_publishedit extends Struct {
@@ -547,13 +777,13 @@ export namespace _Decentiumorg {
             @Struct.field('flags')
             declare flags: Blog_flags
             @Struct.field('pinned')
-            declare pinned: Name[]
+            declare pinned: Name
             @Struct.field('stats')
             declare stats: _Decentiumorg.types.Blog_stats
             @Struct.field('profile')
-            declare profile: _Decentiumorg.types.Tx_ref?
+            declare profile: _Decentiumorg.types.Tx_ref
             @Struct.field('extensions')
-            declare extensions: _Decentiumorg.types.Future_extensions[]
+            declare extensions: _Decentiumorg.types.Future_extensions
         }
         @Struct.type('blog_stats')
         export class Blog_stats extends Struct {
@@ -600,7 +830,7 @@ export namespace _Decentiumorg {
         @Struct.type('document')
         export class Document extends Struct {
             @Struct.field('content')
-            declare content: Variant_block_nodes[]
+            declare content: Variant_block_nodes
         }
         @Struct.type('future_extensions')
         export class Future_extensions extends Struct {}
@@ -609,7 +839,7 @@ export namespace _Decentiumorg {
             @Struct.field('base')
             declare base: _Decentiumorg.types.Color
             @Struct.field('triangles')
-            declare triangles: _Decentiumorg.types.Triangle[]
+            declare triangles: _Decentiumorg.types.Triangle
         }
         @Struct.type('hard_break')
         export class Hard_break extends Struct {}
@@ -625,7 +855,7 @@ export namespace _Decentiumorg {
             @Struct.field('src')
             declare src: String
             @Struct.field('caption')
-            declare caption: Variant_inline_nodes[]
+            declare caption: Variant_inline_nodes
             @Struct.field('layout')
             declare layout: UInt8
         }
@@ -658,7 +888,7 @@ export namespace _Decentiumorg {
             @Struct.field('flags')
             declare flags: Link_flags
             @Struct.field('payment')
-            declare payment: Asset?
+            declare payment: Asset
         }
         @Struct.type('linkref')
         export class Linkref extends Struct {
@@ -670,21 +900,21 @@ export namespace _Decentiumorg {
             @Struct.field('type')
             declare type: UInt8
             @Struct.field('items')
-            declare items: _Decentiumorg.types.List_item[]
+            declare items: _Decentiumorg.types.List_item
         }
         @Struct.type('list_item')
         export class List_item extends Struct {
             @Struct.field('content')
-            declare content: Variant_inline_nodes[]
+            declare content: Variant_inline_nodes
         }
         @Struct.type('metadata')
         export class Metadata extends Struct {
             @Struct.field('image')
-            declare image: String?
+            declare image: String
             @Struct.field('summary')
-            declare summary: String?
+            declare summary: String
             @Struct.field('image_info')
-            declare image_info: _Decentiumorg.types.Pair_string_image_info[]
+            declare image_info: _Decentiumorg.types.Pair_string_image_info
         }
         @Struct.type('pair_name_category_stat')
         export class Pair_name_category_stat extends Struct {
@@ -703,7 +933,7 @@ export namespace _Decentiumorg {
         @Struct.type('paragraph')
         export class Paragraph extends Struct {
             @Struct.field('content')
-            declare content: Variant_inline_nodes[]
+            declare content: Variant_inline_nodes
         }
         @Struct.type('permlink')
         export class Permlink extends Struct {
@@ -725,23 +955,23 @@ export namespace _Decentiumorg {
             @Struct.field('tx')
             declare tx: _Decentiumorg.types.Tx_ref
             @Struct.field('edit_tx')
-            declare edit_tx: _Decentiumorg.types.Tx_ref?
+            declare edit_tx: _Decentiumorg.types.Tx_ref
             @Struct.field('endorsements')
-            declare endorsements: _Decentiumorg.types.Reward_stat?
+            declare endorsements: _Decentiumorg.types.Reward_stat
             @Struct.field('extensions')
-            declare extensions: _Decentiumorg.types.Future_extensions[]
+            declare extensions: _Decentiumorg.types.Future_extensions
         }
         @Struct.type('post_row')
         export class Post_row extends Struct {
             @Struct.field('ref')
             declare ref: _Decentiumorg.types.Post_ref
             @Struct.field('extensions')
-            declare extensions: _Decentiumorg.types.Future_extensions[]
+            declare extensions: _Decentiumorg.types.Future_extensions
         }
         @Struct.type('quote')
         export class Quote extends Struct {
             @Struct.field('content')
-            declare content: Variant_inline_nodes[]
+            declare content: Variant_inline_nodes
         }
         @Struct.type('reward_stat')
         export class Reward_stat extends Struct {
@@ -753,9 +983,9 @@ export namespace _Decentiumorg {
         @Struct.type('state')
         export class State extends Struct {
             @Struct.field('moderators')
-            declare moderators: Name[]
+            declare moderators: Name
             @Struct.field('categories')
-            declare categories: _Decentiumorg.types.Pair_name_category_stat[]
+            declare categories: _Decentiumorg.types.Pair_name_category_stat
         }
         @Struct.type('strike')
         export class Strike extends Struct {}
@@ -764,7 +994,7 @@ export namespace _Decentiumorg {
             @Struct.field('value')
             declare value: String
             @Struct.field('marks')
-            declare marks: Variant_mark_nodes[]
+            declare marks: Variant_mark_nodes
         }
         @Struct.type('trending_row')
         export class Trending_row extends Struct {
@@ -775,7 +1005,7 @@ export namespace _Decentiumorg {
             @Struct.field('ref')
             declare ref: _Decentiumorg.types.Post_ref
             @Struct.field('extensions')
-            declare extensions: _Decentiumorg.types.Future_extensions[]
+            declare extensions: _Decentiumorg.types.Future_extensions
         }
         @Struct.type('triangle')
         export class Triangle extends Struct {

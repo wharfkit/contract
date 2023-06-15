@@ -196,7 +196,7 @@ export function getFieldTypesFromAbi(abi: any): {structName: string; fields: Fie
     return structTypes
 }
 
-const EOSIO_CORE_TYPES = ['Asset', 'Name', 'UInt32', 'UInt64']
+const EOSIO_CORE_TYPES = ['Asset', 'Name', 'UInt32', 'UInt64', 'Checksum256', 'UInt8']
 
 export function cleanupParamType(type: ABI.ResolvedType): string {
     for (const coreType of EOSIO_CORE_TYPES) {

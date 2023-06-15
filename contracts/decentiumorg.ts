@@ -1,4 +1,4 @@
-import {Contract} from '@wharfkit/contract'
+import {Contract, Table, TableCursor} from '@wharfkit/contract'
 import {
     Struct,
     Name,
@@ -9,8 +9,254 @@ import {
     UInt32Type,
     UInt64,
     UInt64Type,
+    UInt8,
+    UInt8Type,
     TransactResult,
+    APIClient,
 } from '@wharfkit/session'
+export namespace _Decentiumorg {
+    export namespace tables {
+        export class blogs {
+            static fieldToIndex = {
+                author: {type: 'name', index_position: 'primary'},
+                flags: {type: 'blog_flags', index_position: 'primary'},
+                pinned: {type: 'name[]', index_position: 'primary'},
+                stats: {type: 'blog_stats', index_position: 'primary'},
+                profile: {type: 'tx_ref?', index_position: 'primary'},
+                extensions: {type: 'future_extensions[]', index_position: 'primary'},
+            }
+            static where(
+                {limit = 10},
+                queryParams: _Decentiumorg.types.blogsQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.blogsRow>> {
+                const blogsTable = Table.from({
+                    contract: 'blog',
+                    name: 'blogs',
+                    client: client,
+                    rowType: _Decentiumorg.types.blogsRow,
+                    fieldToIndex: blogs.fieldToIndex,
+                })
+                return blogsTable.where(queryParams)
+            }
+            static find(
+                queryParams: _Decentiumorg.types.blogsQueryParams,
+                client: APIClient
+            ): Promise<_Blog.types.blogsRow> {
+                const blogsTable = Table.from({
+                    contract: 'blog',
+                    name: 'blogs',
+                    client: client,
+                    rowType: _Decentiumorg.types.blogsRow,
+                    fieldToIndex: blogs.fieldToIndex,
+                })
+                return blogsTable.find(queryParams)
+            }
+            static all(
+                queryParams: _Decentiumorg.types.blogsQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.blogsRow>> {
+                const blogsTable = Table.from({
+                    contract: 'blog',
+                    name: 'blogs',
+                    client: client,
+                    rowType: _Decentiumorg.types.blogsRow,
+                    fieldToIndex: blogs.fieldToIndex,
+                })
+                return blogsTable.all(queryParams)
+            }
+        }
+        export class links {
+            static fieldToIndex = {
+                id: {type: 'uint64', index_position: 'primary'},
+                from: {type: 'permlink', index_position: 'primary'},
+                to: {type: 'permlink', index_position: 'primary'},
+                flags: {type: 'link_flags', index_position: 'primary'},
+                payment: {type: 'asset?', index_position: 'primary'},
+            }
+            static where(
+                {limit = 10},
+                queryParams: _Decentiumorg.types.linksQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.linksRow>> {
+                const linksTable = Table.from({
+                    contract: 'blog',
+                    name: 'links',
+                    client: client,
+                    rowType: _Decentiumorg.types.linksRow,
+                    fieldToIndex: links.fieldToIndex,
+                })
+                return linksTable.where(queryParams)
+            }
+            static find(
+                queryParams: _Decentiumorg.types.linksQueryParams,
+                client: APIClient
+            ): Promise<_Blog.types.linksRow> {
+                const linksTable = Table.from({
+                    contract: 'blog',
+                    name: 'links',
+                    client: client,
+                    rowType: _Decentiumorg.types.linksRow,
+                    fieldToIndex: links.fieldToIndex,
+                })
+                return linksTable.find(queryParams)
+            }
+            static all(
+                queryParams: _Decentiumorg.types.linksQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.linksRow>> {
+                const linksTable = Table.from({
+                    contract: 'blog',
+                    name: 'links',
+                    client: client,
+                    rowType: _Decentiumorg.types.linksRow,
+                    fieldToIndex: links.fieldToIndex,
+                })
+                return linksTable.all(queryParams)
+            }
+        }
+        export class posts {
+            static fieldToIndex = {
+                ref: {type: 'post_ref', index_position: 'primary'},
+                extensions: {type: 'future_extensions[]', index_position: 'primary'},
+            }
+            static where(
+                {limit = 10},
+                queryParams: _Decentiumorg.types.postsQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.postsRow>> {
+                const postsTable = Table.from({
+                    contract: 'blog',
+                    name: 'posts',
+                    client: client,
+                    rowType: _Decentiumorg.types.postsRow,
+                    fieldToIndex: posts.fieldToIndex,
+                })
+                return postsTable.where(queryParams)
+            }
+            static find(
+                queryParams: _Decentiumorg.types.postsQueryParams,
+                client: APIClient
+            ): Promise<_Blog.types.postsRow> {
+                const postsTable = Table.from({
+                    contract: 'blog',
+                    name: 'posts',
+                    client: client,
+                    rowType: _Decentiumorg.types.postsRow,
+                    fieldToIndex: posts.fieldToIndex,
+                })
+                return postsTable.find(queryParams)
+            }
+            static all(
+                queryParams: _Decentiumorg.types.postsQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.postsRow>> {
+                const postsTable = Table.from({
+                    contract: 'blog',
+                    name: 'posts',
+                    client: client,
+                    rowType: _Decentiumorg.types.postsRow,
+                    fieldToIndex: posts.fieldToIndex,
+                })
+                return postsTable.all(queryParams)
+            }
+        }
+        export class state {
+            static fieldToIndex = {
+                moderators: {type: 'name[]', index_position: 'primary'},
+                categories: {type: 'pair_name_category_stat[]', index_position: 'primary'},
+            }
+            static where(
+                {limit = 10},
+                queryParams: _Decentiumorg.types.stateQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.stateRow>> {
+                const stateTable = Table.from({
+                    contract: 'blog',
+                    name: 'state',
+                    client: client,
+                    rowType: _Decentiumorg.types.stateRow,
+                    fieldToIndex: state.fieldToIndex,
+                })
+                return stateTable.where(queryParams)
+            }
+            static find(
+                queryParams: _Decentiumorg.types.stateQueryParams,
+                client: APIClient
+            ): Promise<_Blog.types.stateRow> {
+                const stateTable = Table.from({
+                    contract: 'blog',
+                    name: 'state',
+                    client: client,
+                    rowType: _Decentiumorg.types.stateRow,
+                    fieldToIndex: state.fieldToIndex,
+                })
+                return stateTable.find(queryParams)
+            }
+            static all(
+                queryParams: _Decentiumorg.types.stateQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.stateRow>> {
+                const stateTable = Table.from({
+                    contract: 'blog',
+                    name: 'state',
+                    client: client,
+                    rowType: _Decentiumorg.types.stateRow,
+                    fieldToIndex: state.fieldToIndex,
+                })
+                return stateTable.all(queryParams)
+            }
+        }
+        export class trending {
+            static fieldToIndex = {
+                id: {type: 'uint64', index_position: 'primary'},
+                score: {type: 'uint64', index_position: 'primary'},
+                ref: {type: 'post_ref', index_position: 'primary'},
+                extensions: {type: 'future_extensions[]', index_position: 'primary'},
+            }
+            static where(
+                {limit = 10},
+                queryParams: _Decentiumorg.types.trendingQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.trendingRow>> {
+                const trendingTable = Table.from({
+                    contract: 'blog',
+                    name: 'trending',
+                    client: client,
+                    rowType: _Decentiumorg.types.trendingRow,
+                    fieldToIndex: trending.fieldToIndex,
+                })
+                return trendingTable.where(queryParams)
+            }
+            static find(
+                queryParams: _Decentiumorg.types.trendingQueryParams,
+                client: APIClient
+            ): Promise<_Blog.types.trendingRow> {
+                const trendingTable = Table.from({
+                    contract: 'blog',
+                    name: 'trending',
+                    client: client,
+                    rowType: _Decentiumorg.types.trendingRow,
+                    fieldToIndex: trending.fieldToIndex,
+                })
+                return trendingTable.find(queryParams)
+            }
+            static all(
+                queryParams: _Decentiumorg.types.trendingQueryParams,
+                client: APIClient
+            ): Promise<TableCursor<_Blog.types.trendingRow>> {
+                const trendingTable = Table.from({
+                    contract: 'blog',
+                    name: 'trending',
+                    client: client,
+                    rowType: _Decentiumorg.types.trendingRow,
+                    fieldToIndex: trending.fieldToIndex,
+                })
+                return trendingTable.all(queryParams)
+            }
+        }
+    }
+}
 export class _Decentiumorg extends Contract {
     addcategory(category: NameType): Promise<TransactResult> {
         return this.call('addcategory', _Decentiumorg.Types.Addcategory.from({category: category}))
@@ -139,7 +385,7 @@ export class _Decentiumorg extends Contract {
     }
 }
 export namespace _Decentiumorg {
-    export namespace Types {
+    export namespace types {
         @Struct.type('action_addcategory')
         export class Action_addcategory extends Struct {
             @Struct.field('category')
@@ -329,11 +575,11 @@ export namespace _Decentiumorg {
         @Struct.type('color')
         export class Color extends Struct {
             @Struct.field('r')
-            declare r: uint8
+            declare r: UInt8
             @Struct.field('g')
-            declare g: uint8
+            declare g: UInt8
             @Struct.field('b')
-            declare b: uint8
+            declare b: UInt8
         }
         @Struct.type('divider')
         export class Divider extends Struct {}
@@ -358,7 +604,7 @@ export namespace _Decentiumorg {
             @Struct.field('value')
             declare value: string
             @Struct.field('level')
-            declare level: uint8
+            declare level: UInt8
         }
         @Struct.type('image')
         export class Image extends Struct {
@@ -367,7 +613,7 @@ export namespace _Decentiumorg {
             @Struct.field('caption')
             declare caption: variant_inline_nodes[]
             @Struct.field('layout')
-            declare layout: uint8
+            declare layout: UInt8
         }
         @Struct.type('image_info')
         export class Image_info extends Struct {
@@ -408,7 +654,7 @@ export namespace _Decentiumorg {
         @Struct.type('list')
         export class List extends Struct {
             @Struct.field('type')
-            declare type: uint8
+            declare type: UInt8
             @Struct.field('items')
             declare items: list_item[]
         }
@@ -520,17 +766,17 @@ export namespace _Decentiumorg {
         @Struct.type('triangle')
         export class Triangle extends Struct {
             @Struct.field('ax')
-            declare ax: uint8
+            declare ax: UInt8
             @Struct.field('ay')
-            declare ay: uint8
+            declare ay: UInt8
             @Struct.field('bx')
-            declare bx: uint8
+            declare bx: UInt8
             @Struct.field('by')
-            declare by: uint8
+            declare by: UInt8
             @Struct.field('cx')
-            declare cx: uint8
+            declare cx: UInt8
             @Struct.field('cy')
-            declare cy: uint8
+            declare cy: UInt8
             @Struct.field('color')
             declare color: color
         }
@@ -539,7 +785,7 @@ export namespace _Decentiumorg {
             @Struct.field('block_num')
             declare block_num: UInt32
             @Struct.field('transaction_id')
-            declare transaction_id: checksum256
+            declare transaction_id: Checksum256
         }
     }
 }

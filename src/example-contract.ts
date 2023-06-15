@@ -1,6 +1,7 @@
 import {TableCursor} from './index'
 import {Struct} from '@wharfkit/session'
 import type {APIClient, Name, UInt64} from '@wharfkit/session'
+import {Contract} from './contract'
 import {Table} from './contract/table'
 
 export namespace _Blog {
@@ -53,7 +54,7 @@ export namespace _Blog {
                 client: APIClient
             ): TableCursor<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: 'blog',
+                    contract: Contract.from({name: 'blog'}),
                     name: 'users',
                     client,
                     rowType: _Blog.types.UsersRow,
@@ -68,7 +69,7 @@ export namespace _Blog {
                 client: APIClient
             ): Promise<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: 'blog',
+                    contract: Contract.from({name: 'blog'}),
                     name: 'users',
                     client,
                     rowType: _Blog.types.UsersRow,
@@ -80,7 +81,7 @@ export namespace _Blog {
 
             static first(limit, client): TableCursor<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: 'blog',
+                    contract: Contract.from({name: 'blog'}),
                     name: 'users',
                     client,
                     rowType: _Blog.types.UsersRow,

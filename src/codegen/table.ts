@@ -3,7 +3,7 @@ import * as ts from 'typescript'
 
 import {generateClassDeclaration} from './helpers'
 
-export function generateTableClass(table, abi) {
+export function generateTableClass(namespaceName, table, abi) {
     const tableName = table.name
 
     const struct = abi.structs.find((struct) => struct.name === table.type)
@@ -49,7 +49,9 @@ export function generateTableClass(table, abi) {
                 undefined,
                 ts.factory.createIdentifier('queryParams'),
                 undefined,
-                ts.factory.createTypeReferenceNode(`_Blog.types.${tableName}QueryParams`),
+                ts.factory.createTypeReferenceNode(
+                    `${namespaceName}.types.${tableName}QueryParams`
+                ),
                 undefined
             ),
             ts.factory.createParameterDeclaration(
@@ -62,7 +64,7 @@ export function generateTableClass(table, abi) {
             ),
         ]
 
-        if (method === 'where' || method === 'all') {
+        if (method === 'where' || method === 'first') {
             parameters.unshift(
                 ts.factory.createParameterDeclaration(
                     undefined,
@@ -115,7 +117,7 @@ export function generateTableClass(table, abi) {
                                             ts.factory.createPropertyAssignment(
                                                 'rowType',
                                                 ts.factory.createIdentifier(
-                                                    `_Blog.types.${tableName}Row`
+                                                    `${namespaceName}.types.${tableName}Row`
                                                 )
                                             ),
                                             ts.factory.createPropertyAssignment(
@@ -157,8 +159,8 @@ export function generateTableClass(table, abi) {
             ts.factory.createTypeReferenceNode(
                 `Promise<${
                     method === 'find'
-                        ? `_Blog.types.${tableName}Row`
-                        : `TableCursor<_Blog.types.${tableName}Row>`
+                        ? `${namespaceName}.types.${tableName}Row`
+                        : `TableCursor<${namespaceName}.types.${tableName}Row>`
                 }>`
             ), // return type
             methodBody

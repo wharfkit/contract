@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 
+const {APIClient} = require('@wharfkit/session')
 const fs = require('fs')
+const {fetch} = require('node-fetch')
 
 const {codegen, Contract} = require('../lib/contract.js')
+
+const client = new APIClient({
+    url: process.env.ANTELOPE_NODE_URL || 'https://eos.greymass.com',
+    fetch,
+})
 
 async function codegenCli() {
     // Check if the contractName argument is provided
@@ -16,7 +23,7 @@ async function codegenCli() {
 
     log(`Fetching ABI for ${contractName}...`)
 
-    const contract = Contract.from(contractName)
+    const contract = Contract.from({name: contractName, client})
 
     const abi = await contract.getAbi()
 

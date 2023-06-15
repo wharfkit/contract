@@ -1,18 +1,13 @@
-import {ABI} from '@greymass/eosio'
 import * as ts from 'typescript'
 
 import {generateClassDeclaration} from './helpers'
+import {indexPositionInWords, capitalize} from '../utils'
 
 export function generateTableClass(namespaceName, table, abi) {
     const tableName = table.name
-
     const struct = abi.structs.find((struct) => struct.name === table.type)
-
-    console.log({struct})
-
     const members: ts.ClassElement[] = []
-
-    console.log({table})
+    const rowType = `${namespaceName}.types.${capitalize(struct.name)}`
 
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(
@@ -22,21 +17,21 @@ export function generateTableClass(namespaceName, table, abi) {
         undefined,
         undefined,
         ts.factory.createObjectLiteralExpression(
-            struct.fields.map((field) =>
-                ts.factory.createPropertyAssignment(
-                    field.name,
+            table.key_names.map((keyName, index) => {
+                return ts.factory.createPropertyAssignment(
+                    keyName,
                     ts.factory.createObjectLiteralExpression([
                         ts.factory.createPropertyAssignment(
                             'type',
-                            ts.factory.createStringLiteral(field.type)
+                            ts.factory.createStringLiteral(table.key_types[index])
                         ),
                         ts.factory.createPropertyAssignment(
                             'index_position',
-                            ts.factory.createStringLiteral(field.index_position || 'primary')
+                            ts.factory.createStringLiteral(indexPositionInWords(index) || 'primary')
                         ),
                     ])
                 )
-            )
+            })
         )
     )
     members.push(fieldToIndex)
@@ -116,9 +111,7 @@ export function generateTableClass(namespaceName, table, abi) {
                                             ),
                                             ts.factory.createPropertyAssignment(
                                                 'rowType',
-                                                ts.factory.createIdentifier(
-                                                    `${namespaceName}.types.${tableName}Row`
-                                                )
+                                                ts.factory.createIdentifier(rowType)
                                             ),
                                             ts.factory.createPropertyAssignment(
                                                 'fieldToIndex',
@@ -157,11 +150,7 @@ export function generateTableClass(namespaceName, table, abi) {
             undefined, // questionToken
             parameters, // parameters
             ts.factory.createTypeReferenceNode(
-                `Promise<${
-                    method === 'find'
-                        ? `${namespaceName}.types.${tableName}Row`
-                        : `TableCursor<${namespaceName}.types.${tableName}Row>`
-                }>`
+                `Promise<${method === 'find' ? rowType : `TableCursor<${rowType}>`}>`
             ), // return type
             methodBody
         )

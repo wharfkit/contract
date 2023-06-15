@@ -6,6 +6,7 @@ import {
     getFieldTypesFromAbi,
     generateField,
     generateStruct,
+    generateInterface,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateContractClass} from './codegen/contract'
@@ -23,6 +24,8 @@ export async function codegen(contractName, abi) {
             'NameType',
             'Asset',
             'AssetType',
+            'UInt16',
+            'UInt16Type',
             'UInt32',
             'UInt32Type',
             'UInt64',
@@ -31,6 +34,8 @@ export async function codegen(contractName, abi) {
             'UInt8Type',
             'TransactResult',
             'APIClient',
+            'Checksum256',
+            'TimePointSec',
         ],
         '@wharfkit/session'
     )
@@ -42,14 +47,11 @@ export async function codegen(contractName, abi) {
     const classDeclaration = generateContractClass(ABI.from(abi), namespaceName)
 
     const tableClasses: ts.ClassDeclaration[] = []
-
-    console.log({t: abi.tables})
+    const tableInterfaces: ts.InterfaceDeclaration[] = []
 
     abi.tables.forEach((table) => {
-        const structName = table.name
-        console.log({tableName: structName})
-
         tableClasses.push(generateTableClass(namespaceName, table, abi))
+        // tableInterfaces.push(generateInterface(namespaceName, table, abi, true))
     })
 
     // Generate tables namespace
@@ -60,8 +62,6 @@ export async function codegen(contractName, abi) {
     // Extract fields from the ABI
     const structs = getFieldTypesFromAbi(abi)
 
-    // console.log({structs})
-
     const structDeclarations: ts.ClassDeclaration[] = []
 
     // Iterate through structs and create struct with fields
@@ -69,7 +69,14 @@ export async function codegen(contractName, abi) {
         const structMembers: ts.ClassElement[] = []
 
         for (const field of struct.fields) {
-            structMembers.push(generateField(field, true))
+            structMembers.push(
+                generateField(
+                    field,
+                    true,
+                    `${namespaceName}.types`,
+                    structs.map((struct) => struct.structName)
+                )
+            )
         }
 
         structDeclarations.push(generateStruct(struct.structName, true, structMembers))
@@ -77,15 +84,15 @@ export async function codegen(contractName, abi) {
 
     // Generate types namespace
     const typesDeclaration = generateNamespace(namespaceName, [
-        generateNamespace('types', structDeclarations),
+        generateNamespace('types', [...tableInterfaces, ...structDeclarations]),
     ])
 
     const sourceFile = ts.factory.createSourceFile(
         [
             importContractStatement,
             importCoreStatement,
-            tableNamespace,
             classDeclaration,
+            tableNamespace,
             typesDeclaration,
         ],
         ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),

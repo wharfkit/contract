@@ -5,16 +5,18 @@ import * as ts from 'typescript'
 import {
     generateClassDeclaration,
     generatePropertyDeclarationForField,
-    cleanupParamType,
+    cleanupParam,
+    cleanupType,
 } from './helpers'
 import {pascalCase, capitalize} from '../utils'
 
 export function generateContractClass(abi: ABI, namespaceName: string) {
     const structs: Map<string, ts.ClassDeclaration> = new Map()
-    const structTypes: Map<string, ts.TypeAliasDeclaration> = new Map()
     const coreImports: Set<string> = new Set()
 
     const resolved = abi.resolveAll()
+
+    const structNames = abi.structs.map((struct) => struct.name)
 
     function getTypeIdentifier(type: ABI.ResolvedType) {
         if (type.fields) {
@@ -86,8 +88,8 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
     const members: ts.ClassElement[] = []
     // add a method for each action
     for (const action of abi.actions) {
-        const actionStruct = resolved.structs.find(
-            (struct) => struct.name === action.name || struct.name === `action_${action.name}`
+        const actionStruct = resolved.structs.find((struct) =>
+            struct.name.includes(String(action.name))
         )
         if (!actionStruct) {
             throw Error(`Action Struct not found for ${action.name}`)
@@ -106,7 +108,9 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
                     undefined, // dot dot dot token
                     ts.factory.createIdentifier(field.name), // name
                     undefined, // question token
-                    ts.factory.createTypeReferenceNode(cleanupParamType(field.type)), // type
+                    ts.factory.createTypeReferenceNode(
+                        cleanupType(cleanupParam(field.type), `${namespaceName}.types`, structNames)
+                    ), // type
                     undefined // initializer
                 )
             }) || [],
@@ -129,9 +133,11 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
                                         ts.factory.createPropertyAccessExpression(
                                             ts.factory.createPropertyAccessExpression(
                                                 ts.factory.createIdentifier(namespaceName),
-                                                ts.factory.createIdentifier('Types')
+                                                ts.factory.createIdentifier('types')
                                             ),
-                                            ts.factory.createIdentifier(capitalize(action.name))
+                                            ts.factory.createIdentifier(
+                                                capitalize(actionStruct.name)
+                                            )
                                         ),
                                         ts.factory.createIdentifier('from')
                                     ),

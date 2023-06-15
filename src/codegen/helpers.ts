@@ -151,7 +151,12 @@ export function generateStruct(
     )
 }
 
-export function generateField(field: FieldType, isExport = false): ts.PropertyDeclaration {
+export function generateField(
+    field: FieldType,
+    isExport = false,
+    namespace: string,
+    structNames: string[]
+): ts.PropertyDeclaration {
     const fieldName = field.name.toLowerCase()
 
     const decorators = [
@@ -170,7 +175,9 @@ export function generateField(field: FieldType, isExport = false): ts.PropertyDe
             : decorators,
         ts.factory.createIdentifier(fieldName), // Fixed: Use field.name as the identifier
         undefined, // questionToken
-        ts.factory.createTypeReferenceNode(cleanupParamWrapperName(field.type)), // Fixed: Use field.type as the type reference
+        ts.factory.createTypeReferenceNode(
+            cleanupType(cleanupParamWrapperName(field.type), namespace, structNames)
+        ), // Fixed: Use field.type as the type reference
         undefined // initializer
     )
 }
@@ -196,11 +203,21 @@ export function getFieldTypesFromAbi(abi: any): {structName: string; fields: Fie
     return structTypes
 }
 
-const EOSIO_CORE_TYPES = ['Asset', 'Name', 'UInt32', 'UInt64', 'Checksum256', 'UInt8']
+const EOSIO_CORE_TYPES = [
+    'Asset',
+    'Name',
+    'UInt8',
+    'UInt16',
+    'UInt32',
+    'UInt64',
+    'Uint128',
+    'Checksum256',
+    'TimePointSec',
+]
 
-export function cleanupParamType(type: ABI.ResolvedType): string {
+export function cleanupParam(type: ABI.ResolvedType): string {
     for (const coreType of EOSIO_CORE_TYPES) {
-        if (type.name === coreType.toLowerCase()) {
+        if (type.name.split('_').join('') === coreType.toLowerCase()) {
             return `${coreType}Type`
         }
     }
@@ -210,10 +227,64 @@ export function cleanupParamType(type: ABI.ResolvedType): string {
 
 export function cleanupParamWrapperName(type: string): string {
     for (const coreType of EOSIO_CORE_TYPES) {
-        if (type === coreType.toLowerCase()) {
+        if (type.split('_').join('') === coreType.toLowerCase()) {
             return coreType
         }
     }
 
-    return type
+    return capitalize(type)
+}
+
+const decorators = ['?', '[]']
+export function cleanupType(type: string, namespace: string, structNames: string[]): string {
+    let typeWithoutDecorator
+    for (const decorator of decorators) {
+        if (type.includes(decorator)) {
+            typeWithoutDecorator = type.replace(decorator, '')
+        }
+    }
+    if (structNames.includes((typeWithoutDecorator || type).toLowerCase())) {
+        return `${namespace}.${capitalize(type)}`
+    } else {
+        return type
+    }
+}
+
+export function generateInterface(
+    interfaceName: string,
+    isExport = false,
+    members: ts.TypeElement[] = []
+): ts.InterfaceDeclaration {
+    const modifiers = isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : []
+
+    return ts.factory.createInterfaceDeclaration(
+        modifiers,
+        ts.factory.createIdentifier(interfaceName),
+        undefined, // typeParameters
+        [], // heritageClauses
+        members // members
+    )
+}
+
+export function generateParams(key: string): ts.PropertySignature {
+    return ts.factory.createPropertySignature(
+        undefined, // modifiers
+        key, // name
+        undefined, // questionToken
+        ts.factory.createTypeLiteralNode([
+            // type
+            ts.factory.createPropertySignature(
+                undefined,
+                'from',
+                undefined,
+                ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+            ),
+            ts.factory.createPropertySignature(
+                undefined,
+                'to',
+                undefined,
+                ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+            ),
+        ])
+    )
 }

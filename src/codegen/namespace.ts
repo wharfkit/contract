@@ -18,7 +18,7 @@ export function generateNamespace(
     return ts.factory.createModuleDeclaration(
         isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : [], // modifiers
         ts.factory.createIdentifier(namespaceName),
-        ts.factory.createModuleBlock([...children]),
+        ts.factory.createModuleBlock(children),
         ts.NodeFlags.Namespace
     )
 }

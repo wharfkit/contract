@@ -54,9 +54,8 @@ export namespace _Blog {
                 client: APIClient
             ): TableCursor<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: Contract.from({name: 'blog'}),
+                    contract: Contract.from({name: 'blog', client}),
                     name: 'users',
-                    client,
                     rowType: _Blog.types.UsersRow,
                     fieldToIndex: Users.fieldToIndex,
                 })
@@ -69,9 +68,8 @@ export namespace _Blog {
                 client: APIClient
             ): Promise<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: Contract.from({name: 'blog'}),
+                    contract: Contract.from({name: 'blog', client}),
                     name: 'users',
-                    client,
                     rowType: _Blog.types.UsersRow,
                     fieldToIndex: Users.fieldToIndex,
                 })
@@ -81,9 +79,8 @@ export namespace _Blog {
 
             static first(limit, client): TableCursor<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: Contract.from({name: 'blog'}),
+                    contract: Contract.from({name: 'blog', client}),
                     name: 'users',
-                    client,
                     rowType: _Blog.types.UsersRow,
                 })
 

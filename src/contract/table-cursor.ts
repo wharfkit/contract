@@ -43,6 +43,10 @@ export class TableCursor<TableRow> {
         this.tableParams = tableParams
         this.next_key = next_key
         this.indexPositionField = indexPositionField
+
+        if (!this.table.contract.client) {
+            throw new Error('Table cursor cannot be created without a client')
+        }
     }
 
     /**

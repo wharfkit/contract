@@ -12,15 +12,13 @@ suite('Table', () => {
 
     setup(async function () {
         nameBidTable = new Table({
-            contract: Contract.from({name: 'decentiumorg'}),
+            contract: Contract.from({name: 'decentiumorg', client: mockClient}),
             name: 'namebids',
-            client: mockClient,
         })
 
         decentiumTrendingTable = new Table({
-            contract: Contract.from({name: 'decentiumorg'}),
+            contract: Contract.from({name: 'decentiumorg', client: mockClient}),
             name: 'trending',
-            client: mockClient,
         })
     })
 

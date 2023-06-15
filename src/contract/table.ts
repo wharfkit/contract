@@ -216,20 +216,6 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             }
         }
 
-        if (Object.values(fieldToIndex).length === 0) {
-            const tableStruct = await this.getTableStruct()
-            const firstFieldName = tableStruct?.fields[0].name
-
-            if (!firstFieldName) {
-                throw new Error(`Table ${this.name} has no fields.`)
-            }
-
-            fieldToIndex[firstFieldName] = {
-                type: firstFieldName,
-                index_position: 'primary',
-            }
-        }
-
         return fieldToIndex
     }
 

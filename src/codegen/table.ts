@@ -10,31 +10,6 @@ export function generateTableClass(contractName, namespaceName, table, abi) {
     const members: ts.ClassElement[] = []
     const rowType = `${namespaceName}.types.${capitalize(struct.name)}`
 
-    // Define static contract property
-    const contract = ts.factory.createPropertyDeclaration(
-        undefined,
-        [ts.factory.createModifier(ts.SyntaxKind.StaticKeyword)],
-        'contract',
-        undefined,
-        undefined,
-        ts.factory.createCallExpression(
-            ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier('Contract'),
-                ts.factory.createIdentifier('from')
-            ),
-            undefined,
-            [
-                ts.factory.createObjectLiteralExpression([
-                    ts.factory.createPropertyAssignment(
-                        'name',
-                        ts.factory.createStringLiteral(contractName)
-                    ),
-                ]),
-            ]
-        )
-    )
-    members.push(contract)
-
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(
         undefined,
@@ -151,9 +126,28 @@ export function generateTableClass(contractName, namespaceName, table, abi) {
                                         ts.factory.createObjectLiteralExpression([
                                             ts.factory.createPropertyAssignment(
                                                 'contract',
-                                                ts.factory.createPropertyAccessExpression(
-                                                    ts.factory.createIdentifier(tableName),
-                                                    ts.factory.createIdentifier('contract')
+                                                ts.factory.createCallExpression(
+                                                    ts.factory.createPropertyAccessExpression(
+                                                        ts.factory.createIdentifier('Contract'),
+                                                        ts.factory.createIdentifier('from')
+                                                    ),
+                                                    undefined,
+                                                    [
+                                                        ts.factory.createObjectLiteralExpression([
+                                                            ts.factory.createPropertyAssignment(
+                                                                'name',
+                                                                ts.factory.createStringLiteral(
+                                                                    contractName
+                                                                )
+                                                            ),
+                                                            ts.factory.createPropertyAssignment(
+                                                                'client',
+                                                                ts.factory.createIdentifier(
+                                                                    'client'
+                                                                )
+                                                            ),
+                                                        ]),
+                                                    ]
                                                 )
                                             ),
                                             ts.factory.createPropertyAssignment(
@@ -161,10 +155,6 @@ export function generateTableClass(contractName, namespaceName, table, abi) {
                                                 ts.factory.createStringLiteral(
                                                     tableName.toLowerCase()
                                                 )
-                                            ),
-                                            ts.factory.createPropertyAssignment(
-                                                'client',
-                                                ts.factory.createIdentifier('client')
                                             ),
                                             ts.factory.createPropertyAssignment(
                                                 'rowType',

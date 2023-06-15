@@ -113,7 +113,6 @@ export class Contract {
             return new Table({
                 contract: this,
                 name: table.name,
-                client: this.client!,
             })
         })
     }

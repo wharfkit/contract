@@ -16,7 +16,6 @@ interface FieldToIndex {
 interface TableParams<TableRow = any> {
     contract: Contract
     name: NameType
-    client: APIClient
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
 }
@@ -49,7 +48,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `rowType`: (optional) Custom row type.
      *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      */
-    constructor({contract, name, client, rowType, fieldToIndex}: TableParams<TableRow>) {
+    constructor({contract, name, rowType, fieldToIndex}: TableParams<TableRow>) {
         this.name = Name.from(name)
         this.rowType = rowType
         this.fieldToIndex = fieldToIndex

@@ -64,7 +64,6 @@ export class _RewardsGm extends Contract {
 export namespace _RewardsGm {
     export namespace tables {
         export class config {
-            static contract = Contract.from({name: 'rewards.gm'})
             static fieldToIndex = {}
             static where(
                 queryParams: _RewardsGm.types.ConfigWhereQueryParams,
@@ -72,9 +71,8 @@ export namespace _RewardsGm {
                 client: APIClient
             ): TableCursor<_RewardsGm.types.Config> {
                 const configTable = Table.from({
-                    contract: config.contract,
+                    contract: Contract.from({name: 'rewards.gm', client: client}),
                     name: 'config',
-                    client: client,
                     rowType: _RewardsGm.types.Config,
                     fieldToIndex: config.fieldToIndex,
                 })
@@ -85,9 +83,8 @@ export namespace _RewardsGm {
                 client: APIClient
             ): Promise<_RewardsGm.types.Config> {
                 const configTable = Table.from({
-                    contract: config.contract,
+                    contract: Contract.from({name: 'rewards.gm', client: client}),
                     name: 'config',
-                    client: client,
                     rowType: _RewardsGm.types.Config,
                     fieldToIndex: config.fieldToIndex,
                 })
@@ -95,9 +92,8 @@ export namespace _RewardsGm {
             }
             static first(limit: number, client: APIClient): TableCursor<_RewardsGm.types.Config> {
                 const configTable = Table.from({
-                    contract: config.contract,
+                    contract: Contract.from({name: 'rewards.gm', client: client}),
                     name: 'config',
-                    client: client,
                     rowType: _RewardsGm.types.Config,
                     fieldToIndex: config.fieldToIndex,
                 })
@@ -105,7 +101,6 @@ export namespace _RewardsGm {
             }
         }
         export class users {
-            static contract = Contract.from({name: 'rewards.gm'})
             static fieldToIndex = {}
             static where(
                 queryParams: _RewardsGm.types.UsersWhereQueryParams,
@@ -113,9 +108,8 @@ export namespace _RewardsGm {
                 client: APIClient
             ): TableCursor<_RewardsGm.types.User_row> {
                 const usersTable = Table.from({
-                    contract: users.contract,
+                    contract: Contract.from({name: 'rewards.gm', client: client}),
                     name: 'users',
-                    client: client,
                     rowType: _RewardsGm.types.User_row,
                     fieldToIndex: users.fieldToIndex,
                 })
@@ -126,9 +120,8 @@ export namespace _RewardsGm {
                 client: APIClient
             ): Promise<_RewardsGm.types.User_row> {
                 const usersTable = Table.from({
-                    contract: users.contract,
+                    contract: Contract.from({name: 'rewards.gm', client: client}),
                     name: 'users',
-                    client: client,
                     rowType: _RewardsGm.types.User_row,
                     fieldToIndex: users.fieldToIndex,
                 })
@@ -136,9 +129,8 @@ export namespace _RewardsGm {
             }
             static first(limit: number, client: APIClient): TableCursor<_RewardsGm.types.User_row> {
                 const usersTable = Table.from({
-                    contract: users.contract,
+                    contract: Contract.from({name: 'rewards.gm', client: client}),
                     name: 'users',
-                    client: client,
                     rowType: _RewardsGm.types.User_row,
                     fieldToIndex: users.fieldToIndex,
                 })

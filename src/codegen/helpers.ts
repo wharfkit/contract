@@ -175,9 +175,7 @@ export function generateField(
             : decorators,
         ts.factory.createIdentifier(fieldName), // Fixed: Use field.name as the identifier
         undefined, // questionToken
-        ts.factory.createTypeReferenceNode(
-            cleanupType(cleanupParamWrapperName(field.type), namespace, structNames)
-        ), // Fixed: Use field.type as the type reference
+        ts.factory.createTypeReferenceNode(findInternalType(field.type, namespace, structNames)), // Fixed: Use field.type as the type reference
         undefined // initializer
     )
 }
@@ -205,55 +203,71 @@ export function getFieldTypesFromAbi(abi: any): {structName: string; fields: Fie
 
 const EOSIO_CORE_TYPES = [
     'Asset',
+    'Checksum256',
+    'Float64',
     'Name',
-    'UInt8',
+    'TimePoint',
+    'TimePointSec',
+    'Uint128',
     'UInt16',
     'UInt32',
     'UInt64',
-    'Uint128',
-    'Checksum256',
-    'TimePointSec',
+    'UInt8',
 ]
 
-export function cleanupParam(type: ABI.ResolvedType): string {
-    for (const coreType of EOSIO_CORE_TYPES) {
-        if (type.name.split('_').join('') === coreType.toLowerCase()) {
-            return `${coreType}Type`
-        }
-    }
-
-    return type.name
-}
-
-export function cleanupParamWrapperName(type: string): string {
+export function findCoreClass(type: string): string | undefined {
     for (const coreType of EOSIO_CORE_TYPES) {
         if (type.split('_').join('') === coreType.toLowerCase()) {
             return coreType
         }
     }
+}
 
-    return capitalize(type)
+export function findCoreType(type: string): string | undefined {
+    const coreType = findCoreClass(type)
+
+    if (coreType) {
+        return `${coreType}Type`
+    }
+}
+
+export function findInternalType(type: string, namespace: string, structNames: string[]): string {
+    const cleanedUpTypeString = removeDecorators(type)
+
+    if (structNames.includes(cleanedUpTypeString.toLowerCase())) {
+        return `${namespace}.${capitalize(cleanedUpTypeString)}`
+    } else {
+        return findCoreClass(cleanedUpTypeString) || capitalize(cleanedUpTypeString)
+    }
+}
+
+export function findExternalType(type: string): string {
+    const cleanedUpTypeString = removeDecorators(type)
+
+    return findCoreType(cleanedUpTypeString) || capitalize(cleanedUpTypeString)
 }
 
 const decorators = ['?', '[]']
-export function cleanupType(type: string, namespace: string, structNames: string[]): string {
-    let typeWithoutDecorator
+function removeDecorators(type: string) {
     for (const decorator of decorators) {
         if (type.includes(decorator)) {
-            typeWithoutDecorator = type.replace(decorator, '')
+            type = type.replace(decorator, '')
+            break
         }
     }
-    if (structNames.includes((typeWithoutDecorator || type).toLowerCase())) {
-        return `${namespace}.${capitalize(type)}`
-    } else {
-        return type
-    }
+
+    return type
+}
+
+interface InterfaceFieldType {
+    name: string
+    type: ABI.ResolvedType
 }
 
 export function generateInterface(
     interfaceName: string,
     isExport = false,
-    members: ts.TypeElement[] = []
+    members: ts.TypeElement[]
 ): ts.InterfaceDeclaration {
     const modifiers = isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : []
 
@@ -262,29 +276,6 @@ export function generateInterface(
         ts.factory.createIdentifier(interfaceName),
         undefined, // typeParameters
         [], // heritageClauses
-        members // members
-    )
-}
-
-export function generateParams(key: string): ts.PropertySignature {
-    return ts.factory.createPropertySignature(
-        undefined, // modifiers
-        key, // name
-        undefined, // questionToken
-        ts.factory.createTypeLiteralNode([
-            // type
-            ts.factory.createPropertySignature(
-                undefined,
-                'from',
-                undefined,
-                ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
-            ),
-            ts.factory.createPropertySignature(
-                undefined,
-                'to',
-                undefined,
-                ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
-            ),
-        ])
+        members
     )
 }

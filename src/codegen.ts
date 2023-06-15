@@ -19,11 +19,16 @@ export async function codegen(contractName, abi) {
 
     const importCoreStatement = generateImportStatement(
         [
-            'Struct',
-            'Name',
-            'NameType',
+            'APIClient',
             'Asset',
             'AssetType',
+            'Checksum256',
+            'Name',
+            'NameType',
+            'Session',
+            'Struct',
+            'TimePointSec',
+            'TransactResult',
             'UInt16',
             'UInt16Type',
             'UInt32',
@@ -32,26 +37,31 @@ export async function codegen(contractName, abi) {
             'UInt64Type',
             'UInt8',
             'UInt8Type',
-            'TransactResult',
-            'APIClient',
-            'Checksum256',
-            'TimePointSec',
         ],
         '@wharfkit/session'
     )
     const importContractStatement = generateImportStatement(
-        ['Contract', 'Table', 'TableCursor'],
-        '@wharfkit/contract'
+        ['Contract', 'Table', 'TableCursor', 'GetTableRowsOptions'],
+        '../src/index'
     )
 
-    const classDeclaration = generateContractClass(ABI.from(abi), namespaceName)
+    const {classDeclaration, interfaces: actionsInterfaces} = generateContractClass(
+        ABI.from(abi),
+        namespaceName
+    )
 
     const tableClasses: ts.ClassDeclaration[] = []
     const tableInterfaces: ts.InterfaceDeclaration[] = []
 
     abi.tables.forEach((table) => {
-        tableClasses.push(generateTableClass(namespaceName, table, abi))
-        // tableInterfaces.push(generateInterface(namespaceName, table, abi, true))
+        const {classDeclaration, interfaces} = generateTableClass(
+            contractName,
+            namespaceName,
+            table,
+            abi
+        )
+        tableClasses.push(classDeclaration)
+        tableInterfaces.push(...interfaces)
     })
 
     // Generate tables namespace
@@ -84,7 +94,11 @@ export async function codegen(contractName, abi) {
 
     // Generate types namespace
     const typesDeclaration = generateNamespace(namespaceName, [
-        generateNamespace('types', [...tableInterfaces, ...structDeclarations]),
+        generateNamespace('types', [
+            ...actionsInterfaces,
+            ...tableInterfaces,
+            ...structDeclarations,
+        ]),
     ])
 
     const sourceFile = ts.factory.createSourceFile(

@@ -6,7 +6,8 @@ import {
     getFieldTypesFromAbi,
     generateField,
     generateStruct,
-    generateInterface,
+    EOSIO_CORE_CLASSES,
+    EOSIO_CORE_TYPES,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateContractClass} from './codegen/contract'
@@ -20,23 +21,11 @@ export async function codegen(contractName, abi) {
     const importCoreStatement = generateImportStatement(
         [
             'APIClient',
-            'Asset',
-            'AssetType',
-            'Checksum256',
-            'Name',
-            'NameType',
             'Session',
             'Struct',
-            'TimePointSec',
             'TransactResult',
-            'UInt16',
-            'UInt16Type',
-            'UInt32',
-            'UInt32Type',
-            'UInt64',
-            'UInt64Type',
-            'UInt8',
-            'UInt8Type',
+            ...EOSIO_CORE_CLASSES,
+            ...EOSIO_CORE_TYPES,
         ],
         '@wharfkit/session'
     )

@@ -3,6 +3,33 @@ import * as ts from 'typescript'
 
 import {capitalize} from '../utils'
 
+export const EOSIO_CORE_CLASSES = [
+    'Asset',
+    'Checksum256',
+    'Float64',
+    'Name',
+    'TimePoint',
+    'TimePointSec',
+    'UInt128',
+    'UInt16',
+    'UInt32',
+    'UInt64',
+    'UInt8',
+]
+
+export const EOSIO_CORE_TYPES = [
+    'AssetType',
+    'Checksum256Type',
+    'Float64Type',
+    'NameType',
+    'TimePointType',
+    'UInt128Type',
+    'UInt16Type',
+    'UInt32Type',
+    'UInt64Type',
+    'UInt8Type',
+]
+
 interface FieldType {
     name: string
     type: string
@@ -201,22 +228,8 @@ export function getFieldTypesFromAbi(abi: any): {structName: string; fields: Fie
     return structTypes
 }
 
-const EOSIO_CORE_TYPES = [
-    'Asset',
-    'Checksum256',
-    'Float64',
-    'Name',
-    'TimePoint',
-    'TimePointSec',
-    'Uint128',
-    'UInt16',
-    'UInt32',
-    'UInt64',
-    'UInt8',
-]
-
 export function findCoreClass(type: string): string | undefined {
-    for (const coreType of EOSIO_CORE_TYPES) {
+    for (const coreType of EOSIO_CORE_CLASSES) {
         if (type.split('_').join('') === coreType.toLowerCase()) {
             return coreType
         }

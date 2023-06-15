@@ -11,6 +11,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
     const members: ts.ClassElement[] = []
     const rowType = `${namespaceName}.types.${capitalize(struct.name)}`
 
+<<<<<<< HEAD
     const tableInstance = Table.from({
         name: tableName,
         contract: Contract.from({
@@ -24,6 +25,8 @@ export async function generateTableClass(contractName, namespaceName, table, abi
     })
     const fieldToIndexMapping = await tableInstance.getFieldToIndex()
 
+=======
+>>>>>>> b6b7ac2 (chore: added unit tests for generated rewards.gm contract)
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(
         undefined,

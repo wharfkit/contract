@@ -111,7 +111,7 @@ export class Contract {
 
         return abi.tables.map((table) => {
             return new Table({
-                contract: this.account,
+                contract: this,
                 name: table.name,
                 client: this.client!,
             })

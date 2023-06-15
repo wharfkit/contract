@@ -1,5 +1,5 @@
 import {ABI, ABISerializableConstructor, APIClient, Name, NameType, UInt64} from '@wharfkit/session'
-import {Contract} from '../contract'
+import type {Contract} from '../contract'
 import {TableCursor} from './table-cursor'
 
 interface QueryParams {
@@ -13,7 +13,7 @@ interface FieldToIndex {
     }
 }
 interface TableParams<TableRow = any> {
-    contract: NameType
+    contract: Contract
     name: NameType
     client: APIClient
     rowType?: TableRow
@@ -52,7 +52,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         this.name = Name.from(name)
         this.rowType = rowType
         this.fieldToIndex = fieldToIndex
-        this.contract = Contract.from({name: contract, client})
+        this.contract = contract
     }
 
     /**

@@ -1,5 +1,4 @@
 import {ABI} from '@greymass/eosio'
-import assert from 'assert'
 import * as ts from 'typescript'
 
 import {
@@ -12,7 +11,6 @@ import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateContractClass} from './codegen/contract'
 import {generateTableClass} from './codegen/table'
 
-const file = ts.createSourceFile('codegen.ts', '', 7)
 const printer = ts.createPrinter()
 
 export async function codegen(contractName, abi) {
@@ -29,11 +27,17 @@ export async function codegen(contractName, abi) {
             'UInt32Type',
             'UInt64',
             'UInt64Type',
+            'UInt8',
+            'UInt8Type',
             'TransactResult',
+            'APIClient',
         ],
         '@wharfkit/session'
     )
-    const importContractStatement = generateImportStatement(['Contract'], '@wharfkit/contract')
+    const importContractStatement = generateImportStatement(
+        ['Contract', 'Table', 'TableCursor'],
+        '@wharfkit/contract'
+    )
 
     const classDeclaration = generateContractClass(ABI.from(abi), namespaceName)
 
@@ -45,8 +49,13 @@ export async function codegen(contractName, abi) {
         const structName = table.name
         console.log({tableName: structName})
 
-        tableClasses.push(generateTableClass(table, abi))
+        tableClasses.push(generateTableClass(namespaceName, table, abi))
     })
+
+    // Generate tables namespace
+    const tableNamespace = generateNamespace(namespaceName, [
+        generateNamespace('tables', tableClasses),
+    ])
 
     // Extract fields from the ABI
     const structs = getFieldTypesFromAbi(abi)
@@ -63,23 +72,21 @@ export async function codegen(contractName, abi) {
             structMembers.push(generateField(field, true))
         }
 
-        // console.log({name: struct.structName})
-
         structDeclarations.push(generateStruct(struct.structName, true, structMembers))
     }
 
-    // Add your custom namespace and export namespace
-    const exportNamespace = generateNamespace('types', structDeclarations)
-
-    const typesDeclaration = generateNamespace(namespaceName, [exportNamespace])
+    // Generate types namespace
+    const typesDeclaration = generateNamespace(namespaceName, [
+        generateNamespace('types', structDeclarations),
+    ])
 
     const sourceFile = ts.factory.createSourceFile(
         [
             importContractStatement,
             importCoreStatement,
-            ...tableClasses,
-            // classDeclaration,
-            // typesDeclaration,
+            tableNamespace,
+            classDeclaration,
+            typesDeclaration,
         ],
         ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
         ts.NodeFlags.None

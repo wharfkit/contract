@@ -1,6 +1,6 @@
 import {assert} from 'chai'
 
-import {Table} from '$lib'
+import {Table, Contract} from '$lib'
 
 import {makeClient} from '../utils/mock-client'
 
@@ -13,7 +13,7 @@ suite('Table', () => {
 
     setup(async function () {
         nameBidTable = new Table({
-            contract: 'eosio',
+            contract: Contract.from({name: 'decentiumorg'}),
             name: 'namebids',
             client: mockClient,
         })
@@ -25,7 +25,7 @@ suite('Table', () => {
         })
 
         decentiumTrendingTable = new Table({
-            contract: 'decentiumorg',
+            contract: Contract.from({name: 'decentiumorg'}),
             name: 'trending',
             client: mockClient,
         })

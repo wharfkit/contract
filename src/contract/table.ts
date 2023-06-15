@@ -1,5 +1,6 @@
 import {ABI, ABISerializableConstructor, APIClient, Name, NameType, UInt64} from '@wharfkit/session'
 import type {Contract} from '../contract'
+import {indexPositionInWords} from '../utils'
 import {TableCursor} from './table-cursor'
 
 interface QueryParams {
@@ -205,7 +206,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         for (let i = 0; i < table.key_names.length; i++) {
             fieldToIndex[table.key_names[i]] = {
                 type: table.key_types[i],
-                index_position: indexPosition(i),
+                index_position: indexPositionInWords(i),
             }
         }
 
@@ -220,19 +221,4 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         }
         return this.contract.getAbi()
     }
-}
-
-function indexPosition(index: number): string {
-    return [
-        'primary',
-        'secondary',
-        'tertiary',
-        'fourth',
-        'fifth',
-        'sixth',
-        'seventh',
-        'eighth',
-        'ninth',
-        'tenth',
-    ][index]
 }

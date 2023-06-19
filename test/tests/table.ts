@@ -128,6 +128,17 @@ suite('Table', () => {
                 const firstBatch = await tableCursor.all()
                 assert.equal(firstBatch.length, 52)
             })
+
+            test('should fetch all table rows recursively', async () => {
+                const table = new Table({
+                    contract: 'eosio',
+                    name: 'namebids',
+                    client: mockClient,
+                })
+                const tableCursor = await table.first(10000)
+                const firstBatch = await tableCursor.all()
+                assert.equal(firstBatch.length, 10000)
+            })
         })
     })
 })

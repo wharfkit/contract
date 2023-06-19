@@ -106,7 +106,7 @@ export class TableCursor<TableRow> {
 
         const {rows, next_key} = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
-            limit: Math.min(this.tableParams.limit - this.rowsCount, 50),
+            limit: Math.min(this.tableParams.limit - this.rowsCount, 10000),
             lower_bound: lower_bound ? lower_bound : undefined,
             upper_bound: upper_bound ? upper_bound : undefined,
             index_position: indexPosition,

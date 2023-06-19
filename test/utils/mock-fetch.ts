@@ -42,23 +42,23 @@ export async function mockFetch(path, params) {
     if (process.env['MOCK']) {
         const response = await fetch(path, params)
         const cloned = await response.clone()
-        const json = cloned.json()
-
-        await writeFile(
-            filename,
-            JSON.stringify(
-                {
-                    request: {
-                        path,
-                        params,
+        cloned.json().then((json) =>
+            writeFile(
+                filename,
+                JSON.stringify(
+                    {
+                        request: {
+                            path,
+                            params,
+                        },
+                        headers: Object.fromEntries(response.headers.entries()),
+                        status: response.status,
+                        json,
+                        text: JSON.stringify(json),
                     },
-                    headers: Object.fromEntries(response.headers.entries()),
-                    status: response.status,
-                    json,
-                    text: JSON.stringify(json),
-                },
-                undefined,
-                4
+                    undefined,
+                    4
+                )
             )
         )
         return response

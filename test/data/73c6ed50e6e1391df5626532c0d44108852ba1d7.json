@@ -13,7 +13,7 @@
         "connection": "close",
         "content-length": "39",
         "content-type": "application/json",
-        "date": "Mon, 19 Jun 2023 18:10:22 GMT",
+        "date": "Mon, 19 Jun 2023 18:18:02 GMT",
         "host": "eos.greymass.com",
         "server": "nginx",
         "x-cached": "MISS"

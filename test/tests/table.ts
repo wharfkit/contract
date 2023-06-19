@@ -136,8 +136,8 @@ suite('Table', () => {
                     client: mockClient,
                 })
                 const tableCursor = await table.first(10000)
-                const firstBatch = await tableCursor.all()
-                assert.equal(firstBatch.length, 10000)
+                const allRows = await tableCursor.all()
+                assert.equal(allRows.length, 10000)
             })
         })
     })

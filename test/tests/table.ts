@@ -135,9 +135,15 @@ suite('Table', () => {
                     name: 'namebids',
                     client: mockClient,
                 })
+                const cursor = table.first(10000)
+                const allRequestedRows = await cursor.all()
+                assert.equal(allRequestedRows.length, 10000)
+            })
+
+            test('should stop if requesting more than exists', async () => {
                 const tableCursor = mockTable.first(10000)
                 const firstBatch = await tableCursor.all()
-                assert.equal(firstBatch.length, 52)
+                assert.equal(firstBatch.length, 239)
             })
         })
     })

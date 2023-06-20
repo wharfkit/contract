@@ -65,9 +65,9 @@ suite('Table', () => {
 
         suite('next', () => {
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = mockTable.where({id: {from: 5, to: 1000}}, {limit: 60})
-                assert.equal((await tableCursor.next()).length, 50)
-                assert.equal((await tableCursor.next()).length, 10)
+                const tableCursor = mockTable.where({id: {from: 5, to: 1000}}, {limit: 10000})
+                assert.equal((await tableCursor.next()).length, 235)
+                assert.equal((await tableCursor.next()).length, 0)
             })
         })
     })
@@ -114,11 +114,11 @@ suite('Table', () => {
                 )
             })
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = mockTable.first(52)
+                const tableCursor = mockTable.first(250)
                 const firstBatch = await tableCursor.next()
-                assert.equal(firstBatch.length, 50)
+                assert.equal(firstBatch.length, 239)
                 const secondBatch = await tableCursor.next()
-                assert.equal(secondBatch.length, 2)
+                assert.equal(secondBatch.length, 0)
             })
         })
 

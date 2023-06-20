@@ -114,7 +114,7 @@ export class TableCursor<TableRow> {
 
         this.next_key = next_key
 
-        if (!next_key || this.rowsCount === this.tableParams.limit) {
+        if (!next_key || rows.length === 0 || this.rowsCount === this.tableParams.limit) {
             this.endReached = true
         }
 

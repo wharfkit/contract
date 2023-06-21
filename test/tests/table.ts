@@ -134,7 +134,15 @@ suite('Table', () => {
 
         suite('all', () => {
             test('should fetch all table rows recursively', async () => {
+<<<<<<< HEAD
                 const cursor = nameBidTable.first(10000)
+=======
+                const table = new Table({
+                    contract: Contract.from({name: 'eosio', client: mockClient}),
+                    name: 'namebids',
+                })
+                const cursor = table.first(10000)
+>>>>>>> cfc8151 (chore: updated requests data)
                 const allRequestedRows = await cursor.all()
                 assert.equal(allRequestedRows.length, 10000)
             })

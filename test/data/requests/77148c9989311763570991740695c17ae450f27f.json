@@ -1,0 +1,39 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"table\":\"namebids\",\"limit\":100000,\"code\":\"decentiumorg\",\"index_position\":\"primary\",\"scope\":\"decentiumorg\",\"key_type\":\"name\",\"json\":true}"
+        }
+    },
+    "headers": {
+        "access-control-allow-headers": "X-Requested-With,Accept,Content-Type,Origin",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-origin": "*",
+        "connection": "close",
+        "content-length": "292",
+        "content-type": "application/json",
+        "date": "Wed, 21 Jun 2023 23:15:10 GMT",
+        "server": "nginx",
+        "x-cached": "MISS"
+    },
+    "status": 500,
+    "json": {
+        "code": 500,
+        "message": "Internal Service Error",
+        "error": {
+            "code": 3060003,
+            "name": "contract_table_query_exception",
+            "what": "Contract Table Query Exception",
+            "details": [
+                {
+                    "message": "Table namebids is not specified in the ABI",
+                    "file": "chain_plugin.cpp",
+                    "line_number": 1676,
+                    "method": "get_table_type"
+                }
+            ]
+        }
+    },
+    "text": "{\"code\":500,\"message\":\"Internal Service Error\",\"error\":{\"code\":3060003,\"name\":\"contract_table_query_exception\",\"what\":\"Contract Table Query Exception\",\"details\":[{\"message\":\"Table namebids is not specified in the ABI\",\"file\":\"chain_plugin.cpp\",\"line_number\":1676,\"method\":\"get_table_type\"}]}}"
+}

@@ -26,39 +26,58 @@ import {
     UInt64Type,
     UInt8Type,
 } from '@wharfkit/session'
-export class _RewardsGm extends Contract {
-    adduser(
-        adduserParams: _RewardsGm.types.AdduserParams,
-        session: Session
-    ): Promise<TransactResult> {
-        return this.call('adduser', _RewardsGm.types.Adduser.from(adduserParams), session)
-    }
-    claim(claimParams: _RewardsGm.types.ClaimParams, session: Session): Promise<TransactResult> {
-        return this.call('claim', _RewardsGm.types.Claim.from(claimParams), session)
-    }
-    configure(
-        configureParams: _RewardsGm.types.ConfigureParams,
-        session: Session
-    ): Promise<TransactResult> {
-        return this.call('configure', _RewardsGm.types.Configure.from(configureParams), session)
-    }
-    deluser(
-        deluserParams: _RewardsGm.types.DeluserParams,
-        session: Session
-    ): Promise<TransactResult> {
-        return this.call('deluser', _RewardsGm.types.Deluser.from(deluserParams), session)
-    }
-    receipt(
-        receiptParams: _RewardsGm.types.ReceiptParams,
-        session: Session
-    ): Promise<TransactResult> {
-        return this.call('receipt', _RewardsGm.types.Receipt.from(receiptParams), session)
-    }
-    updateuser(
-        updateuserParams: _RewardsGm.types.UpdateuserParams,
-        session: Session
-    ): Promise<TransactResult> {
-        return this.call('updateuser', _RewardsGm.types.Updateuser.from(updateuserParams), session)
+export namespace _RewardsGm {
+    export namespace actions {
+        export function adduser(
+            adduserParams: _RewardsGm.types.AdduserParams,
+            session: Session
+        ): Promise<TransactResult> {
+            const contract = Contract.from({name: 'rewards.gm'})
+            return contract.call('adduser', _RewardsGm.types.Adduser.from(adduserParams), session)
+        }
+        export function claim(
+            claimParams: _RewardsGm.types.ClaimParams,
+            session: Session
+        ): Promise<TransactResult> {
+            const contract = Contract.from({name: 'rewards.gm'})
+            return contract.call('claim', _RewardsGm.types.Claim.from(claimParams), session)
+        }
+        export function configure(
+            configureParams: _RewardsGm.types.ConfigureParams,
+            session: Session
+        ): Promise<TransactResult> {
+            const contract = Contract.from({name: 'rewards.gm'})
+            return contract.call(
+                'configure',
+                _RewardsGm.types.Configure.from(configureParams),
+                session
+            )
+        }
+        export function deluser(
+            deluserParams: _RewardsGm.types.DeluserParams,
+            session: Session
+        ): Promise<TransactResult> {
+            const contract = Contract.from({name: 'rewards.gm'})
+            return contract.call('deluser', _RewardsGm.types.Deluser.from(deluserParams), session)
+        }
+        export function receipt(
+            receiptParams: _RewardsGm.types.ReceiptParams,
+            session: Session
+        ): Promise<TransactResult> {
+            const contract = Contract.from({name: 'rewards.gm'})
+            return contract.call('receipt', _RewardsGm.types.Receipt.from(receiptParams), session)
+        }
+        export function updateuser(
+            updateuserParams: _RewardsGm.types.UpdateuserParams,
+            session: Session
+        ): Promise<TransactResult> {
+            const contract = Contract.from({name: 'rewards.gm'})
+            return contract.call(
+                'updateuser',
+                _RewardsGm.types.Updateuser.from(updateuserParams),
+                session
+            )
+        }
     }
 }
 export namespace _RewardsGm {

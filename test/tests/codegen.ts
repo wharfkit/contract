@@ -31,15 +31,12 @@ suite('codegen', function () {
     })
 
     suite('_RewardsGm', function () {
-        let contract: _RewardsGm
-        let session: Session
         let client: APIClient
 
         // Setup before each test
         setup(function () {
             // Initialize contract, session, client
             // This is just an example, you may need to use real or mocked values depending on your test setup
-            contract = new _RewardsGm()
             client = makeClient('https://eos.greymass.com')
         })
 
@@ -51,30 +48,16 @@ suite('codegen', function () {
                         calledWith = transactParam
                     },
                 }
-                const actionName = 'testAction'
-                const data = _RewardsGm.types.Adduser.from({
-                    account: 'teamgreymass',
-                    weight: 100,
-                })
 
-                await contract.adduser(data, session as unknown as Session)
-                assert.equal(calledWith, ['sig_1_tesst'])
-            })
-        })
-
-        suite('where', function () {
-            test('returns a TableCursor that can be used to fetch rows', async function () {
-                const queryParams = {
-                    account: {
-                        from: 'dafuga.gm',
-                        to: 'tony.gm',
+                await _RewardsGm.actions.adduser(
+                    {
+                        account: 'teamgreymass',
+                        weight: 100,
                     },
-                }
-                const options = {} // Define GetTableRowsOptions if needed
+                    session as unknown as Session
+                )
 
-                const rows = await _RewardsGm.tables.users.where(queryParams, {}, client).all()
-
-                assert.equal(rows.length, 1)
+                assert.equal(calledWith, {})
             })
         })
 

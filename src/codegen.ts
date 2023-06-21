@@ -10,7 +10,7 @@ import {
     EOSIO_CORE_TYPES,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
-import {generateContractClass} from './codegen/contract'
+import {generateActions} from './codegen/actions'
 import {generateTableClass} from './codegen/table'
 
 const printer = ts.createPrinter()
@@ -34,10 +34,16 @@ export async function codegen(contractName, abi) {
         '../src/index'
     )
 
-    const {classDeclaration, interfaces: actionsInterfaces} = generateContractClass(
-        ABI.from(abi),
-        namespaceName
+    const {methods: actionMethods, interfaces: actionsInterfaces} = generateActions(
+        contractName,
+        namespaceName,
+        ABI.from(abi)
     )
+
+    // Generate actions namespace
+    const actionsNamespace = generateNamespace(namespaceName, [
+        generateNamespace('actions', actionMethods),
+    ])
 
     const tableClasses: ts.ClassDeclaration[] = []
     const tableInterfaces: ts.InterfaceDeclaration[] = []
@@ -87,7 +93,7 @@ export async function codegen(contractName, abi) {
         [
             importContractStatement,
             importCoreStatement,
-            classDeclaration,
+            actionsNamespace,
             tableNamespace,
             typesDeclaration,
         ],

@@ -10,7 +10,7 @@ import {
 } from './helpers'
 import {pascalCase, capitalize} from '../utils'
 
-export function generateContractClass(abi: ABI, namespaceName: string) {
+export function generateActions(contractName: string, namespaceName: string, abi: ABI) {
     const structs: Map<string, ts.ClassDeclaration> = new Map()
     const coreImports: Set<string> = new Set()
 
@@ -83,7 +83,7 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
         structs.set(abiType.name, structClass)
     }
 
-    const members: ts.ClassElement[] = []
+    const members: ts.FunctionDeclaration[] = []
     const interfaces: ts.InterfaceDeclaration[] = []
 
     // add a method for each action
@@ -111,12 +111,12 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
             generateInterface(`${capitalize(actionName)}Params`, true, interfaceMembers)
         )
 
-        const actionMethod = ts.factory.createMethodDeclaration(
-            undefined, // decorators
-            undefined, // asterisk token
+        const actionMethod = ts.factory.createFunctionDeclaration(
+            undefined,
+            [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            undefined,
             actionNameIdentifier, // name
             undefined, // question token
-            undefined, // type parameters
             [
                 ts.factory.createParameterDeclaration(
                     undefined, // decorators
@@ -142,10 +142,41 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
             ]), // type
             ts.factory.createBlock(
                 [
+                    ts.factory.createVariableStatement(
+                        undefined,
+                        ts.factory.createVariableDeclarationList(
+                            [
+                                ts.factory.createVariableDeclaration(
+                                    'contract',
+                                    undefined,
+                                    undefined,
+                                    ts.factory.createCallExpression(
+                                        ts.factory.createPropertyAccessExpression(
+                                            ts.factory.createIdentifier('Contract'),
+                                            ts.factory.createIdentifier('from')
+                                        ),
+                                        undefined,
+                                        [
+                                            ts.factory.createObjectLiteralExpression(
+                                                [
+                                                    ts.factory.createPropertyAssignment(
+                                                        'name',
+                                                        ts.factory.createStringLiteral(contractName)
+                                                    ),
+                                                ],
+                                                false
+                                            ),
+                                        ]
+                                    )
+                                ),
+                            ],
+                            ts.NodeFlags.Const
+                        )
+                    ),
                     ts.factory.createReturnStatement(
                         ts.factory.createCallExpression(
                             ts.factory.createPropertyAccessExpression(
-                                ts.factory.createThis(),
+                                ts.factory.createIdentifier('contract'),
                                 ts.factory.createIdentifier('call')
                             ),
                             undefined,
@@ -177,11 +208,6 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
         )
         members.push(actionMethod)
     }
-    // build out contract class with actions
-    const classDeclaration = generateClassDeclaration(namespaceName, members, {
-        parent: 'Contract',
-        export: true,
-    })
 
-    return {classDeclaration, interfaces}
+    return {methods: members, interfaces}
 }

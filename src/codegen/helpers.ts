@@ -182,7 +182,7 @@ export function generateField(
     field: FieldType,
     isExport = false,
     namespace: string,
-    structNames: string[]
+    abi: ABI.Def
 ): ts.PropertyDeclaration {
     const fieldName = field.name.toLowerCase()
 
@@ -202,8 +202,24 @@ export function generateField(
             : decorators,
         ts.factory.createIdentifier(fieldName), // Fixed: Use field.name as the identifier
         undefined, // questionToken
-        ts.factory.createTypeReferenceNode(findInternalType(field.type, namespace, structNames)), // Fixed: Use field.type as the type reference
+        ts.factory.createTypeReferenceNode(findInternalType(field.type, namespace, abi)), // Fixed: Use field.type as the type reference
         undefined // initializer
+    )
+}
+
+export function generateInterface(
+    interfaceName: string,
+    isExport = false,
+    members: ts.TypeElement[]
+): ts.InterfaceDeclaration {
+    const modifiers = isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : []
+
+    return ts.factory.createInterfaceDeclaration(
+        modifiers,
+        ts.factory.createIdentifier(interfaceName),
+        undefined, // typeParameters
+        [], // heritageClauses
+        members
     )
 }
 
@@ -244,20 +260,64 @@ export function findCoreType(type: string): string | undefined {
     }
 }
 
-export function findInternalType(type: string, namespace: string, structNames: string[]): string {
-    const cleanedUpTypeString = removeDecorators(type)
+export function findInternalType(type: string, namespace: string, abi: ABI.Def): string {
+    let typeString = removeDecorators(type)
 
-    if (structNames.includes(cleanedUpTypeString.toLowerCase())) {
-        return `${namespace}.${capitalize(cleanedUpTypeString)}`
+    const relevantAbitype = findAbiType(typeString, abi)
+
+    if (relevantAbitype) {
+        typeString = relevantAbitype
+    }
+
+    const variantType = findVariantType(typeString, namespace, abi)
+
+    if (variantType) {
+        typeString = variantType
+    }
+
+    return formatInternalType(typeString, namespace, abi)
+}
+
+function formatInternalType(typeString: string, namespace: string, abi: ABI.Def): string {
+    const structNames = abi.structs.map((struct) => struct.name.toLowerCase())
+
+    if (structNames.includes(typeString.toLowerCase())) {
+        return `${namespace}.${capitalize(typeString)}`
     } else {
-        return findCoreClass(cleanedUpTypeString) || capitalize(cleanedUpTypeString)
+        return findCoreClass(typeString) || capitalize(typeString)
     }
 }
 
-export function findExternalType(type: string): string {
-    const cleanedUpTypeString = removeDecorators(type)
+function findVariantType(typeString: string, namespace: string, abi: ABI.Def): string | undefined {
+    const abiVariant = abi.variants.find(
+        (variant) => variant.name.toLowerCase() === typeString.toLowerCase()
+    )
 
-    return findCoreType(cleanedUpTypeString) || capitalize(cleanedUpTypeString)
+    if (!abiVariant) {
+        return
+    }
+
+    return abiVariant.types
+        .map((variant) => formatInternalType(variant, namespace, abi))
+        .join(' | ')
+}
+
+function findAbiType(typeString: string, abi: ABI.Def): string | undefined {
+    return abi.types.find(
+        (abiType) => abiType.new_type_name.toLowerCase() === typeString.toLowerCase()
+    )?.type
+}
+
+export function findExternalType(type: string, abi: ABI.Def): string {
+    let typeString = removeDecorators(type)
+
+    const relevantAbitype = findAbiType(typeString, abi)
+
+    if (relevantAbitype) {
+        typeString = relevantAbitype
+    }
+
+    return findCoreType(typeString) || capitalize(typeString)
 }
 
 const decorators = ['?', '[]']
@@ -270,25 +330,4 @@ function removeDecorators(type: string) {
     }
 
     return type
-}
-
-interface InterfaceFieldType {
-    name: string
-    type: ABI.ResolvedType
-}
-
-export function generateInterface(
-    interfaceName: string,
-    isExport = false,
-    members: ts.TypeElement[]
-): ts.InterfaceDeclaration {
-    const modifiers = isExport ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)] : []
-
-    return ts.factory.createInterfaceDeclaration(
-        modifiers,
-        ts.factory.createIdentifier(interfaceName),
-        undefined, // typeParameters
-        [], // heritageClauses
-        members
-    )
 }

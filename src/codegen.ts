@@ -68,14 +68,7 @@ export async function codegen(contractName, abi) {
         const structMembers: ts.ClassElement[] = []
 
         for (const field of struct.fields) {
-            structMembers.push(
-                generateField(
-                    field,
-                    true,
-                    `${namespaceName}.types`,
-                    structs.map((struct) => struct.structName)
-                )
-            )
+            structMembers.push(generateField(field, true, `${namespaceName}.types`, abi))
         }
 
         structDeclarations.push(generateStruct(struct.structName, true, structMembers))

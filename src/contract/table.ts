@@ -170,7 +170,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             table: this.name,
             code: this.contract.account,
             type: this.rowType,
-            limit: 10000,
+            limit: 1000000,
         }
 
         return new TableCursor({

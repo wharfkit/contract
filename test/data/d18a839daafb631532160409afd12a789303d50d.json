@@ -13,11 +13,11 @@
         "connection": "close",
         "content-encoding": "gzip",
         "content-type": "application/json",
-        "date": "Wed, 21 Jun 2023 19:25:04 GMT",
+        "date": "Wed, 21 Jun 2023 23:02:21 GMT",
         "host": "eos.greymass.com",
         "server": "nginx",
         "transfer-encoding": "chunked",
-        "x-cached": "EXPIRED"
+        "x-cached": "MISS"
     },
     "status": 200,
     "json": {

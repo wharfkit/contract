@@ -3,7 +3,7 @@
         "path": "https://eos.greymass.com/v1/chain/get_table_rows",
         "params": {
             "method": "POST",
-            "body": "{\"table\":\"trending\",\"limit\":250,\"code\":\"decentiumorg\",\"index_position\":\"primary\",\"scope\":\"decentiumorg\",\"key_type\":\"name\",\"json\":true}"
+            "body": "{\"table\":\"trending\",\"code\":\"decentiumorg\",\"limit\":1000000,\"index_position\":\"primary\",\"scope\":\"decentiumorg\",\"key_type\":\"name\",\"json\":true}"
         }
     },
     "headers": {
@@ -13,7 +13,7 @@
         "connection": "close",
         "content-encoding": "gzip",
         "content-type": "application/json",
-        "date": "Wed, 21 Jun 2023 19:25:04 GMT",
+        "date": "Wed, 21 Jun 2023 23:02:23 GMT",
         "host": "eos.greymass.com",
         "server": "nginx",
         "transfer-encoding": "chunked",

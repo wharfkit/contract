@@ -101,12 +101,17 @@ export class TableCursor<TableRow> {
         if (this.indexPositionField) {
             const fieldToIndexMapping = await this.table.getFieldToIndex()
 
+            if (!fieldToIndexMapping[this.indexPositionField]) {
+                console.log({fieldToIndexMapping, indexPositionField: this.indexPositionField})
+                throw new Error(`Field ${this.indexPositionField} is not a valid index.`)
+            }
+
             indexPosition = fieldToIndexMapping[this.indexPositionField].index_position
         }
 
         const {rows, next_key} = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
-            limit: Math.min(this.tableParams.limit - this.rowsCount, 10000),
+            limit: Math.min(this.tableParams.limit - this.rowsCount, 1000000),
             lower_bound: lower_bound ? lower_bound : undefined,
             upper_bound: upper_bound ? upper_bound : undefined,
             index_position: indexPosition,

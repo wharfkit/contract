@@ -221,13 +221,13 @@ export function generateTableClass(contractName, namespaceName, table, abi) {
                             undefined,
                             'from',
                             undefined,
-                            ts.factory.createTypeReferenceNode(findExternalType(field.type))
+                            ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
                         ),
                         ts.factory.createPropertySignature(
                             undefined,
                             'to',
                             undefined,
-                            ts.factory.createTypeReferenceNode(findExternalType(field.type))
+                            ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
                         ),
                     ])
                 )
@@ -241,7 +241,7 @@ export function generateTableClass(contractName, namespaceName, table, abi) {
                     undefined,
                     field.name,
                     ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-                    ts.factory.createTypeReferenceNode(findExternalType(field.type))
+                    ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
                 )
             )
         ),

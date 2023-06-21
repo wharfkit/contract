@@ -16,8 +16,6 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
 
     const resolved = abi.resolveAll()
 
-    const structNames = abi.structs.map((struct) => struct.name)
-
     function getTypeIdentifier(type: ABI.ResolvedType) {
         if (type.fields) {
             return getStructDeclaration(type).name!
@@ -105,7 +103,7 @@ export function generateContractClass(abi: ABI, namespaceName: string) {
                 undefined,
                 field.name,
                 undefined,
-                ts.factory.createTypeReferenceNode(findExternalType(field.type.name))
+                ts.factory.createTypeReferenceNode(findExternalType(field.type.name, abi))
             )
         )
 

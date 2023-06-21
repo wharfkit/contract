@@ -79,7 +79,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
      *  May include:
      *  - `limit`: Maximum number of rows to return.
-     * @returns {Promise<TableCursor<TableRow>>} Promise resolving to a `TableCursor` of the filtered table rows.
+     * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
     where(queryParams: QueryParams, {limit = 10}: GetTableRowsOptions = {}): TableCursor<TableRow> {
         const {from, to} = queryParams[Object.keys(queryParams)[0]]
@@ -145,7 +145,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
      *  May include:
      *  - `limit`: Maximum number of rows to return.
-     * @returns {Promise<TableCursor<TableRow>>} Promise resolving to a `TableCursor` of the table rows.
+     * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
     first(limit: number): TableCursor<TableRow> {
         const tableRowsParams = {
@@ -159,6 +159,32 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             table: this,
             tableParams: tableRowsParams,
         })
+    }
+
+    /**
+     * Returns a cursor to get every single rows on the table.
+     * @returns {TableCursor<TableRow>}
+     */
+    cursor(): TableCursor<TableRow> {
+        const tableRowsParams = {
+            table: this.name,
+            code: this.contract.account,
+            type: this.rowType,
+            limit: 10000,
+        }
+
+        return new TableCursor({
+            table: this,
+            tableParams: tableRowsParams,
+        })
+    }
+
+    /**
+     * Returns all the rows from the table.
+     * @returns {Promise<TableRow[]>} Promise resolving to an array of table rows.
+     */
+    async all(): Promise<TableRow[]> {
+        return this.cursor().all()
     }
 
     async getFieldToIndex() {

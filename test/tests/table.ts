@@ -147,4 +147,33 @@ suite('Table', () => {
             })
         })
     })
+
+    suite('cursor', () => {
+        suite('all', () => {
+            test('should return every single row in a table', async () => {
+                const tableCursor = mockTable.cursor()
+                assert.equal((await tableCursor.all()).length, 239)
+            })
+        })
+
+        test('next', async () => {
+            test('should allow you to fetch as many rows as possible with one request', async () => {
+                const tableCursor = mockTable.cursor()
+                assert.equal((await tableCursor.next()).length, 239)
+            })
+
+            test('should allow you to fetch more rows after first request', async () => {
+                const tableCursor = mockTable.cursor()
+                assert.equal((await tableCursor.next()).length, 239)
+                assert.equal((await tableCursor.next()).length, 0)
+            })
+        })
+    })
+
+    suite('all', () => {
+        test('should return every single row in a table', async () => {
+            const tableRows = await mockTable.all()
+            assert.equal(tableRows.length, 239)
+        })
+    })
 })

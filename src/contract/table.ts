@@ -82,6 +82,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
     where(queryParams: QueryParams, {limit = 10}: GetTableRowsOptions = {}): TableCursor<TableRow> {
+        this.checkIsValidQuery(Object.keys(queryParams)[0])
         const {from, to} = queryParams[Object.keys(queryParams)[0]]
 
         const lower_bound = from && (typeof from === 'string' ? Name.from(from) : UInt64.from(from))
@@ -116,6 +117,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
 
         const fieldName = Object.keys(queryParams)[0]
         const entryFieldValue = Object.values(queryParams)[0] as string
+
+        this.checkIsValidQuery(fieldName)
 
         const tableRowsParams = {
             table: this.name,
@@ -185,6 +188,12 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     async all(): Promise<TableRow[]> {
         return this.cursor().all()
+    }
+
+    checkIsValidQuery(fieldName: string) {
+        if (this.fieldToIndex && !this.fieldToIndex[fieldName]) {
+            throw new Error(`Field ${fieldName} is not an index.`)
+        }
     }
 
     async getFieldToIndex() {

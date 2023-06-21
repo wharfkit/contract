@@ -12,7 +12,7 @@ suite('Table', () => {
 
     setup(async function () {
         nameBidTable = new Table({
-            contract: Contract.from({name: 'decentiumorg', client: mockClient}),
+            contract: Contract.from({name: 'eosio', client: mockClient}),
             name: 'namebids',
         })
 
@@ -126,23 +126,15 @@ suite('Table', () => {
             test('should allow you to fetch more rows after first request', async () => {
                 const tableCursor = nameBidTable.first(100000)
                 const firstBatch = await tableCursor.next()
-                assert.equal(firstBatch.length, 3975)
+                assert.equal(firstBatch.length, 3866)
                 const secondBatch = await tableCursor.next()
-                assert.equal(secondBatch.length, 3542)
+                assert.equal(secondBatch.length, 3761)
             })
         })
 
         suite('all', () => {
             test('should fetch all table rows recursively', async () => {
-<<<<<<< HEAD
                 const cursor = nameBidTable.first(10000)
-=======
-                const table = new Table({
-                    contract: Contract.from({name: 'eosio', client: mockClient}),
-                    name: 'namebids',
-                })
-                const cursor = table.first(10000)
->>>>>>> cfc8151 (chore: updated requests data)
                 const allRequestedRows = await cursor.all()
                 assert.equal(allRequestedRows.length, 10000)
             })

@@ -75,6 +75,16 @@ suite('codegen', function () {
             })
         })
 
+        suite('where', function () {
+            test('returns a cursor that lets you filter rows', async function () {
+                const rows = await _RewardsGm.tables.users
+                    .where({account: {from: 'dafuga.gm', to: 'tony.gm'}}, client)
+                    .all()
+
+                assert.equal(rows.length, 1)
+            })
+        })
+
         suite('find', function () {
             test('returns a single row', async function () {
                 const row = await _RewardsGm.tables.users.find({account: 'dafuga.gm'}, client)
@@ -86,6 +96,22 @@ suite('codegen', function () {
         suite('first', function () {
             test('returns a cursor that lets you fetch the first n rows', async function () {
                 const rows = await _RewardsGm.tables.users.first(10, client).all()
+
+                assert.equal(rows.length, 10)
+            })
+        })
+
+        suite('cursor', function () {
+            test('returns a cursor that allows you to fetch all rows', async function () {
+                const rows = await _RewardsGm.tables.users.cursor().all()
+
+                assert.equal(rows.length, 10)
+            })
+        })
+
+        suite('all', function () {
+            test('returns all rows', async function () {
+                const rows = await _RewardsGm.tables.users.all(client)
 
                 assert.equal(rows.length, 10)
             })

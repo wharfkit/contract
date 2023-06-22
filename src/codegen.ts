@@ -49,14 +49,12 @@ export async function codegen(contractName, abi) {
     const tableInterfaces: ts.InterfaceDeclaration[] = []
 
     for (const table of abi.tables) {
-        console.log({table})
         const {classDeclaration, interfaces} = await generateTableClass(
             contractName,
             namespaceName,
             table,
             abi
         )
-        console.log({classDeclaration, interfaces})
         tableClasses.push(classDeclaration)
         tableInterfaces.push(...interfaces)
     }

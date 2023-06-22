@@ -44,6 +44,14 @@ export namespace _RewardsGm {
                 const configTable = Table.from({ contract: Contract.from({ name: "rewards.gm", client: client }), name: "config", rowType: _RewardsGm.types.Config, fieldToIndex: config.fieldToIndex });
                 return configTable.first(limit);
             }
+            static cursor(client: APIClient): TableCursor<_RewardsGm.types.Config> {
+                const configTable = Table.from({ contract: Contract.from({ name: "rewards.gm", client: client }), name: "config", rowType: _RewardsGm.types.Config, fieldToIndex: config.fieldToIndex });
+                return configTable.cursor();
+            }
+            static all(client: APIClient): Promise<_RewardsGm.types.Config[]> {
+                const configTable = Table.from({ contract: Contract.from({ name: "rewards.gm", client: client }), name: "config", rowType: _RewardsGm.types.Config, fieldToIndex: config.fieldToIndex });
+                return configTable.all();
+            }
         }
         export class users {
             static fieldToIndex = { account: { type: "account", index_position: "primary" } };
@@ -58,6 +66,14 @@ export namespace _RewardsGm {
             static first(limit: number, client: APIClient): TableCursor<_RewardsGm.types.User_row> {
                 const usersTable = Table.from({ contract: Contract.from({ name: "rewards.gm", client: client }), name: "users", rowType: _RewardsGm.types.User_row, fieldToIndex: users.fieldToIndex });
                 return usersTable.first(limit);
+            }
+            static cursor(client: APIClient): TableCursor<_RewardsGm.types.User_row> {
+                const usersTable = Table.from({ contract: Contract.from({ name: "rewards.gm", client: client }), name: "users", rowType: _RewardsGm.types.User_row, fieldToIndex: users.fieldToIndex });
+                return usersTable.cursor();
+            }
+            static all(client: APIClient): Promise<_RewardsGm.types.User_row[]> {
+                const usersTable = Table.from({ contract: Contract.from({ name: "rewards.gm", client: client }), name: "users", rowType: _RewardsGm.types.User_row, fieldToIndex: users.fieldToIndex });
+                return usersTable.all();
             }
         }
     }

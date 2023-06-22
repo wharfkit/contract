@@ -106,7 +106,6 @@ export class TableCursor<TableRow> {
             const fieldToIndexMapping = await this.table.getFieldToIndex()
 
             if (!fieldToIndexMapping[this.indexPositionField]) {
-                // console.log({fieldToIndexMapping, indexPositionField: this.indexPositionField})
                 throw new Error(`Field ${this.indexPositionField} is not a valid index.`)
             }
 

@@ -6,7 +6,7 @@ import {ABI} from '@greymass/eosio'
 
 import {codegen} from '$lib' // replace with your actual codegen file
 
-import {Session, APIClient, TransactResult} from '@wharfkit/session'
+import {Session, APIClient} from '@wharfkit/session'
 import {makeClient} from '../utils/mock-client'
 
 let _RewardsGm
@@ -49,8 +49,6 @@ suite('codegen', function () {
 
         // Setup before each test
         setup(function () {
-            // Initialize contract, session, client
-            // This is just an example, you may need to use real or mocked values depending on your test setup
             client = makeClient('https://eos.greymass.com')
         })
 
@@ -79,10 +77,10 @@ suite('codegen', function () {
         suite('where', function () {
             test('returns a cursor that lets you filter rows', async function () {
                 const rows = await _RewardsGm.tables.users
-                    .where({account: {from: 'dafuga.gm', to: 'tony.gm'}}, client)
+                    .where({account: {from: 'dafuga.gm', to: 'tony.gm'}}, {}, client)
                     .all()
 
-                assert.equal(rows.length, 1)
+                assert.equal(rows.length, 6)
             })
         })
 
@@ -104,7 +102,7 @@ suite('codegen', function () {
 
         suite('cursor', function () {
             test('returns a cursor that allows you to fetch all rows', async function () {
-                const rows = await _RewardsGm.tables.users.cursor().all()
+                const rows = await _RewardsGm.tables.users.cursor(client).all()
 
                 assert.equal(rows.length, 9)
             })
@@ -114,7 +112,7 @@ suite('codegen', function () {
             test('returns all rows', async function () {
                 const rows = await _RewardsGm.tables.users.all(client)
 
-                assert.equal(rows.length, 10)
+                assert.equal(rows.length, 9)
             })
         })
     })

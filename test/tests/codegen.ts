@@ -41,7 +41,7 @@ suite('codegen', function () {
 
     teardown(() => {
         // Remove the 'test/tmp' directory and its contents after each run
-        // fs.rmSync('test/tmp', {recursive: true, force: true})
+        fs.rmSync('test/tmp', {recursive: true, force: true})
     })
 
     suite('_RewardsGm', function () {

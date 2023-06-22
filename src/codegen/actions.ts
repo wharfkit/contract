@@ -3,12 +3,12 @@ import assert from 'assert'
 import * as ts from 'typescript'
 
 import {
-    generateClassDeclaration,
-    generatePropertyDeclarationForField,
-    generateInterface,
     findExternalType,
+    generateClassDeclaration,
+    generateInterface,
+    generatePropertyDeclarationForField,
 } from './helpers'
-import {pascalCase, capitalize} from '../utils'
+import {capitalize, pascalCase} from '../utils'
 
 export function generateActions(contractName: string, namespaceName: string, abi: ABI) {
     const structs: Map<string, ts.ClassDeclaration> = new Map()

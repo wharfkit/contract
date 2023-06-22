@@ -48,16 +48,18 @@ export async function codegen(contractName, abi) {
     const tableClasses: ts.ClassDeclaration[] = []
     const tableInterfaces: ts.InterfaceDeclaration[] = []
 
-    abi.tables.forEach((table) => {
-        const {classDeclaration, interfaces} = generateTableClass(
+    for (const table of abi.tables) {
+        console.log({table})
+        const {classDeclaration, interfaces} = await generateTableClass(
             contractName,
             namespaceName,
             table,
             abi
         )
+        console.log({classDeclaration, interfaces})
         tableClasses.push(classDeclaration)
         tableInterfaces.push(...interfaces)
-    })
+    }
 
     // Generate tables namespace
     const tableNamespace = generateNamespace(namespaceName, [

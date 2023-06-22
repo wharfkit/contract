@@ -13,6 +13,7 @@ import {Table} from './contract/table'
 export interface ContractOptions {
     name: NameType
     client?: APIClient
+    abi?: ABI.Def
 }
 
 /**
@@ -39,9 +40,9 @@ export class Contract {
     constructor(options: ContractOptions) {
         this.account = Name.from(options.name)
 
-        if (options?.client) {
-            this.client = options.client
-        }
+        this.client = options.client
+
+        this.abi = options.abi
     }
 
     /**

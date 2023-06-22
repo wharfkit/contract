@@ -201,9 +201,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             return this.fieldToIndex
         }
 
-        const abi = await this.getAbi()
-
-        const table = abi.tables.find((table) => this.name.equals(table.name))
+        const table = await this.getAbiTable()
 
         if (!table) {
             throw new Error(`Table ${this.name} not found in ABI`)
@@ -218,6 +216,21 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             }
         }
 
+        if (Object.values(fieldToIndex).length === 0) {
+            const tableStruct = await this.getTableStruct()
+            console.log('tableStruct', tableStruct)
+            const firstFieldName = tableStruct?.fields[0].name
+
+            if (!firstFieldName) {
+                throw new Error(`Table ${this.name} has no fields.`)
+            }
+
+            fieldToIndex[firstFieldName] = {
+                type: firstFieldName,
+                index_position: 'primary',
+            }
+        }
+
         return fieldToIndex
     }
 
@@ -228,5 +241,16 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             )
         }
         return this.contract.getAbi()
+    }
+
+    private async getAbiTable(): Promise<ABI.Table | undefined> {
+        const abi = await this.getAbi()
+        return abi.tables.find((table) => this.name.equals(table.name))
+    }
+
+    private async getTableStruct(): Promise<ABI.Struct | undefined> {
+        const abi = await this.getAbi()
+        const table = await this.getAbiTable()
+        return abi.structs.find((struct) => table?.type === String(struct.name))
     }
 }

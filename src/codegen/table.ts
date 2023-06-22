@@ -1,14 +1,20 @@
 import * as ts from 'typescript'
 
+import {Table, Contract} from '../index'
 import {findExternalType, generateClassDeclaration, generateInterface} from './helpers'
-import {indexPositionInWords, capitalize} from '../utils'
+import {capitalize} from '../utils'
 
-export function generateTableClass(contractName, namespaceName, table, abi) {
+export async function generateTableClass(contractName, namespaceName, table, abi) {
     const tableName = table.name
     const struct = abi.structs.find((struct) => struct.name === table.type)
-    const structNames = abi.structs.map((struct) => struct.name)
     const members: ts.ClassElement[] = []
     const rowType = `${namespaceName}.types.${capitalize(struct.name)}`
+
+    const tableInstance = Table.from({
+        name: tableName,
+        contract: Contract.from({name: contractName, abi}),
+    })
+    const fieldToIndexMapping = await tableInstance.getFieldToIndex()
 
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(
@@ -18,17 +24,19 @@ export function generateTableClass(contractName, namespaceName, table, abi) {
         undefined,
         undefined,
         ts.factory.createObjectLiteralExpression(
-            table.key_names.map((keyName, index) => {
+            Object.keys(fieldToIndexMapping).map((keyName, index) => {
                 return ts.factory.createPropertyAssignment(
                     keyName,
                     ts.factory.createObjectLiteralExpression([
                         ts.factory.createPropertyAssignment(
                             'type',
-                            ts.factory.createStringLiteral(table.key_types[index])
+                            ts.factory.createStringLiteral(fieldToIndexMapping[keyName].type)
                         ),
                         ts.factory.createPropertyAssignment(
                             'index_position',
-                            ts.factory.createStringLiteral(indexPositionInWords(index) || 'primary')
+                            ts.factory.createStringLiteral(
+                                fieldToIndexMapping[keyName].index_position
+                            )
                         ),
                     ])
                 )

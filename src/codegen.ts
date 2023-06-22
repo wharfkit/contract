@@ -31,7 +31,7 @@ export async function codegen(contractName, abi) {
     )
     const importContractStatement = generateImportStatement(
         ['Contract', 'Table', 'TableCursor', 'GetTableRowsOptions'],
-        '../src/index'
+        '@wharfkit/contract'
     )
 
     const {methods: actionMethods, interfaces: actionsInterfaces} = generateActions(

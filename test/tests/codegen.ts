@@ -1,33 +1,47 @@
 import * as fs from 'fs'
+import * as path from 'path'
+
 import {assert} from 'chai'
 import {ABI} from '@greymass/eosio'
 
 import {codegen} from '$lib' // replace with your actual codegen file
 
-import {_RewardsGm} from '../codegen-samples/rewards.gm' // replace with your actual file import
 import {Session, APIClient, TransactResult} from '@wharfkit/session'
 import {makeClient} from '../utils/mock-client'
 
+let _RewardsGm
+
 suite('codegen', function () {
-    suite('generator', function () {
-        test('should match the content of the file', async function () {
-            const contractName = 'yourContractName' // replace with your contract name
+    setup(async () => {
+        const contractName = 'rewards.gm' // replace with your contract name
 
-            // Read the ABI from a JSON file
-            const abiJson = fs.readFileSync('test/data/abis/rewards.gm.json', {encoding: 'utf8'})
-            const abi = new ABI(JSON.parse(abiJson))
+        // Read the ABI from a JSON file
+        const abiJson = fs.readFileSync(`test/data/abis/${contractName}.json`, {encoding: 'utf8'})
+        const abi = new ABI(JSON.parse(abiJson))
 
-            // Generate the code
-            const generatedCode = await codegen(contractName, abi)
+        // Generate the code
+        let generatedCode = await codegen(contractName, abi)
 
-            // Read the content of the file
-            const fileContent = fs.readFileSync('test/codegen-samples/rewards.gm.ts', {
-                encoding: 'utf8',
-            })
+        generatedCode = generatedCode.replace('@wharfkit/contract', '../../src/index')
 
-            // Compare the generated code with the content of the file
-            assert.equal(generatedCode, fileContent)
+        // Create the tmp directory under the test directory if it does not exist
+        if (!fs.existsSync('test/tmp')) {
+            fs.mkdirSync('test/tmp')
+        }
+
+        // Write the generated code to a file in the tmp directory
+        fs.writeFileSync(path.join('test/tmp', `${contractName}.ts`), generatedCode, {
+            encoding: 'utf8',
         })
+
+        const contractPackage = await import(`../tmp/${contractName}`)
+
+        _RewardsGm = contractPackage._RewardsGm
+    })
+
+    teardown(() => {
+        // Remove the 'test/tmp' directory and its contents after each run
+        fs.rmSync('test/tmp', {recursive: true, force: true})
     })
 
     suite('_RewardsGm', function () {

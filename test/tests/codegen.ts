@@ -41,7 +41,7 @@ suite('codegen', function () {
 
     teardown(() => {
         // Remove the 'test/tmp' directory and its contents after each run
-        fs.rmSync('test/tmp', {recursive: true, force: true})
+        // fs.rmSync('test/tmp', {recursive: true, force: true})
     })
 
     suite('_RewardsGm', function () {
@@ -71,7 +71,8 @@ suite('codegen', function () {
                     session as unknown as Session
                 )
 
-                assert.equal(calledWith, {})
+                assert.equal(String(calledWith.action.account), 'rewards.gm')
+                assert.equal(String(calledWith.action.name), 'adduser')
             })
         })
 

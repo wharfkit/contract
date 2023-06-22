@@ -1,6 +1,6 @@
 import * as ts from 'typescript'
 
-import {Table, Contract} from '../index'
+import {Contract, Table} from '../index'
 import {findExternalType, generateClassDeclaration, generateInterface} from './helpers'
 import {capitalize} from '../utils'
 
@@ -24,7 +24,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
         undefined,
         undefined,
         ts.factory.createObjectLiteralExpression(
-            Object.keys(fieldToIndexMapping).map((keyName, index) => {
+            Object.keys(fieldToIndexMapping).map((keyName) => {
                 return ts.factory.createPropertyAssignment(
                     keyName,
                     ts.factory.createObjectLiteralExpression([

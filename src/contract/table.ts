@@ -1,4 +1,4 @@
-import {ABI, ABISerializableConstructor, APIClient, Name, NameType, UInt64} from '@wharfkit/session'
+import {ABI, ABISerializableConstructor, Name, NameType, UInt64} from '@wharfkit/session'
 import type {Contract} from '../contract'
 import {indexPositionInWords} from '../utils'
 import {TableCursor} from './table-cursor'

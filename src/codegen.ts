@@ -2,12 +2,12 @@ import {ABI} from '@greymass/eosio'
 import * as ts from 'typescript'
 
 import {
-    generateImportStatement,
-    getFieldTypesFromAbi,
-    generateField,
-    generateStruct,
     EOSIO_CORE_CLASSES,
     EOSIO_CORE_TYPES,
+    generateField,
+    generateImportStatement,
+    generateStruct,
+    getFieldTypesFromAbi,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateActions} from './codegen/actions'

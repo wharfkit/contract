@@ -191,7 +191,7 @@ export function generateField(
             ts.factory.createCallExpression(
                 ts.factory.createIdentifier('Struct.field'),
                 undefined,
-                [ts.factory.createStringLiteral(fieldName)]
+                [ts.factory.createStringLiteral(field.type)]
             )
         ),
     ]

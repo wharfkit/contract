@@ -218,7 +218,6 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
 
         if (Object.values(fieldToIndex).length === 0) {
             const tableStruct = await this.getTableStruct()
-            console.log('tableStruct', tableStruct)
             const firstFieldName = tableStruct?.fields[0].name
 
             if (!firstFieldName) {

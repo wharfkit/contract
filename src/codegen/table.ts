@@ -46,7 +46,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
     members.push(fieldToIndex)
 
     // Create 'where', 'find' and 'all' methods
-    ;['where', 'find', 'first'].forEach((method) => {
+    ;['where', 'find', 'first', 'cursor', 'all'].forEach((method) => {
         const parameters: ts.ParameterDeclaration[] = []
         const baseClassParameters: ts.Identifier[] = []
 
@@ -89,7 +89,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
                 )
             )
             baseClassParameters.push(ts.factory.createIdentifier('queryParams'))
-        } else {
+        } else if (method === 'first') {
             parameters.push(
                 ts.factory.createParameterDeclaration(
                     undefined,
@@ -197,6 +197,16 @@ export async function generateTableClass(contractName, namespaceName, table, abi
             true
         )
 
+        let returnedType: string
+
+        if (method === 'find') {
+            returnedType = `Promise<${rowType}>`
+        } else if (method === 'all') {
+            returnedType = `Promise<${rowType}[]>`
+        } else {
+            returnedType = `TableCursor<${rowType}>`
+        }
+
         const methodDeclaration = ts.factory.createMethodDeclaration(
             [ts.factory.createModifier(ts.SyntaxKind.StaticKeyword)], // decorators
             undefined, // modifiers
@@ -204,9 +214,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
             undefined,
             undefined, // questionToken
             parameters, // parameters
-            ts.factory.createTypeReferenceNode(
-                method === 'find' ? `Promise<${rowType}>` : `TableCursor<${rowType}>`
-            ), // return type
+            ts.factory.createTypeReferenceNode(returnedType), // return type
             methodBody
         )
         members.push(methodDeclaration)

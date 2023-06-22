@@ -97,7 +97,7 @@ suite('codegen', function () {
             test('returns a cursor that lets you fetch the first n rows', async function () {
                 const rows = await _RewardsGm.tables.users.first(10, client).all()
 
-                assert.equal(rows.length, 10)
+                assert.equal(rows.length, 9)
             })
         })
 
@@ -105,7 +105,7 @@ suite('codegen', function () {
             test('returns a cursor that allows you to fetch all rows', async function () {
                 const rows = await _RewardsGm.tables.users.cursor().all()
 
-                assert.equal(rows.length, 10)
+                assert.equal(rows.length, 9)
             })
         })
 

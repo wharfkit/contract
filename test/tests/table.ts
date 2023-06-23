@@ -9,11 +9,18 @@ const mockClient = makeClient('https://eos.greymass.com')
 suite('Table', () => {
     let nameBidTable
     let decentiumTrendingTable
+    let producersTable
 
     setup(async function () {
         nameBidTable = new Table({
             contract: 'eosio',
             name: 'namebids',
+            client: mockClient,
+        })
+
+        producersTable = new Table({
+            contract: 'eosio',
+            name: 'producers',
             client: mockClient,
         })
 
@@ -112,6 +119,33 @@ suite('Table', () => {
                     extensions: [],
                 },
                 extensions: [],
+            })
+        })
+        test('should fetch table row correctly with default filtering', async () => {
+            // curl http://eos.greymass.com/v1/chain/get_table_rows -d '{"table":"producers","limit":10,"code":"eosio","scope":"eosio","json":true, "lower_bound": "teamgreymass", "upper_bound": "teamgreymass"}'
+            const row = await producersTable.find({owner: 'teamgreymass'})
+
+            assert.deepEqual(row, {
+                owner: 'teamgreymass',
+                total_votes: '9899236489925054464.00000000000000000',
+                producer_key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
+                is_active: 1,
+                url: 'https://greymass.com',
+                unpaid_blocks: 0,
+                last_claim_time: '2023-06-23T14:57:10.000',
+                location: 124,
+                producer_authority: [
+                    'block_signing_authority_v0',
+                    {
+                        threshold: 1,
+                        keys: [
+                            {
+                                key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
+                                weight: 1,
+                            },
+                        ],
+                    },
+                ],
             })
         })
     })

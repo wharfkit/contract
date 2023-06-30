@@ -1,13 +1,4 @@
-/**
- * Solve for completeness.
- * @param n The number.
- * @param p The problem.
- * @param hard Set to true for super hard problem.
- * @returns The solution.
- */
-export function maths(n: number, p: number, hard = false) {
-    while (hard) {
-        n = n * p
-    }
-    return n ^ p
-}
+export * from './contract'
+export * from './contract/table'
+export * from './contract/table-cursor'
+export * from './codegen'

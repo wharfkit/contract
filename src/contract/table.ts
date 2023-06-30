@@ -7,6 +7,16 @@ interface QueryParams {
     [key: string]: any
 }
 
+interface QueryOptions {
+    index: string
+    scope: NameType
+}
+
+interface WhereQueryOptions extends QueryOptions {
+    from: number | string | UInt64
+    to: number | string | UInt64
+}
+
 interface FieldToIndex {
     [key: string]: {
         type: string
@@ -81,9 +91,11 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    where(queryParams: QueryParams, {limit = 10}: GetTableRowsOptions = {}): TableCursor<TableRow> {
-        this.checkIsValidQuery(Object.keys(queryParams)[0])
-        const {from, to} = queryParams[Object.keys(queryParams)[0]]
+    where(
+        queryOptions: WhereQueryOptions,
+        {limit = 10}: GetTableRowsOptions = {}
+    ): TableCursor<TableRow> {
+        const {from, to} = queryOptions
 
         const lower_bound = from && (typeof from === 'string' ? Name.from(from) : UInt64.from(from))
         const upper_bound = to && (typeof to === 'string' ? Name.from(to) : UInt64.from(to))
@@ -101,7 +113,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         return new TableCursor({
             table: this,
             tableParams: tableRowsParams,
-            indexPositionField: Object.keys(queryParams)[0],
+            indexPositionField: queryOptions.index,
         })
     }
 
@@ -112,13 +124,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
-    async find(queryParams: QueryParams): Promise<TableRow> {
+    async find(query, queryOptions?: QueryOptions): Promise<TableRow> {
         const fieldToIndexMapping = await this.getFieldToIndex()
-
-        const fieldName = Object.keys(queryParams)[0]
-        const entryFieldValue = Object.values(queryParams)[0] as string
-
-        this.checkIsValidQuery(fieldName)
 
         const tableRowsParams = {
             table: this.name,
@@ -126,15 +133,11 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             scope: this.contract.account,
             type: this.rowType,
             limit: 1,
-            lower_bound:
-                typeof entryFieldValue === 'string'
-                    ? Name.from(entryFieldValue)
-                    : UInt64.from(entryFieldValue),
-            upper_bound:
-                typeof entryFieldValue === 'string'
-                    ? Name.from(entryFieldValue)
-                    : UInt64.from(entryFieldValue),
-            index_position: fieldToIndexMapping[fieldName].index_position || 'primary',
+            lower_bound: typeof query === 'string' ? Name.from(query) : UInt64.from(query),
+            upper_bound: typeof query === 'string' ? Name.from(query) : UInt64.from(query),
+            index_position: queryOptions?.index
+                ? fieldToIndexMapping[queryOptions?.index].index_position
+                : 'primary',
         }
 
         const {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
@@ -188,12 +191,6 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     async all(): Promise<TableRow[]> {
         return this.cursor().all()
-    }
-
-    checkIsValidQuery(fieldName: string) {
-        if (this.fieldToIndex && !this.fieldToIndex[fieldName]) {
-            throw new Error(`Field ${fieldName} is not an index.`)
-        }
     }
 
     async getFieldToIndex() {

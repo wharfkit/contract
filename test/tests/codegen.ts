@@ -48,6 +48,10 @@
 //         setup(function () {
 //             client = makeClient('https://eos.greymass.com')
 //         })
+    // teardown(() => {
+    //     // Remove the 'test/tmp' directory and its contents after each run
+    //     // fs.rmSync('test/tmp', {recursive: true, force: true})
+    // })
 
 //         suite('adduser', function () {
 //             test('adduser calls the correct contract action', async function () {

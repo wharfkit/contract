@@ -63,40 +63,38 @@ export async function generateTableClass(contractName, namespaceName, table, abi
                 ts.factory.createParameterDeclaration(
                     undefined,
                     undefined,
-                    ts.factory.createIdentifier('queryParams'),
+                    ts.factory.createIdentifier('query'),
                     undefined,
                     ts.factory.createTypeReferenceNode(
-                        `${namespaceName}.types.${capitalize(tableName)}WhereQueryParams`
+                        `${namespaceName}.types.${capitalize(tableName)}WhereQuery`
                     ),
                     undefined
                 ),
                 ts.factory.createParameterDeclaration(
                     undefined,
                     undefined,
-                    ts.factory.createIdentifier('getTableRowsOptions'),
+                    ts.factory.createIdentifier('queryOptions'),
                     undefined,
-                    ts.factory.createTypeReferenceNode('GetTableRowsOptions'),
+                    ts.factory.createTypeReferenceNode('QueryOptions'),
                     undefined
                 )
             )
             baseClassParameters.push(
-                ts.factory.createIdentifier('queryParams'),
-                ts.factory.createIdentifier('getTableRowsOptions')
+                ts.factory.createIdentifier('query'),
+                ts.factory.createIdentifier('queryOptions')
             )
         } else if (method === 'find') {
             parameters.push(
                 ts.factory.createParameterDeclaration(
                     undefined,
                     undefined,
-                    ts.factory.createIdentifier('queryParams'),
+                    ts.factory.createIdentifier('query'),
                     undefined,
-                    ts.factory.createTypeReferenceNode(
-                        `${namespaceName}.types.${capitalize(tableName)}FindQueryParams`
-                    ),
+                    ts.factory.createTypeReferenceNode('any'),
                     undefined
                 )
             )
-            baseClassParameters.push(ts.factory.createIdentifier('queryParams'))
+            baseClassParameters.push(ts.factory.createIdentifier('query'))
         } else if (method === 'first') {
             parameters.push(
                 ts.factory.createParameterDeclaration(
@@ -232,33 +230,22 @@ export async function generateTableClass(contractName, namespaceName, table, abi
     const classDeclaration = generateClassDeclaration(tableName, members, {export: true})
 
     const interfaces: ts.InterfaceDeclaration[] = [
+        generateInterface(`${capitalize(tableName)}WhereQuery`, true, [
+            ts.factory.createPropertySignature(
+                undefined,
+                'from',
+                ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+                ts.factory.createTypeReferenceNode('any')
+            ),
+            ts.factory.createPropertySignature(
+                undefined,
+                'to',
+                ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+                ts.factory.createTypeReferenceNode('any')
+            ),
+        ]),
         generateInterface(
-            `${capitalize(tableName)}WhereQueryParams`,
-            true,
-            struct.fields.map((field) =>
-                ts.factory.createPropertySignature(
-                    undefined,
-                    field.name,
-                    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-                    ts.factory.createTypeLiteralNode([
-                        ts.factory.createPropertySignature(
-                            undefined,
-                            'from',
-                            undefined,
-                            ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
-                        ),
-                        ts.factory.createPropertySignature(
-                            undefined,
-                            'to',
-                            undefined,
-                            ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
-                        ),
-                    ])
-                )
-            )
-        ),
-        generateInterface(
-            `${capitalize(tableName)}FindQueryParams`,
+            `${capitalize(tableName)}FindQuery`,
             true,
             struct.fields.map((field) =>
                 ts.factory.createPropertySignature(

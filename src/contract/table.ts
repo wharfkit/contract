@@ -3,16 +3,16 @@ import type {Contract} from '../contract'
 import {indexPositionInWords} from '../utils'
 import {TableCursor} from './table-cursor'
 
-interface QueryParams {
-    [key: string]: any
-}
-
 interface QueryOptions {
-    index: string
-    scope: NameType
+    index?: string
+    scope?: NameType
 }
 
 interface WhereQueryOptions extends QueryOptions {
+    limit?: number
+}
+
+interface WhereQuery {
     from: number | string | UInt64
     to: number | string | UInt64
 }
@@ -32,6 +32,7 @@ interface TableParams<TableRow = any> {
 
 export interface GetTableRowsOptions {
     limit?: number
+    scope?: NameType
 }
 
 /**
@@ -92,18 +93,26 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
     where(
-        queryOptions: WhereQueryOptions,
-        {limit = 10}: GetTableRowsOptions = {}
+        query: WhereQuery,
+        {limit = 10, scope = this.contract.account, index}: WhereQueryOptions = {}
     ): TableCursor<TableRow> {
-        const {from, to} = queryOptions
+        const {from, to} = query
 
-        const lower_bound = from && (typeof from === 'string' ? Name.from(from) : UInt64.from(from))
-        const upper_bound = to && (typeof to === 'string' ? Name.from(to) : UInt64.from(to))
+        const lower_bound = from
+            ? typeof from === 'string'
+                ? Name.from(from)
+                : UInt64.from(from)
+            : undefined
+        const upper_bound = to
+            ? typeof to === 'string'
+                ? Name.from(to)
+                : UInt64.from(to)
+            : undefined
 
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
-            scope: this.contract.account,
+            scope,
             type: this.rowType,
             limit,
             lower_bound,
@@ -113,7 +122,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         return new TableCursor({
             table: this,
             tableParams: tableRowsParams,
-            indexPositionField: queryOptions.index,
+            indexPositionField: index,
         })
     }
 

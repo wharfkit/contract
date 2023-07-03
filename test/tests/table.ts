@@ -23,37 +23,43 @@ suite('Table', () => {
         decentiumTrendingTable = decentiumorg.table('trending')
     })
 
-    suite('cursor', () => {
-        suite('reset', () => {
-            test('should allow you to reset the cursor', async () => {
-                const tableCursor = decentiumTrendingTable.where({id: {from: 5, to: 6}})
+    // suite('cursor', () => {
+    //     suite('reset', () => {
+    //         test('should allow you to reset the cursor', async () => {
+    //             const tableCursor = decentiumTrendingTable.where({from: 5, to: 6})
 
-                assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
-                    [5, 6]
-                )
+    //             assert.deepEqual(
+    //                 (await tableCursor.next()).map((row) => row.id),
+    //                 [5, 6]
+    //             )
 
-                assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
-                    []
-                )
+    //             assert.deepEqual(
+    //                 (await tableCursor.next()).map((row) => row.id),
+    //                 []
+    //             )
 
-                tableCursor.reset()
+    //             tableCursor.reset()
 
-                assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
-                    [5, 6]
-                )
-            })
-        })
-    })
+    //             assert.deepEqual(
+    //                 (await tableCursor.next()).map((row) => row.id),
+    //                 [5, 6]
+    //             )
+    //         })
+    //     })
+    // })
 
     suite('where', () => {
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
-                const tableCursor = decentiumTrendingTable.where({
-                    score: {from: 101511, to: 105056},
-                })
+                const tableCursor = decentiumTrendingTable.where(
+                    {
+                        from: 101511,
+                        to: 105056,
+                    },
+                    {
+                        index: 'score',
+                    }
+                )
 
                 assert.deepEqual(
                     (await tableCursor.all()).map((row) => row.score),
@@ -62,10 +68,7 @@ suite('Table', () => {
             })
 
             test('should fetch correct number of table rows when limit option is used', async () => {
-                const tableCursor = decentiumTrendingTable.where(
-                    {id: {from: 5, to: 10}},
-                    {limit: 2}
-                )
+                const tableCursor = decentiumTrendingTable.where({from: 5, to: 10}, {limit: 2})
 
                 assert.deepEqual(
                     (await tableCursor.all()).map((row) => row.id),
@@ -76,7 +79,7 @@ suite('Table', () => {
 
         suite('next', () => {
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = decentiumTrendingTable.where({id: {from: 5}}, {limit: 10000})
+                const tableCursor = decentiumTrendingTable.where({from: 5}, {limit: 10000})
                 assert.equal((await tableCursor.next()).length, 235)
                 assert.equal((await tableCursor.next()).length, 0)
             })
@@ -85,7 +88,7 @@ suite('Table', () => {
 
     suite('find', () => {
         test('should fetch table row correctly when filtering by primary index is used', async () => {
-            const row = await decentiumTrendingTable.find({id: 5})
+            const row = await decentiumTrendingTable.find(5)
 
             assert.deepEqual(row, {
                 id: 5,

@@ -30,7 +30,7 @@ export async function codegen(contractName, abi) {
         '@wharfkit/session'
     )
     const importContractStatement = generateImportStatement(
-        ['Contract', 'Table', 'TableCursor', 'GetTableRowsOptions'],
+        ['Contract', 'Table', 'TableCursor', 'QueryOptions', 'WhereQueryOptions', 'WhereQuery'],
         '@wharfkit/contract'
     )
 
@@ -49,14 +49,8 @@ export async function codegen(contractName, abi) {
     const tableInterfaces: ts.InterfaceDeclaration[] = []
 
     for (const table of abi.tables) {
-        const {classDeclaration, interfaces} = await generateTableClass(
-            contractName,
-            namespaceName,
-            table,
-            abi
-        )
+        const {classDeclaration} = await generateTableClass(contractName, namespaceName, table, abi)
         tableClasses.push(classDeclaration)
-        tableInterfaces.push(...interfaces)
     }
 
     // Generate tables namespace

@@ -1,7 +1,7 @@
 import * as ts from 'typescript'
 
 import {Contract, Table} from '../index'
-import {findExternalType, generateClassDeclaration, generateInterface} from './helpers'
+import {generateClassDeclaration} from './helpers'
 import {capitalize} from '../utils'
 import {APIClient} from '@wharfkit/session'
 
@@ -65,9 +65,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
                     undefined,
                     ts.factory.createIdentifier('query'),
                     undefined,
-                    ts.factory.createTypeReferenceNode(
-                        `${namespaceName}.types.${capitalize(tableName)}WhereQuery`
-                    ),
+                    ts.factory.createTypeReferenceNode('WhereQuery'),
                     undefined
                 ),
                 ts.factory.createParameterDeclaration(
@@ -75,7 +73,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
                     undefined,
                     ts.factory.createIdentifier('queryOptions'),
                     undefined,
-                    ts.factory.createTypeReferenceNode('QueryOptions'),
+                    ts.factory.createTypeReferenceNode('WhereQueryOptions'),
                     undefined
                 )
             )
@@ -91,6 +89,14 @@ export async function generateTableClass(contractName, namespaceName, table, abi
                     ts.factory.createIdentifier('query'),
                     undefined,
                     ts.factory.createTypeReferenceNode('any'),
+                    undefined
+                ),
+                ts.factory.createParameterDeclaration(
+                    undefined,
+                    undefined,
+                    ts.factory.createIdentifier('queryOptions'),
+                    undefined,
+                    ts.factory.createTypeReferenceNode('QueryOptions'),
                     undefined
                 )
             )
@@ -229,34 +235,5 @@ export async function generateTableClass(contractName, namespaceName, table, abi
     // Construct class declaration
     const classDeclaration = generateClassDeclaration(tableName, members, {export: true})
 
-    const interfaces: ts.InterfaceDeclaration[] = [
-        generateInterface(`${capitalize(tableName)}WhereQuery`, true, [
-            ts.factory.createPropertySignature(
-                undefined,
-                'from',
-                ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-                ts.factory.createTypeReferenceNode('any')
-            ),
-            ts.factory.createPropertySignature(
-                undefined,
-                'to',
-                ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-                ts.factory.createTypeReferenceNode('any')
-            ),
-        ]),
-        generateInterface(
-            `${capitalize(tableName)}FindQuery`,
-            true,
-            struct.fields.map((field) =>
-                ts.factory.createPropertySignature(
-                    undefined,
-                    field.name,
-                    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-                    ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
-                )
-            )
-        ),
-    ]
-
-    return {classDeclaration, interfaces}
+    return {classDeclaration}
 }

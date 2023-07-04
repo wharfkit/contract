@@ -3,16 +3,16 @@ import type {Contract} from '../contract'
 import {indexPositionInWords} from '../utils'
 import {TableCursor} from './table-cursor'
 
-interface QueryOptions {
+export interface QueryOptions {
     index?: string
     scope?: NameType
 }
 
-interface WhereQueryOptions extends QueryOptions {
+export interface WhereQueryOptions extends QueryOptions {
     limit?: number
 }
 
-interface WhereQuery {
+export interface WhereQuery {
     from: number | string | UInt64
     to: number | string | UInt64
 }

@@ -23,30 +23,30 @@ suite('Table', () => {
         decentiumTrendingTable = decentiumorg.table('trending')
     })
 
-    // suite('cursor', () => {
-    //     suite('reset', () => {
-    //         test('should allow you to reset the cursor', async () => {
-    //             const tableCursor = decentiumTrendingTable.where({from: 5, to: 6})
+    suite('cursor', () => {
+        suite('reset', () => {
+            test('should allow you to reset the cursor', async () => {
+                const tableCursor = decentiumTrendingTable.where({from: 5, to: 6})
 
-    //             assert.deepEqual(
-    //                 (await tableCursor.next()).map((row) => row.id),
-    //                 [5, 6]
-    //             )
+                assert.deepEqual(
+                    (await tableCursor.next()).map((row) => row.id),
+                    [5, 6]
+                )
 
-    //             assert.deepEqual(
-    //                 (await tableCursor.next()).map((row) => row.id),
-    //                 []
-    //             )
+                assert.deepEqual(
+                    (await tableCursor.next()).map((row) => row.id),
+                    []
+                )
 
-    //             tableCursor.reset()
+                tableCursor.reset()
 
-    //             assert.deepEqual(
-    //                 (await tableCursor.next()).map((row) => row.id),
-    //                 [5, 6]
-    //             )
-    //         })
-    //     })
-    // })
+                assert.deepEqual(
+                    (await tableCursor.next()).map((row) => row.id),
+                    [5, 6]
+                )
+            })
+        })
+    })
 
     suite('where', () => {
         suite('all', () => {

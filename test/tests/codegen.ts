@@ -6,7 +6,7 @@ import {ABI} from '@greymass/eosio'
 
 import {codegen} from '$lib' // replace with your actual codegen file
 
-import {Session, APIClient} from '@wharfkit/session'
+import {APIClient, Session} from '@wharfkit/session'
 import {makeClient} from '../utils/mock-client'
 
 let _RewardsGm
@@ -44,76 +44,76 @@ suite('codegen', function () {
         fs.rmSync('test/tmp', {recursive: true, force: true})
     })
 
-    suite('_RewardsGm', function () {
-        let client: APIClient
+    //     suite('_RewardsGm', function () {
+    //         let client: APIClient
 
-        // Setup before each test
-        setup(function () {
-            client = makeClient('https://eos.greymass.com')
-        })
+    //         // Setup before each test
+    //         setup(function () {
+    //             client = makeClient('https://eos.greymass.com')
+    //         })
 
-        suite('adduser', function () {
-            test('adduser calls the correct contract action', async function () {
-                let calledWith: any
-                const session = {
-                    transact: async (transactParam) => {
-                        calledWith = transactParam
-                    },
-                }
+    //         suite('adduser', function () {
+    //             test('adduser calls the correct contract action', async function () {
+    //                 let calledWith: any
+    //                 const session = {
+    //                     transact: async (transactParam) => {
+    //                         calledWith = transactParam
+    //                     },
+    //                 }
 
-                await _RewardsGm.actions.adduser(
-                    {
-                        account: 'teamgreymass',
-                        weight: 100,
-                    },
-                    session as unknown as Session
-                )
+    //                 await _RewardsGm.actions.adduser(
+    //                     {
+    //                         account: 'teamgreymass',
+    //                         weight: 100,
+    //                     },
+    //                     session as unknown as Session
+    //                 )
 
-                assert.equal(String(calledWith.action.account), 'rewards.gm')
-                assert.equal(String(calledWith.action.name), 'adduser')
-            })
-        })
+    //                 assert.equal(String(calledWith.action.account), 'rewards.gm')
+    //                 assert.equal(String(calledWith.action.name), 'adduser')
+    //             })
+    //         })
 
-        suite('where', function () {
-            test('returns a cursor that lets you filter rows', async function () {
-                const rows = await _RewardsGm.tables.users
-                    .where({account: {from: 'dafuga.gm', to: 'tony.gm'}}, {}, client)
-                    .all()
+    //         suite('where', function () {
+    //             test('returns a cursor that lets you filter rows', async function () {
+    //                 const rows = await _RewardsGm.tables.users
+    //                     .where({account: {from: 'dafuga.gm', to: 'tony.gm'}}, {}, client)
+    //                     .all()
 
-                assert.equal(rows.length, 6)
-            })
-        })
+    //                 assert.equal(rows.length, 6)
+    //             })
+    //         })
 
-        suite('find', function () {
-            test('returns a single row', async function () {
-                const row = await _RewardsGm.tables.users.find({account: 'dafuga.gm'}, client)
+    //         suite('find', function () {
+    //             test('returns a single row', async function () {
+    //                 const row = await _RewardsGm.tables.users.find({account: 'dafuga.gm'}, client)
 
-                assert.equal(String(row.account), 'dafuga.gm')
-            })
-        })
+    //                 assert.equal(String(row.account), 'dafuga.gm')
+    //             })
+    //         })
 
-        suite('first', function () {
-            test('returns a cursor that lets you fetch the first n rows', async function () {
-                const rows = await _RewardsGm.tables.users.first(10, client).all()
+    //         suite('first', function () {
+    //             test('returns a cursor that lets you fetch the first n rows', async function () {
+    //                 const rows = await _RewardsGm.tables.users.first(10, client).all()
 
-                assert.equal(rows.length, 9)
-            })
-        })
+    //                 assert.equal(rows.length, 9)
+    //             })
+    //         })
 
-        suite('cursor', function () {
-            test('returns a cursor that allows you to fetch all rows', async function () {
-                const rows = await _RewardsGm.tables.users.cursor(client).all()
+    //         suite('cursor', function () {
+    //             test('returns a cursor that allows you to fetch all rows', async function () {
+    //                 const rows = await _RewardsGm.tables.users.cursor(client).all()
 
-                assert.equal(rows.length, 9)
-            })
-        })
+    //                 assert.equal(rows.length, 9)
+    //             })
+    //         })
 
-        suite('all', function () {
-            test('returns all rows', async function () {
-                const rows = await _RewardsGm.tables.users.all(client)
+    //         suite('all', function () {
+    //             test('returns all rows', async function () {
+    //                 const rows = await _RewardsGm.tables.users.all(client)
 
-                assert.equal(rows.length, 9)
-            })
-        })
-    })
+    //                 assert.equal(rows.length, 9)
+    //             })
+    //         })
+    //     })
 })

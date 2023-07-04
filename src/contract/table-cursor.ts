@@ -15,7 +15,7 @@ interface TableCursorParams {
  *
  * @typeparam TableRow The type of rows in the table.
  */
-export class TableCursor<TableRow> {
+export class TableCursor {
     private table: Table
     private next_key: Name | UInt64 | undefined
     private tableParams: API.v1.GetTableRowsParams
@@ -74,7 +74,7 @@ export class TableCursor<TableRow> {
      *
      * @returns The new rows.
      */
-    async next(): Promise<TableRow[]> {
+    async next() {
         if (this.endReached) {
             return []
         }
@@ -147,8 +147,8 @@ export class TableCursor<TableRow> {
      *
      * @returns All rows in the cursor query.
      */
-    async all() {
-        const rows: TableRow[] = []
+    async all(): Promise<any[]> {
+        const rows: any[] = []
         for await (const row of this) {
             rows.push(row)
         }

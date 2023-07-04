@@ -13,10 +13,10 @@ interface FieldToIndex {
         index_position: string
     }
 }
-interface TableParams<TableRow = any> {
+interface TableParams {
     contract: Contract
     name: NameType
-    rowType?: TableRow
+    rowType?: ABISerializableConstructor
     fieldToIndex?: FieldToIndex
 }
 
@@ -30,17 +30,17 @@ export interface GetTableRowsOptions {
  *
  * @typeparam TableRow The type of rows in the table.
  */
-export class Table<TableRow extends ABISerializableConstructor = ABISerializableConstructor> {
+export class Table {
     readonly name: Name
     readonly contract: Contract
-    readonly rowType?: TableRow
+    readonly rowType?: ABISerializableConstructor
 
     private fieldToIndex?: any
 
     /**
      * Constructs a new `Table` instance.
      *
-     * @param {TableParams<TableRow>} tableParams - Parameters for the table.
+     * @param {TableParams} tableParams - Parameters for the table.
      * The parameters should include:
      *  - `contract`: Name of the contract that this table is associated with.
      *  - `name`: Name of the table.
@@ -48,7 +48,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `rowType`: (optional) Custom row type.
      *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      */
-    constructor({contract, name, rowType, fieldToIndex}: TableParams<TableRow>) {
+    constructor({contract, name, rowType, fieldToIndex}: TableParams) {
         this.name = Name.from(name)
         this.rowType = rowType
         this.fieldToIndex = fieldToIndex
@@ -79,9 +79,9 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
      *  May include:
      *  - `limit`: Maximum number of rows to return.
-     * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
+     * @returns {TableCursor} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    where(queryParams: QueryParams, {limit = 10}: GetTableRowsOptions = {}): TableCursor<TableRow> {
+    where(queryParams: QueryParams, {limit = 10}: GetTableRowsOptions = {}): TableCursor {
         this.checkIsValidQuery(Object.keys(queryParams)[0])
         const {from, to} = queryParams[Object.keys(queryParams)[0]]
 
@@ -110,9 +110,9 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *
      * @param {QueryParams} queryParams - Query parameters to identify a single row (eg. `{ id: 1 }`).
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
-     * @returns {Promise<TableRow>} Promise resolving to a single table row.
+     * @returns {Promise} Promise resolving to a single table row.
      */
-    async find(queryParams: QueryParams): Promise<TableRow> {
+    async find(queryParams: QueryParams) {
         const fieldToIndexMapping = await this.getFieldToIndex()
 
         const fieldName = Object.keys(queryParams)[0]
@@ -148,9 +148,9 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
      *  May include:
      *  - `limit`: Maximum number of rows to return.
-     * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
+     * @returns {TableCursor} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(limit: number): TableCursor<TableRow> {
+    first(limit: number): TableCursor {
         const tableRowsParams = {
             table: this.name,
             limit,
@@ -166,9 +166,9 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
 
     /**
      * Returns a cursor to get every single rows on the table.
-     * @returns {TableCursor<TableRow>}
+     * @returns {TableCursor}
      */
-    cursor(): TableCursor<TableRow> {
+    cursor(): TableCursor {
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
@@ -186,7 +186,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * Returns all the rows from the table.
      * @returns {Promise<TableRow[]>} Promise resolving to an array of table rows.
      */
-    async all(): Promise<TableRow[]> {
+    async all() {
         return this.cursor().all()
     }
 

@@ -85,7 +85,7 @@ export namespace _EosioToken {
                 queryParams: _EosioToken.types.AccountsWhereQueryParams,
                 getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
-            ): TableCursor<_EosioToken.types.Account> {
+            ): TableCursor {
                 const accountsTable = Table.from({
                     contract: Contract.from({name: 'eosio.token', client: client}),
                     name: 'accounts',
@@ -106,7 +106,7 @@ export namespace _EosioToken {
                 })
                 return accountsTable.find(queryParams)
             }
-            static first(limit: number, client: APIClient): TableCursor<_EosioToken.types.Account> {
+            static first(limit: number, client: APIClient): TableCursor {
                 const accountsTable = Table.from({
                     contract: Contract.from({name: 'eosio.token', client: client}),
                     name: 'accounts',
@@ -115,7 +115,7 @@ export namespace _EosioToken {
                 })
                 return accountsTable.first(limit)
             }
-            static cursor(client: APIClient): TableCursor<_EosioToken.types.Account> {
+            static cursor(client: APIClient): TableCursor {
                 const accountsTable = Table.from({
                     contract: Contract.from({name: 'eosio.token', client: client}),
                     name: 'accounts',
@@ -140,7 +140,7 @@ export namespace _EosioToken {
                 queryParams: _EosioToken.types.StatWhereQueryParams,
                 getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
-            ): TableCursor<_EosioToken.types.Currency_stats> {
+            ): TableCursor {
                 const statTable = Table.from({
                     contract: Contract.from({name: 'eosio.token', client: client}),
                     name: 'stat',
@@ -161,10 +161,7 @@ export namespace _EosioToken {
                 })
                 return statTable.find(queryParams)
             }
-            static first(
-                limit: number,
-                client: APIClient
-            ): TableCursor<_EosioToken.types.Currency_stats> {
+            static first(limit: number, client: APIClient): TableCursor {
                 const statTable = Table.from({
                     contract: Contract.from({name: 'eosio.token', client: client}),
                     name: 'stat',
@@ -173,7 +170,7 @@ export namespace _EosioToken {
                 })
                 return statTable.first(limit)
             }
-            static cursor(client: APIClient): TableCursor<_EosioToken.types.Currency_stats> {
+            static cursor(client: APIClient): TableCursor {
                 const statTable = Table.from({
                     contract: Contract.from({name: 'eosio.token', client: client}),
                     name: 'stat',

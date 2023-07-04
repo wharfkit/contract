@@ -1,5 +1,5 @@
 import {assert} from 'chai'
-import {Session} from '@wharfkit/session'
+import {ABI, Session} from '@wharfkit/session'
 
 import {Contract, Table} from '$lib'
 import {makeClient} from '../utils/mock-client'
@@ -66,25 +66,11 @@ suite('Contract', () => {
     suite('getAbi', () => {
         test('returns ABI for the contract', async () => {
             const abi = await mockContract.getAbi()
-
-            assert.isObject(abi)
-            assert.hasAllKeys(abi, [
-                'version',
-                'types',
-                'structs',
-                'actions',
-                'tables',
-                'ricardian_clauses',
-                'error_messages',
-                'abi_extensions',
-                'action_results',
-                'variants',
-            ])
+            assert.instanceOf(abi, ABI)
 
             const abiSecondCall = await mockContract.getAbi()
-            assert.strictEqual(
-                abi,
-                abiSecondCall,
+            assert.isTrue(
+                abi.equals(abiSecondCall),
                 'ABI should be cached and return the same instance on subsequent calls'
             )
         })

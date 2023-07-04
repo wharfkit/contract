@@ -552,21 +552,21 @@
     "@typescript-eslint/types" "5.41.0"
     eslint-visitor-keys "^3.3.0"
 
-"@wharfkit/mock-data@^1.0.0-beta8":
-  version "1.0.0-beta8"
-  resolved "https://registry.yarnpkg.com/@wharfkit/mock-data/-/mock-data-1.0.0-beta8.tgz#630c97630dbb3bbefdc3399ba8b2e550bd324f1c"
-  integrity sha512-YMPcHZDCdmhB0sG+jGrsE0BfdUlcEs7QQP+xLRp8/GrOAo7dbSJz3bftydlrgRKWbbDkFMYmFZlRtomgTps7vg==
+"@wharfkit/mock-data@^1.0.0-beta9":
+  version "1.0.0-beta9"
+  resolved "https://registry.yarnpkg.com/@wharfkit/mock-data/-/mock-data-1.0.0-beta9.tgz#757ec38f2724e3e866e25a05e0bbffaf8fe4a7ac"
+  integrity sha512-fZnkBeMCep22P2+FTsysjOD4vZ7CmoOShyMLnTjmICZ8FM0VzWEMak2z2XcGbgcFDhLAugcNbMZj1RvbxfFjgA==
   dependencies:
     "@greymass/eosio" "^0.6.10"
-    "@wharfkit/session" "^1.0.0-beta1"
+    "@wharfkit/session" "^1.0.0-beta2"
     "@wharfkit/wallet-plugin-privatekey" "^0.5.0"
     node-fetch "^2.6.1"
     tslib "^2.1.0"
 
-"@wharfkit/session@^1.0.0-beta1":
-  version "1.0.0-beta1"
-  resolved "https://registry.yarnpkg.com/@wharfkit/session/-/session-1.0.0-beta1.tgz#7ef02ee5beb237f4f6a84bd4cd27769468624c6d"
-  integrity sha512-GMYzoMHB/fh7i4N4J31t8k7HTU+Gq3rTlK8gX1D+bkfIAblkT4nIIK0K10p91NyaIwzyw/UQ/5DByojTDyBgPg==
+"@wharfkit/session@^1.0.0-beta2":
+  version "1.0.0-beta2"
+  resolved "https://registry.yarnpkg.com/@wharfkit/session/-/session-1.0.0-beta2.tgz#248db8c2aa907bc9c930303f819e339e5d411585"
+  integrity sha512-KMZeDXgV8ocOOU/L7QSDUWCE8S/LbUtLui7BDCgCtoyiGfnmF69SSORBAHKbiN0dgXimJfl/2xn/RPNeIgJTdQ==
   dependencies:
     "@greymass/eosio" "^0.6.10"
     eosio-signing-request "^2.5.3"

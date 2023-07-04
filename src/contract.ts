@@ -47,7 +47,9 @@ export class Contract {
             this.client = options.session.client
         }
 
-        this.abi = options.abi
+        if (options.abi) {
+            this.abi = ABI.from(options.abi)
+        }
     }
 
     /**

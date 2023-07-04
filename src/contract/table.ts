@@ -3,17 +3,17 @@ import type {Contract} from '../contract'
 import {indexPositionInWords} from '../utils'
 import {TableCursor} from './table-cursor'
 
-interface QueryParams {
+export interface QueryParams {
     [key: string]: any
 }
 
-interface FieldToIndex {
+export interface FieldToIndex {
     [key: string]: {
         type: string
         index_position: string
     }
 }
-interface TableParams {
+export interface TableParams {
     contract: Contract
     name: NameType
     rowType?: ABISerializableConstructor

@@ -25,7 +25,7 @@ export class Contract {
     private static _shared: Contract | null = null
     private static account: Name
 
-    private abi?: ABI.Def
+    public abi?: ABI
 
     readonly account: Name
     readonly client?: APIClient
@@ -118,7 +118,7 @@ export class Contract {
      *
      * @return {Promise<ABI.Def>} A promise that resolves with the ABI for the contract.
      */
-    async getAbi(): Promise<ABI.Def> {
+    async getAbi(): Promise<ABI> {
         if (this.abi) {
             return this.abi
         }
@@ -141,8 +141,8 @@ export class Contract {
 
         const {abi} = response
 
-        this.abi = abi
+        this.abi = ABI.from(abi)
 
-        return abi
+        return this.abi
     }
 }

@@ -76,7 +76,17 @@ export class Contract {
         })
 
         // Trigger the transaction using the session kit
-        return session.transact({action})
+        return session.transact(
+            {action},
+            {
+                abis: [
+                    {
+                        account: this.account,
+                        abi: this.abi || (await this.getAbi()),
+                    },
+                ],
+            }
+        )
     }
 
     /**

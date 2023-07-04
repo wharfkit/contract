@@ -1,0 +1,28 @@
+{
+    "request": {
+        "path": "https://jungle4.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"table\":\"eosio.token\",\"limit\":1,\"code\":\"eosio.token\",\"index_position\":\"primary\",\"scope\":\"eosio.token\",\"key_type\":\"name\",\"json\":false}"
+        }
+    },
+    "status": 500,
+    "json": {
+        "code": 500,
+        "message": "Internal Service Error",
+        "error": {
+            "code": 3060003,
+            "name": "contract_table_query_exception",
+            "what": "Contract Table Query Exception",
+            "details": [
+                {
+                    "message": "Table eosio.token is not specified in the ABI",
+                    "file": "chain_plugin.cpp",
+                    "line_number": 1674,
+                    "method": "get_table_type"
+                }
+            ]
+        }
+    },
+    "text": "{\"code\":500,\"message\":\"Internal Service Error\",\"error\":{\"code\":3060003,\"name\":\"contract_table_query_exception\",\"what\":\"Contract Table Query Exception\",\"details\":[{\"message\":\"Table eosio.token is not specified in the ABI\",\"file\":\"chain_plugin.cpp\",\"line_number\":1674,\"method\":\"get_table_type\"}]}}"
+}

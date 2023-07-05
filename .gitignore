@@ -3,3 +3,4 @@ lib/
 build/
 test/browser.html*
 ./contracts/
+./yarn-error.log

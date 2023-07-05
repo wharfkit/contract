@@ -1,13 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
-
 import {assert} from 'chai'
-import {ABI} from '@greymass/eosio'
+import {ABI, APIClient, Session} from '@wharfkit/session'
+import {makeClient} from '@wharfkit/mock-data'
 
 import {codegen} from '../../src/codegen' // replace with your actual codegen file
-
-import {APIClient, Session} from '@wharfkit/session'
-import {makeClient} from '../utils/mock-client'
 
 let _RewardsGm
 

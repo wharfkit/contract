@@ -6,17 +6,6 @@
             "body": "{\"account_name\":\"non.xistent\"}"
         }
     },
-    "headers": {
-        "access-control-allow-headers": "X-Requested-With,Accept,Content-Type,Origin",
-        "access-control-allow-methods": "GET, POST, OPTIONS",
-        "access-control-allow-origin": "*",
-        "connection": "close",
-        "content-length": "249",
-        "content-type": "application/json",
-        "date": "Wed, 21 Jun 2023 23:15:09 GMT",
-        "server": "nginx",
-        "x-cached": "MISS"
-    },
     "status": 500,
     "json": {
         "code": 500,

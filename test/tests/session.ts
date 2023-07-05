@@ -1,5 +1,6 @@
-import {_EosioToken as TokenContract} from '../data/contracts/token'
 import {mockSession} from '@wharfkit/mock-data'
+
+import {_EosioToken as TokenContract} from '../data/contracts/token'
 
 suite('session', function () {
     test('action', async function () {
@@ -12,6 +13,5 @@ suite('session', function () {
             },
             mockSession
         )
-        console.log(test)
     })
 })

@@ -3,7 +3,7 @@
         "path": "https://eos.greymass.com/v1/chain/get_table_rows",
         "params": {
             "method": "POST",
-            "body": "{\"table\":\"namebids\",\"limit\":0,\"code\":\"eosio\",\"lower_bound\":\"b1n11111a\",\"index_position\":\"primary\",\"scope\":\"eosio\",\"key_type\":\"name\",\"json\":true}"
+            "body": "{\"table\":\"namebids\",\"limit\":0,\"code\":\"eosio\",\"lower_bound\":\"b1n11111b\",\"index_position\":\"primary\",\"scope\":\"eosio\",\"key_type\":\"name\",\"json\":true}"
         }
     },
     "headers": {
@@ -13,7 +13,7 @@
         "connection": "close",
         "content-length": "56",
         "content-type": "application/json",
-        "date": "Wed, 21 Jun 2023 23:16:48 GMT",
+        "date": "Wed, 05 Jul 2023 22:30:12 GMT",
         "host": "eos.greymass.com",
         "server": "nginx",
         "x-cached": "MISS"
@@ -22,7 +22,7 @@
     "json": {
         "rows": [],
         "more": true,
-        "next_key": "4063953873426972672"
+        "next_key": "4063953873427496960"
     },
-    "text": "{\"rows\":[],\"more\":true,\"next_key\":\"4063953873426972672\"}"
+    "text": "{\"rows\":[],\"more\":true,\"next_key\":\"4063953873427496960\"}"
 }

@@ -1,5 +1,6 @@
-import {ABI, ABISerializableConstructor, APIClient, Name, NameType, UInt64} from '@wharfkit/session'
-import {Contract} from '../contract'
+import {ABI, ABISerializableConstructor, Name, NameType, UInt64} from '@wharfkit/session'
+import type {Contract} from '../contract'
+import {indexPositionInWords} from '../utils'
 import {TableCursor} from './table-cursor'
 
 interface QueryParams {
@@ -13,14 +14,13 @@ interface FieldToIndex {
     }
 }
 interface TableParams<TableRow = any> {
-    contract: NameType
+    contract: Contract
     name: NameType
-    client: APIClient
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
 }
 
-interface GetTableRowsOptions {
+export interface GetTableRowsOptions {
     limit?: number
 }
 
@@ -48,11 +48,11 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `rowType`: (optional) Custom row type.
      *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      */
-    constructor({contract, name, client, rowType, fieldToIndex}: TableParams<TableRow>) {
+    constructor({contract, name, rowType, fieldToIndex}: TableParams<TableRow>) {
         this.name = Name.from(name)
         this.rowType = rowType
         this.fieldToIndex = fieldToIndex
-        this.contract = Contract.from({name: contract, client})
+        this.contract = contract
     }
 
     /**
@@ -82,6 +82,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
     where(queryParams: QueryParams, {limit = 10}: GetTableRowsOptions = {}): TableCursor<TableRow> {
+        this.checkIsValidQuery(Object.keys(queryParams)[0])
         const {from, to} = queryParams[Object.keys(queryParams)[0]]
 
         const lower_bound = from && (typeof from === 'string' ? Name.from(from) : UInt64.from(from))
@@ -116,6 +117,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
 
         const fieldName = Object.keys(queryParams)[0]
         const entryFieldValue = Object.values(queryParams)[0] as string
+
+        this.checkIsValidQuery(fieldName)
 
         const tableRowsParams = {
             table: this.name,
@@ -187,14 +190,18 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         return this.cursor().all()
     }
 
+    checkIsValidQuery(fieldName: string) {
+        if (this.fieldToIndex && !this.fieldToIndex[fieldName]) {
+            throw new Error(`Field ${fieldName} is not an index.`)
+        }
+    }
+
     async getFieldToIndex() {
         if (this.fieldToIndex) {
             return this.fieldToIndex
         }
 
-        const abi = await this.getAbi()
-
-        const table = abi.tables.find((table) => this.name.equals(table.name))
+        const table = await this.getAbiTable()
 
         if (!table) {
             throw new Error(`Table ${this.name} not found in ABI`)
@@ -205,7 +212,21 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         for (let i = 0; i < table.key_names.length; i++) {
             fieldToIndex[table.key_names[i]] = {
                 type: table.key_types[i],
-                index_position: indexPosition(i),
+                index_position: indexPositionInWords(i),
+            }
+        }
+
+        if (Object.values(fieldToIndex).length === 0) {
+            const tableStruct = await this.getTableStruct()
+            const firstFieldName = tableStruct?.fields[0].name
+
+            if (!firstFieldName) {
+                throw new Error(`Table ${this.name} has no fields.`)
+            }
+
+            fieldToIndex[firstFieldName] = {
+                type: firstFieldName,
+                index_position: 'primary',
             }
         }
 
@@ -220,19 +241,15 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         }
         return this.contract.getAbi()
     }
-}
 
-function indexPosition(index: number): string {
-    return [
-        'primary',
-        'secondary',
-        'tertiary',
-        'fourth',
-        'fifth',
-        'sixth',
-        'seventh',
-        'eighth',
-        'ninth',
-        'tenth',
-    ][index]
+    private async getAbiTable(): Promise<ABI.Table | undefined> {
+        const abi = await this.getAbi()
+        return abi.tables.find((table) => this.name.equals(table.name))
+    }
+
+    private async getTableStruct(): Promise<ABI.Struct | undefined> {
+        const abi = await this.getAbi()
+        const table = await this.getAbiTable()
+        return abi.structs.find((struct) => table?.type === String(struct.name))
+    }
 }

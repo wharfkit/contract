@@ -43,6 +43,10 @@ export class TableCursor<TableRow> {
         this.tableParams = tableParams
         this.next_key = next_key
         this.indexPositionField = indexPositionField
+
+        if (!this.table.contract.client) {
+            throw new Error('Table cursor cannot be created without a client')
+        }
     }
 
     /**
@@ -102,7 +106,6 @@ export class TableCursor<TableRow> {
             const fieldToIndexMapping = await this.table.getFieldToIndex()
 
             if (!fieldToIndexMapping[this.indexPositionField]) {
-                // console.log({fieldToIndexMapping, indexPositionField: this.indexPositionField})
                 throw new Error(`Field ${this.indexPositionField} is not a valid index.`)
             }
 

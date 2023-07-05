@@ -1,6 +1,7 @@
 import {TableCursor} from './index'
 import {Struct} from '@wharfkit/session'
 import type {APIClient, Name, UInt64} from '@wharfkit/session'
+import {Contract} from './contract'
 import {Table} from './contract/table'
 
 export namespace _Blog {
@@ -51,11 +52,10 @@ export namespace _Blog {
                 queryParams: _Blog.types.UsersWhereQueryParams,
                 {limit = 10} = {},
                 client: APIClient
-            ): Promise<TableCursor<_Blog.types.UsersRow>> {
+            ): TableCursor<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: 'blog',
+                    contract: Contract.from({name: 'blog', client}),
                     name: 'users',
-                    client,
                     rowType: _Blog.types.UsersRow,
                     fieldToIndex: Users.fieldToIndex,
                 })
@@ -68,9 +68,8 @@ export namespace _Blog {
                 client: APIClient
             ): Promise<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: 'blog',
+                    contract: Contract.from({name: 'blog', client}),
                     name: 'users',
-                    client,
                     rowType: _Blog.types.UsersRow,
                     fieldToIndex: Users.fieldToIndex,
                 })
@@ -78,15 +77,14 @@ export namespace _Blog {
                 return usersTable.find(queryParams)
             }
 
-            static async all({limit}, client): Promise<TableCursor<_Blog.types.UsersRow>> {
+            static first(limit, client): TableCursor<_Blog.types.UsersRow> {
                 const usersTable = Table.from({
-                    contract: 'blog',
+                    contract: Contract.from({name: 'blog', client}),
                     name: 'users',
-                    client,
                     rowType: _Blog.types.UsersRow,
                 })
 
-                return usersTable.all({limit})
+                return usersTable.first(limit)
             }
         }
     }

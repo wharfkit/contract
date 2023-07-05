@@ -11,8 +11,9 @@ import type {APIClient} from '@wharfkit/session'
 import {Table} from './contract/table'
 
 export interface ContractOptions {
-    name?: NameType
+    name: NameType
     client?: APIClient
+    abi?: ABI.Def
 }
 
 /**
@@ -36,22 +37,12 @@ export class Contract {
      * @param {NameType} options.name - The name of the contract.
      * @param {APIClient} options.client - The client to connect to the blockchain.
      */
-    constructor(options?: ContractOptions) {
-        if ((this.constructor as typeof Contract).account) {
-            if (options?.name) {
-                throw new Error('Cannot specify account when using subclassed Contract')
-            }
-            this.account = Name.from((this.constructor as any).account!)
-        } else {
-            if (!options?.name) {
-                throw new Error('Must specify account when using Contract directly')
-            }
-            this.account = Name.from(options?.name)
-        }
+    constructor(options: ContractOptions) {
+        this.account = Name.from(options.name)
 
-        if (options?.client) {
-            this.client = options.client
-        }
+        this.client = options.client
+
+        this.abi = options.abi
     }
 
     /**
@@ -60,21 +51,8 @@ export class Contract {
      * @param {ContractOptions} options - The options for the contract.
      * @return {Contract} A new contract instance.
      */
-    static from(options?: ContractOptions): Contract {
+    static from(options: ContractOptions): Contract {
         return new this(options)
-    }
-
-    /**
-     * Gets the shared instance of the contract.
-     *
-     * @return {Contract} The shared instance of the contract.
-     */
-    static shared<T extends {new ()}>(this: T): InstanceType<T> {
-        const self = this as unknown as typeof Contract
-        if (!self._shared) {
-            self._shared = new self()
-        }
-        return self._shared as InstanceType<T>
     }
 
     /**
@@ -111,9 +89,8 @@ export class Contract {
 
         return abi.tables.map((table) => {
             return new Table({
-                contract: this.account,
+                contract: this,
                 name: table.name,
-                client: this.client!,
             })
         })
     }

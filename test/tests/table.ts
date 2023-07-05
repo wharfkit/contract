@@ -18,9 +18,8 @@ suite('Table', () => {
         })
 
         producersTable = new Table({
-            contract: 'eosio',
+            contract: Contract.from({name: 'eosio', client: mockClient}),
             name: 'producers',
-            client: mockClient,
         })
 
         decentiumTrendingTable = new Table({
@@ -125,12 +124,12 @@ suite('Table', () => {
 
             assert.deepEqual(row, {
                 owner: 'teamgreymass',
-                total_votes: '9899236489925054464.00000000000000000',
+                total_votes: '10034547958325608448.00000000000000000',
                 producer_key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
                 is_active: 1,
                 url: 'https://greymass.com',
                 unpaid_blocks: 0,
-                last_claim_time: '2023-06-23T14:57:10.000',
+                last_claim_time: '2023-07-05T14:59:26.000',
                 location: 124,
                 producer_authority: [
                     'block_signing_authority_v0',

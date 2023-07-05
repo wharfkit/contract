@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import {Contract, Table} from '$lib'
 
-import {makeClient} from '../utils/mock-client'
+import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
 

@@ -4,9 +4,9 @@ import * as path from 'path'
 import {assert} from 'chai'
 import {ABI} from '@greymass/eosio'
 
-import {codegen} from '$lib' // replace with your actual codegen file
+import {codegen} from '../../src/codegen' // replace with your actual codegen file
 
-import {Session, APIClient} from '@wharfkit/session'
+import {APIClient, Session} from '@wharfkit/session'
 import {makeClient} from '../utils/mock-client'
 
 let _RewardsGm

@@ -1,11 +1,12 @@
-import {ABI, ABISerializableConstructor, Name, NameType, UInt64} from '@wharfkit/session'
+import {ABI, ABISerializableConstructor, API, Name, NameType, UInt64} from '@wharfkit/session'
 import type {Contract} from '../contract'
-import {indexPositionInWords} from '../utils'
+import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
 
 export interface QueryOptions {
     index?: string
     scope?: NameType
+    index_type?: API.v1.TableIndexType
 }
 
 export interface WhereQueryOptions extends QueryOptions {
@@ -94,7 +95,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     where(
         query: WhereQuery,
-        {limit = 10, scope = this.contract.account, index}: WhereQueryOptions = {}
+        {limit = 10, scope = this.contract.account, index, index_type}: WhereQueryOptions = {}
     ): TableCursor<TableRow> {
         if (!query) {
             throw new Error('Index value range must be provided')
@@ -106,25 +107,14 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             throw new Error('Index value for "from" or "to" must be provided')
         }
 
-        const lower_bound = from
-            ? typeof from === 'string'
-                ? Name.from(from)
-                : UInt64.from(from)
-            : undefined
-        const upper_bound = to
-            ? typeof to === 'string'
-                ? Name.from(to)
-                : UInt64.from(to)
-            : undefined
-
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
             scope,
             type: this.rowType,
             limit,
-            lower_bound,
-            upper_bound,
+            lower_bound: wrapIndexValue(from, index_type),
+            upper_bound: wrapIndexValue(from, index_type),
         }
 
         return new TableCursor({

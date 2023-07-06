@@ -1,6 +1,7 @@
 import {API, isInstanceOf, UInt64} from '@wharfkit/session'
 import {Name} from '@wharfkit/session'
-import {Table} from './table'
+import {wrapIndexValue} from '../utils'
+import {QueryOptions, Table, WhereQuery} from './table'
 
 interface TableCursorParams {
     table: Table
@@ -153,5 +154,25 @@ export class TableCursor<TableRow> {
             rows.push(row)
         }
         return rows
+    }
+
+    /**
+     * Returns a new cursor with updated parameters.
+     *
+     * @returns A new cursor with updated parameters.
+     */
+    where(query: WhereQuery, queryOptions?: QueryOptions) {
+        return new TableCursor({
+            table: this.table,
+            tableParams: {
+                ...this.tableParams,
+                lower_bound:
+                    wrapIndexValue(query.from, queryOptions?.index_type) ||
+                    this.tableParams.lower_bound,
+                upper_bound:
+                    wrapIndexValue(query.to, queryOptions?.index_type) ||
+                    this.tableParams.upper_bound,
+            },
+        })
     }
 }

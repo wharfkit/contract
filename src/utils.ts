@@ -1,3 +1,11 @@
+import {
+    ABISerializable,
+    ABISerializableConstructor,
+    ABISerializableObject,
+    API,
+    Name,
+} from '@wharfkit/session'
+
 export function pascalCase(value: string): string {
     return value
         .split(/_| /)
@@ -40,4 +48,19 @@ export function indexPositionInWords(index: number): string {
         'ninth',
         'tenth',
     ][index]
+}
+
+export function wrapIndexValue(
+    value,
+    indexType?: API.v1.TableIndexType
+): API.v1.TableIndexType | undefined {
+    if (!value) {
+        return
+    }
+
+    if (indexType) {
+        return indexType.from(value)
+    }
+
+    return Name.from(value)
 }

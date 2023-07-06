@@ -65,7 +65,7 @@ export namespace _RewardsGm {
     export namespace tables {
         export class config {
             static fieldToIndex = {}
-            static where(
+            static query(
                 queryParams: _RewardsGm.types.ConfigWhereQueryParams,
                 getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
@@ -76,9 +76,9 @@ export namespace _RewardsGm {
                     rowType: _RewardsGm.types.Config,
                     fieldToIndex: config.fieldToIndex,
                 })
-                return configTable.where(queryParams, getTableRowsOptions)
+                return configTable.query(queryParams, getTableRowsOptions)
             }
-            static find(
+            static get(
                 queryParams: _RewardsGm.types.ConfigFindQueryParams,
                 client: APIClient
             ): Promise<_RewardsGm.types.Config> {
@@ -88,7 +88,7 @@ export namespace _RewardsGm {
                     rowType: _RewardsGm.types.Config,
                     fieldToIndex: config.fieldToIndex,
                 })
-                return configTable.find(queryParams)
+                return configTable.get(queryParams)
             }
             static first(limit: number, client: APIClient): TableCursor<_RewardsGm.types.Config> {
                 const configTable = Table.from({
@@ -102,7 +102,7 @@ export namespace _RewardsGm {
         }
         export class users {
             static fieldToIndex = {}
-            static where(
+            static query(
                 queryParams: _RewardsGm.types.UsersWhereQueryParams,
                 getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
@@ -113,9 +113,9 @@ export namespace _RewardsGm {
                     rowType: _RewardsGm.types.User_row,
                     fieldToIndex: users.fieldToIndex,
                 })
-                return usersTable.where(queryParams, getTableRowsOptions)
+                return usersTable.query(queryParams, getTableRowsOptions)
             }
-            static find(
+            static get(
                 queryParams: _RewardsGm.types.UsersFindQueryParams,
                 client: APIClient
             ): Promise<_RewardsGm.types.User_row> {
@@ -125,7 +125,7 @@ export namespace _RewardsGm {
                     rowType: _RewardsGm.types.User_row,
                     fieldToIndex: users.fieldToIndex,
                 })
-                return usersTable.find(queryParams)
+                return usersTable.get(queryParams)
             }
             static first(limit: number, client: APIClient): TableCursor<_RewardsGm.types.User_row> {
                 const usersTable = Table.from({

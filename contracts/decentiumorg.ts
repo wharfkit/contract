@@ -171,7 +171,7 @@ export namespace _Decentiumorg {
     export namespace tables {
         export class blogs {
             static fieldToIndex = {author: {type: 'name', index_position: 'primary'}}
-            static where(
+            static query(
                 {limit = 10},
                 queryParams: _Decentiumorg.types.blogsQueryParams,
                 client: APIClient
@@ -183,9 +183,9 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.Blog_row,
                     fieldToIndex: blogs.fieldToIndex,
                 })
-                return blogsTable.where(queryParams)
+                return blogsTable.query(queryParams)
             }
-            static find(
+            static get(
                 queryParams: _Decentiumorg.types.blogsQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.Blog_row> {
@@ -196,7 +196,7 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.Blog_row,
                     fieldToIndex: blogs.fieldToIndex,
                 })
-                return blogsTable.find(queryParams)
+                return blogsTable.get(queryParams)
             }
             static all(
                 queryParams: _Decentiumorg.types.blogsQueryParams,
@@ -218,7 +218,7 @@ export namespace _Decentiumorg {
                 from: {type: 'uint128', index_position: 'secondary'},
                 to: {type: 'uint128', index_position: 'tertiary'},
             }
-            static where(
+            static query(
                 {limit = 10},
                 queryParams: _Decentiumorg.types.linksQueryParams,
                 client: APIClient
@@ -230,9 +230,9 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.Link_row,
                     fieldToIndex: links.fieldToIndex,
                 })
-                return linksTable.where(queryParams)
+                return linksTable.query(queryParams)
             }
-            static find(
+            static get(
                 queryParams: _Decentiumorg.types.linksQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.Link_row> {
@@ -243,7 +243,7 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.Link_row,
                     fieldToIndex: links.fieldToIndex,
                 })
-                return linksTable.find(queryParams)
+                return linksTable.get(queryParams)
             }
             static all(
                 queryParams: _Decentiumorg.types.linksQueryParams,
@@ -264,7 +264,7 @@ export namespace _Decentiumorg {
                 slug: {type: 'name', index_position: 'primary'},
                 updated: {type: 'uint64', index_position: 'secondary'},
             }
-            static where(
+            static query(
                 {limit = 10},
                 queryParams: _Decentiumorg.types.postsQueryParams,
                 client: APIClient
@@ -276,9 +276,9 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.Post_row,
                     fieldToIndex: posts.fieldToIndex,
                 })
-                return postsTable.where(queryParams)
+                return postsTable.query(queryParams)
             }
-            static find(
+            static get(
                 queryParams: _Decentiumorg.types.postsQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.Post_row> {
@@ -289,7 +289,7 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.Post_row,
                     fieldToIndex: posts.fieldToIndex,
                 })
-                return postsTable.find(queryParams)
+                return postsTable.get(queryParams)
             }
             static all(
                 queryParams: _Decentiumorg.types.postsQueryParams,
@@ -307,7 +307,7 @@ export namespace _Decentiumorg {
         }
         export class state {
             static fieldToIndex = {}
-            static where(
+            static query(
                 {limit = 10},
                 queryParams: _Decentiumorg.types.stateQueryParams,
                 client: APIClient
@@ -319,9 +319,9 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.State,
                     fieldToIndex: state.fieldToIndex,
                 })
-                return stateTable.where(queryParams)
+                return stateTable.query(queryParams)
             }
-            static find(
+            static get(
                 queryParams: _Decentiumorg.types.stateQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.State> {
@@ -332,7 +332,7 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.State,
                     fieldToIndex: state.fieldToIndex,
                 })
-                return stateTable.find(queryParams)
+                return stateTable.get(queryParams)
             }
             static all(
                 queryParams: _Decentiumorg.types.stateQueryParams,
@@ -355,7 +355,7 @@ export namespace _Decentiumorg {
                 cscore: {type: 'uint128', index_position: 'tertiary'},
                 permlink: {type: 'uint128', index_position: 'fourth'},
             }
-            static where(
+            static query(
                 {limit = 10},
                 queryParams: _Decentiumorg.types.trendingQueryParams,
                 client: APIClient
@@ -367,9 +367,9 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.Trending_row,
                     fieldToIndex: trending.fieldToIndex,
                 })
-                return trendingTable.where(queryParams)
+                return trendingTable.query(queryParams)
             }
-            static find(
+            static get(
                 queryParams: _Decentiumorg.types.trendingQueryParams,
                 client: APIClient
             ): Promise<_Decentiumorg.types.Trending_row> {
@@ -380,7 +380,7 @@ export namespace _Decentiumorg {
                     rowType: _Decentiumorg.types.Trending_row,
                     fieldToIndex: trending.fieldToIndex,
                 })
-                return trendingTable.find(queryParams)
+                return trendingTable.get(queryParams)
             }
             static all(
                 queryParams: _Decentiumorg.types.trendingQueryParams,

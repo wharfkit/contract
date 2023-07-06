@@ -161,17 +161,13 @@ export class TableCursor<TableRow> {
      *
      * @returns A new cursor with updated parameters.
      */
-    where(query: WhereQuery, queryOptions?: QueryOptions) {
+    query(query: WhereQuery, queryOptions?: QueryOptions) {
         return new TableCursor({
             table: this.table,
             tableParams: {
                 ...this.tableParams,
-                lower_bound:
-                    wrapIndexValue(query.from, queryOptions?.index_type) ||
-                    this.tableParams.lower_bound,
-                upper_bound:
-                    wrapIndexValue(query.to, queryOptions?.index_type) ||
-                    this.tableParams.upper_bound,
+                lower_bound: wrapIndexValue(query.from) || this.tableParams.lower_bound,
+                upper_bound: wrapIndexValue(query.to) || this.tableParams.upper_bound,
             },
         })
     }

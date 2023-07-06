@@ -93,7 +93,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    where(
+    query(
         query: WhereQuery,
         {limit = 10, scope = this.contract.account, index, index_type}: WhereQueryOptions = {}
     ): TableCursor<TableRow> {
@@ -113,8 +113,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             scope,
             type: this.rowType,
             limit,
-            lower_bound: wrapIndexValue(from, index_type),
-            upper_bound: wrapIndexValue(from, index_type),
+            lower_bound: wrapIndexValue(from),
+            upper_bound: wrapIndexValue(from),
         }
 
         return new TableCursor({
@@ -131,7 +131,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
-    async find(query, queryOptions?: QueryOptions): Promise<TableRow> {
+    async get(query, queryOptions?: QueryOptions): Promise<TableRow> {
         if (!query) {
             throw new Error('Index value must be provided')
         }

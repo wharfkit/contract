@@ -81,7 +81,7 @@
 //     export namespace tables {
 //         export class accounts {
 //             static fieldToIndex = {balance: {type: 'balance', index_position: 'primary'}}
-//             static where(
+//             static query(
 //                 queryParams: _EosioToken.types.AccountsWhereQueryParams,
 //                 getTableRowsOptions: GetTableRowsOptions,
 //                 client: APIClient
@@ -92,9 +92,9 @@
 //                     rowType: _EosioToken.types.Account,
 //                     fieldToIndex: accounts.fieldToIndex,
 //                 })
-//                 return accountsTable.where(queryParams, getTableRowsOptions)
+//                 return accountsTable.query(queryParams, getTableRowsOptions)
 //             }
-//             static find(
+//             static get(
 //                 queryParams: _EosioToken.types.AccountsFindQueryParams,
 //                 client: APIClient
 //             ): Promise<_EosioToken.types.Account> {
@@ -104,7 +104,7 @@
 //                     rowType: _EosioToken.types.Account,
 //                     fieldToIndex: accounts.fieldToIndex,
 //                 })
-//                 return accountsTable.find(queryParams)
+//                 return accountsTable.get(queryParams)
 //             }
 //             static first(limit: number, client: APIClient): TableCursor<_EosioToken.types.Account> {
 //                 const accountsTable = Table.from({
@@ -136,7 +136,7 @@
 //         }
 //         export class stat {
 //             static fieldToIndex = {supply: {type: 'supply', index_position: 'primary'}}
-//             static where(
+//             static query(
 //                 queryParams: _EosioToken.types.StatWhereQueryParams,
 //                 getTableRowsOptions: GetTableRowsOptions,
 //                 client: APIClient
@@ -147,9 +147,9 @@
 //                     rowType: _EosioToken.types.Currency_stats,
 //                     fieldToIndex: stat.fieldToIndex,
 //                 })
-//                 return statTable.where(queryParams, getTableRowsOptions)
+//                 return statTable.query(queryParams, getTableRowsOptions)
 //             }
-//             static find(
+//             static get(
 //                 queryParams: _EosioToken.types.StatFindQueryParams,
 //                 client: APIClient
 //             ): Promise<_EosioToken.types.Currency_stats> {
@@ -159,7 +159,7 @@
 //                     rowType: _EosioToken.types.Currency_stats,
 //                     fieldToIndex: stat.fieldToIndex,
 //                 })
-//                 return statTable.find(queryParams)
+//                 return statTable.get(queryParams)
 //             }
 //             static first(
 //                 limit: number,

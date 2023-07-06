@@ -26,7 +26,7 @@ suite('Table', () => {
     suite('cursor', () => {
         suite('reset', () => {
             test('should allow you to reset the cursor', async () => {
-                const tableCursor = decentiumTrendingTable.where({from: 5, to: 6})
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 6})
 
                 assert.deepEqual(
                     (await tableCursor.next()).map((row) => row.id),
@@ -51,7 +51,7 @@ suite('Table', () => {
     suite('where', () => {
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
-                const tableCursor = decentiumTrendingTable.where(
+                const tableCursor = decentiumTrendingTable.query(
                     {
                         from: 101511,
                         to: 105056,
@@ -68,7 +68,7 @@ suite('Table', () => {
             })
 
             test('should fetch correct number of table rows when limit option is used', async () => {
-                const tableCursor = decentiumTrendingTable.where({from: 5, to: 10}, {limit: 2})
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}, {limit: 2})
 
                 assert.deepEqual(
                     (await tableCursor.all()).map((row) => row.id),
@@ -79,7 +79,7 @@ suite('Table', () => {
 
         suite('next', () => {
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = decentiumTrendingTable.where({from: 5}, {limit: 10000})
+                const tableCursor = decentiumTrendingTable.query({from: 5}, {limit: 10000})
                 assert.equal((await tableCursor.next()).length, 235)
                 assert.equal((await tableCursor.next()).length, 0)
             })
@@ -88,7 +88,7 @@ suite('Table', () => {
 
     suite('find', () => {
         test('should fetch table row correctly when filtering by primary index is used', async () => {
-            const row = await decentiumTrendingTable.find(5)
+            const row = await decentiumTrendingTable.get(5)
 
             assert.deepEqual(row, {
                 id: 5,
@@ -118,7 +118,7 @@ suite('Table', () => {
         })
         test('should fetch table row correctly with default filtering', async () => {
             // curl http://eos.greymass.com/v1/chain/get_table_rows -d '{"table":"producers","limit":10,"code":"eosio","scope":"eosio","json":true, "lower_bound": "teamgreymass", "upper_bound": "teamgreymass"}'
-            const row = await producersTable.find('teamgreymass')
+            const row = await producersTable.get('teamgreymass')
 
             assert.deepEqual(row, {
                 owner: 'teamgreymass',

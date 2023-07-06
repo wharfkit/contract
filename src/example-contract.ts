@@ -48,7 +48,7 @@ export namespace _Blog {
                 },
             }
 
-            static where(
+            static query(
                 queryParams: _Blog.types.UsersWhereQueryParams,
                 {limit = 10} = {},
                 client: APIClient
@@ -60,10 +60,10 @@ export namespace _Blog {
                     fieldToIndex: Users.fieldToIndex,
                 })
 
-                return usersTable.where(queryParams, {limit})
+                return usersTable.query(queryParams, {limit})
             }
 
-            static async find(
+            static async get(
                 queryParams: _Blog.types.UsersFindQueryParams,
                 client: APIClient
             ): Promise<_Blog.types.UsersRow> {
@@ -74,7 +74,7 @@ export namespace _Blog {
                     fieldToIndex: Users.fieldToIndex,
                 })
 
-                return usersTable.find(queryParams)
+                return usersTable.get(queryParams)
             }
 
             static first(limit, client): TableCursor<_Blog.types.UsersRow> {

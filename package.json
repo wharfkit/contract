@@ -19,8 +19,8 @@
         "wharf-generate": "./scripts/codegen-cli.js"
     },
     "dependencies": {
-        "@wharfkit/mock-data": "^1.0.0-beta10",
-        "@wharfkit/session": "^1.0.0-beta3",
+        "@wharfkit/mock-data": "^1.0.0-beta11",
+        "@wharfkit/session": "^1.0.0-beta4",
         "rollup-plugin-cleanup": "^3.2.1",
         "tslib": "^2.1.0"
     },

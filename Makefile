@@ -5,12 +5,12 @@ BIN := ./node_modules/.bin
 MOCHA_OPTS := -u tdd -r ts-node/register -r tsconfig-paths/register --extension ts
 NYC_OPTS := --temp-dir build/nyc_output --report-dir build/coverage
 
-lib: ${SRC_FILES} package.json tsconfig.json node_modules rollup.config.mjs
+lib: ${SRC_FILES} package.json tsconfig.json node_modules rollup.config.js
 	@${BIN}/rollup -c && touch lib
 
 .PHONY: test
 test: node_modules
-	@TS_NODE_PROJECT='./test/tsconfig.json' MOCK_DIR='./test/data' \
+	@TS_NODE_PROJECT='./test/tsconfig.json' MOCK_DIR='./test/data/requests' \
 		${BIN}/mocha ${MOCHA_OPTS} ${TEST_FILES} --no-timeout --grep '$(grep)'
 
 test/watch: node_modules
@@ -28,7 +28,7 @@ coverage: build/coverage
 
 .PHONY: ci-test
 ci-test: node_modules
-	@TS_NODE_PROJECT='./test/tsconfig.json' MOCK_DIR='./test/data' \
+	@TS_NODE_PROJECT='./test/tsconfig.json' MOCK_DIR='./test/data/requests' \
 		${BIN}/nyc ${NYC_OPTS} --reporter=text \
 		${BIN}/mocha ${MOCHA_OPTS} -R list ${TEST_FILES}
 
@@ -71,8 +71,8 @@ build/pages: build/coverage build/docs build/browser.html
 deploy-pages: | clean lib build/pages node_modules
 	@${BIN}/gh-pages -d build/pages
 
-build/browser.html: $(SRC_FILES) $(TEST_FILES) test/rollup.config.mjs node_modules
-	@${BIN}/rollup -c test/rollup.config.mjs
+build/browser.html: $(SRC_FILES) $(TEST_FILES) test/rollup.config.js node_modules
+	@${BIN}/rollup -c test/rollup.config.js
 
 .PHONY: browser-test
 browser-test: build/browser.html
@@ -88,7 +88,3 @@ clean:
 .PHONY: distclean
 distclean: clean
 	rm -rf node_modules/
-
-.PHONY: accounts
-accounts: node_modules
-	${BIN}/ts-node --project test/utils/setup/tsconfig.json test/utils/setup/accounts.ts

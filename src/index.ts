@@ -1,4 +1,6 @@
-export * from './contract'
-export * from './contract/table'
-export * from './contract/table-cursor'
-export * from './codegen'
+// export library
+export * from './index-module'
+
+// default export is ContractKit class for convenience
+import {ContractKit} from './index-module'
+export default ContractKit

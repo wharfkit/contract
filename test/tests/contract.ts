@@ -1,9 +1,7 @@
 import {assert} from 'chai'
-import {Session} from '@wharfkit/session'
+import {makeClient, makeMockAction, mockSession} from '@wharfkit/mock-data'
 
 import {Contract, Table} from '$lib'
-import {makeClient} from '../utils/mock-client'
-import {makeMockTransfer} from '../utils/mock-transactions'
 
 const mockClient = makeClient('https://eos.greymass.com')
 
@@ -29,21 +27,14 @@ suite('Contract', () => {
 
     suite('call', () => {
         test('calls a contract action', async () => {
-            let calledWith: any
-            const session = {
-                transact: async (transactParam) => {
-                    calledWith = transactParam
-                },
-            }
-            const actionName = 'testAction'
-            const data = makeMockTransfer({
-                from: 'blockone',
-                to: 'teamgreymass',
-                quantity: '1.0000 EOS',
-                memo: 'gift!',
+            const contract = new Contract({
+                name: 'eosio.token',
+                client: mockClient,
             })
-
-            const result = await mockContract.call(actionName, data, session as unknown as Session)
+            const session = mockSession
+            const actionName = 'transfer'
+            const {data} = makeMockAction()
+            await contract.call(actionName, data, session)
         })
     })
 

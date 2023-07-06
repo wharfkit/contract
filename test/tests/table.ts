@@ -1,8 +1,8 @@
 import {assert} from 'chai'
 
-import {Table, Contract} from '$lib'
+import {Contract, Table} from '$lib'
 
-import {makeClient} from '../utils/mock-client'
+import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
 
@@ -124,7 +124,7 @@ suite('Table', () => {
 
             assert.deepEqual(row, {
                 owner: 'teamgreymass',
-                total_votes: '10034547958325608448.00000000000000000',
+                total_votes: '10022159900306069504.00000000000000000',
                 producer_key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
                 is_active: 1,
                 url: 'https://greymass.com',
@@ -159,9 +159,9 @@ suite('Table', () => {
             test('should allow you to fetch more rows after first request', async () => {
                 const tableCursor = nameBidTable.first(100000)
                 const firstBatch = await tableCursor.next()
-                assert.equal(firstBatch.length, 3866)
+                assert.equal(firstBatch.length, 2199)
                 const secondBatch = await tableCursor.next()
-                assert.equal(secondBatch.length, 3761)
+                assert.equal(secondBatch.length, 2268)
             })
         })
 
@@ -205,7 +205,7 @@ suite('Table', () => {
     suite('all', () => {
         test('should return every single row in a table', async () => {
             const tableRows = await nameBidTable.all()
-            assert.equal(tableRows.length, 53107)
+            assert.equal(tableRows.length, 53102)
         })
     })
 })

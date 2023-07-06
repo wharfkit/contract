@@ -118,7 +118,7 @@ suite('Table', () => {
         })
         test('should fetch table row correctly with default filtering', async () => {
             // curl http://eos.greymass.com/v1/chain/get_table_rows -d '{"table":"producers","limit":10,"code":"eosio","scope":"eosio","json":true, "lower_bound": "teamgreymass", "upper_bound": "teamgreymass"}'
-            const row = await producersTable.find({owner: 'teamgreymass'})
+            const row = await producersTable.find('teamgreymass')
 
             assert.deepEqual(row, {
                 owner: 'teamgreymass',

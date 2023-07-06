@@ -96,7 +96,15 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         query: WhereQuery,
         {limit = 10, scope = this.contract.account, index}: WhereQueryOptions = {}
     ): TableCursor<TableRow> {
+        if (!query) {
+            throw new Error('Index value range must be provided')
+        }
+
         const {from, to} = query
+
+        if (!from && !to) {
+            throw new Error('Index value for "from" or "to" must be provided')
+        }
 
         const lower_bound = from
             ? typeof from === 'string'
@@ -134,6 +142,10 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
     async find(query, queryOptions?: QueryOptions): Promise<TableRow> {
+        if (!query) {
+            throw new Error('Index value must be provided')
+        }
+
         const fieldToIndexMapping = await this.getFieldToIndex()
 
         const tableRowsParams = {

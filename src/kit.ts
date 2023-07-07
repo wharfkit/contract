@@ -67,12 +67,12 @@ export class ContractKit {
      * @returns
      */
     async load(contract: NameType): Promise<Contract> {
-        const name = Name.from(contract)
-        const abiDef = await this.abiCache.getAbi(name)
+        const account = Name.from(contract)
+        const abiDef = await this.abiCache.getAbi(account)
         return new Contract({
             abi: ABI.from(abiDef),
+            account,
             client: this.client,
-            name,
         })
     }
 }

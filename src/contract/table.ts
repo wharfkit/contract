@@ -239,7 +239,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
                 'Contract must be passed as a parameter in order for getAbi to be called.'
             )
         }
-        return this.contract.getAbi()
+        return this.contract.abi
     }
 
     private async getAbiTable(): Promise<ABI.Table | undefined> {

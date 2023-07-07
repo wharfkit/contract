@@ -1,109 +1,77 @@
 import {assert} from 'chai'
 import {makeClient, makeMockAction, mockSession} from '@wharfkit/mock-data'
 
-import {Contract, Table} from '$lib'
+import ContractKit, {Contract, ContractArgs, Table} from '$lib'
+import {ABI, Name, Serializer} from '@wharfkit/session'
 
 const mockClient = makeClient('https://eos.greymass.com')
+
+const mockContractArgs: ContractArgs = {
+    abi: {version: 'eosio::abi/1.2'},
+    account: 'eosio',
+    client: mockClient,
+}
 
 suite('Contract', () => {
     let mockContract: Contract
 
     setup(async function () {
-        mockContract = new Contract({
-            name: 'decentiumorg',
+        const kit = new ContractKit({
             client: mockClient,
         })
+        mockContract = await kit.load('eosio')
     })
 
-    suite('from', () => {
-        test('returns a Contract instance', () => {
-            const contract = Contract.from({
-                name: 'decentiumorg',
-                client: mockClient,
+    suite('construct', function () {
+        test('typed', function () {
+            const contract = new Contract({
+                ...mockContractArgs,
+                abi: ABI.from(mockContractArgs.abi),
+                account: Name.from(mockContractArgs.account),
             })
+            assert.instanceOf(contract, Contract)
+        })
+        test('untyped', function () {
+            const contract = new Contract(mockContractArgs)
             assert.instanceOf(contract, Contract)
         })
     })
 
-    suite('call', () => {
-        test('calls a contract action', async () => {
-            const contract = new Contract({
-                name: 'eosio.token',
-                client: mockClient,
-            })
-            const session = mockSession
-            const actionName = 'transfer'
-            const {data} = makeMockAction()
-            await contract.call(actionName, data, session)
+    suite('tables', function () {
+        test('list table names', function () {
+            assert.isArray(mockContract.tables)
+            assert.lengthOf(mockContract.tables, 26)
+            assert.isTrue(mockContract.tables.includes('voters'))
         })
     })
 
-    suite('getTables', () => {
-        test('returns list of tables', async () => {
-            const tables = await mockContract.getTables()
-            assert.lengthOf(tables, 5)
-            assert.instanceOf(tables[0], Table)
+    suite('table', function () {
+        test('load table using Name', function () {
+            const table = mockContract.table('voters')
+            assert.instanceOf(table, Table)
+            assert.isTrue(table.name.equals('voters'))
+        })
+        test('load table using string', function () {
+            const table = mockContract.table(Name.from('voters'))
+            assert.instanceOf(table, Table)
+            assert.isTrue(table.name.equals('voters'))
+        })
+        test('throws on invalid name', function () {
+            assert.throws(() => mockContract.table('foo'))
         })
     })
 
-    suite('getTable', () => {
-        test('returns single table', async () => {
-            assert.instanceOf(await mockContract.getTable('blogs'), Table)
-            assert.instanceOf(await mockContract.getTable('links'), Table)
-            assert.instanceOf(await mockContract.getTable('posts'), Table)
-        })
-    })
-
-    suite('getAbi', () => {
-        test('returns ABI for the contract', async () => {
-            const abi = await mockContract.getAbi()
-
-            assert.isObject(abi)
-            assert.hasAllKeys(abi, [
-                'version',
-                'types',
-                'structs',
-                'actions',
-                'tables',
-                'ricardian_clauses',
-                'error_messages',
-                'abi_extensions',
-                'action_results',
-                'variants',
-            ])
-
-            const abiSecondCall = await mockContract.getAbi()
-            assert.strictEqual(
-                abi,
-                abiSecondCall,
-                'ABI should be cached and return the same instance on subsequent calls'
-            )
-        })
-
-        test('throws error when client is not set', async () => {
-            const contractWithoutClient = new Contract({name: 'decentiumorg'})
-            try {
-                await contractWithoutClient.getAbi()
-                assert.fail('Expected method to reject.')
-            } catch (err: any) {
-                assert.strictEqual(err.message, 'Cannot get ABI without client')
-            }
-        })
-
-        test('throws error when ABI not found', async () => {
-            const contractWithNonExistentName = new Contract({
-                name: 'nonExistent',
-                client: mockClient,
-            })
-
-            try {
-                await contractWithNonExistentName.getAbi()
-            } catch (error: any) {
-                assert.strictEqual(
-                    error.message,
-                    `No ABI found for ${contractWithNonExistentName.account}`
-                )
-            }
-        })
-    })
+    // TODO: reimplement call tests
+    // suite('call', () => {
+    //     test('calls a contract action', async () => {
+    //         const contract = new Contract({
+    //             name: 'eosio.token',
+    //             client: mockClient,
+    //         })
+    //         const session = mockSession
+    //         const actionName = 'transfer'
+    //         const {data} = makeMockAction()
+    //         await contract.call(actionName, data, session)
+    //     })
+    // })
 })

@@ -21,6 +21,7 @@ export class Contract {
     readonly abi: ABI
     readonly account: Name
     readonly client: APIClient
+    readonly session?: Session
 
     /**
      * Constructs a new `Contract` instance.
@@ -33,13 +34,9 @@ export class Contract {
         this.account = Name.from(args.account)
         this.client = args.client
 
-        this.abi.tables.forEach((tableDef) => {
-            this.tables[String(tableDef.name)] = Table.from({
-                contract: this,
-                name: tableDef.name,
-                rowType: tableDef.type,
-            })
-        })
+        if (options.session) {
+            this.session = options.session
+        }
     }
 
     static from(args: ContractArgs, options: ContractOptions = {}): Contract {

@@ -3,6 +3,7 @@ import * as ts from 'typescript'
 import {Contract, Table} from '../index'
 import {findExternalType, generateClassDeclaration, generateInterface} from './helpers'
 import {capitalize} from '../utils'
+import {APIClient} from '@wharfkit/session'
 
 export async function generateTableClass(contractName, namespaceName, table, abi) {
     const tableName = table.name
@@ -12,7 +13,14 @@ export async function generateTableClass(contractName, namespaceName, table, abi
 
     const tableInstance = Table.from({
         name: tableName,
-        contract: Contract.from({name: contractName, abi}),
+        contract: Contract.from({
+            account: contractName,
+            abi,
+            // TODO: Remove the need for a table instance to need the full contract.
+            // The line below was added because `client` is now required for a contract
+            // It's not a good solution here, but it's a quick fix for now
+            client: new APIClient({url: 'https://jungle4.greymass.com'}),
+        }),
     })
     const fieldToIndexMapping = await tableInstance.getFieldToIndex()
 

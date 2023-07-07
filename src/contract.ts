@@ -1,4 +1,14 @@
-import {ABI, ABIDef, APIClient, Name, NameType, Session} from '@wharfkit/session'
+import {
+    ABI,
+    ABIDef,
+    ABISerializableObject,
+    Action,
+    APIClient,
+    Name,
+    NameType,
+    Session,
+    TransactResult,
+} from '@wharfkit/session'
 
 import {Table} from './contract/table'
 
@@ -66,19 +76,19 @@ export class Contract {
      * @param {Session} session - The session object to use to sign the transaction.
      * @return {Promise<TransactResult>} A promise that resolves with the transaction data.
      */
-    // async call(
-    //     name: NameType,
-    //     data: ABISerializableObject | {[key: string]: any},
-    //     session: Session
-    // ): Promise<TransactResult> {
-    //     const action: Action = Action.from({
-    //         account: this.account,
-    //         name,
-    //         authorization: [],
-    //         data,
-    //     })
+    async call(
+        name: NameType,
+        data: ABISerializableObject | {[key: string]: any},
+        session: Session
+    ): Promise<TransactResult> {
+        const action: Action = Action.from({
+            account: this.account,
+            name,
+            authorization: [],
+            data,
+        })
 
-    //     // Trigger the transaction using the session kit
-    //     return session.transact({action})
-    // }
+        // Trigger the transaction using the session kit
+        return session.transact({action})
+    }
 }

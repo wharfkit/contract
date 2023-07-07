@@ -86,9 +86,11 @@ suite('Table', () => {
         })
     })
 
-    suite('find', () => {
+    suite('get', () => {
         test('should fetch table row correctly when filtering by primary index is used', async () => {
-            const row = await decentiumTrendingTable.get(5)
+            const row = await decentiumTrendingTable.get(5, {key_type: 'i64'})
+
+            console.log({row})
 
             assert.deepEqual(row, {
                 id: 5,

@@ -1,12 +1,12 @@
-import {ABI, ABISerializableConstructor, API, Name, NameType, UInt64} from '@wharfkit/session'
+import {ABI, ABISerializableConstructor, API, Name, NameType} from '@wharfkit/session'
 import type {Contract} from '../contract'
-import {indexPositionInWords, wrapIndexValue} from '../utils'
+import {indexPositionInWords} from '../utils'
 import {TableCursor} from './table-cursor'
 
 export interface QueryOptions {
     index?: string
     scope?: NameType
-    index_type?: API.v1.TableIndexType
+    key_type?: keyof API.v1.TableIndexTypes
 }
 
 export interface WhereQueryOptions extends QueryOptions {
@@ -14,8 +14,8 @@ export interface WhereQueryOptions extends QueryOptions {
 }
 
 export interface WhereQuery {
-    from: number | string | UInt64
-    to: number | string | UInt64
+    from: API.v1.TableIndexType | string
+    to: API.v1.TableIndexType | string
 }
 
 interface FieldToIndex {
@@ -95,7 +95,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     query(
         query: WhereQuery,
-        {limit = 10, scope = this.contract.account, index, index_type}: WhereQueryOptions = {}
+        {limit = 10, scope = this.contract.account, index, key_type}: WhereQueryOptions = {}
     ): TableCursor<TableRow> {
         if (!query) {
             throw new Error('Index value range must be provided')
@@ -113,8 +113,9 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             scope,
             type: this.rowType,
             limit,
-            lower_bound: wrapIndexValue(from),
-            upper_bound: wrapIndexValue(from),
+            lower_bound: from,
+            upper_bound: to,
+            key_type: key_type,
         }
 
         return new TableCursor({
@@ -131,24 +132,30 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
-    async get(query, queryOptions?: QueryOptions): Promise<TableRow> {
-        if (!query) {
+    async get(
+        queryValue: API.v1.TableIndexType | string,
+        queryOptions?: QueryOptions
+    ): Promise<TableRow> {
+        if (!queryValue) {
             throw new Error('Index value must be provided')
         }
 
         const fieldToIndexMapping = await this.getFieldToIndex()
 
+        console.log({queryValue})
+
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
             scope: this.contract.account,
-            type: this.rowType,
+            type: this.rowType!,
             limit: 1,
-            lower_bound: typeof query === 'string' ? Name.from(query) : UInt64.from(query),
-            upper_bound: typeof query === 'string' ? Name.from(query) : UInt64.from(query),
+            lower_bound: queryValue,
+            upper_bound: queryValue,
             index_position: queryOptions?.index
                 ? fieldToIndexMapping[queryOptions?.index].index_position
                 : 'primary',
+            key_type: queryOptions?.key_type,
         }
 
         const {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)

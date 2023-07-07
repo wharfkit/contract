@@ -66,7 +66,7 @@ export namespace _RewardsGm {
         export class config {
             static fieldToIndex = {}
             static query(
-                queryParams: _RewardsGm.types.ConfigWhereQueryParams,
+                queryParams: _RewardsGm.types.ConfigQueryParams,
                 getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
             ): TableCursor<_RewardsGm.types.Config> {
@@ -103,7 +103,7 @@ export namespace _RewardsGm {
         export class users {
             static fieldToIndex = {}
             static query(
-                queryParams: _RewardsGm.types.UsersWhereQueryParams,
+                queryParams: _RewardsGm.types.UsersQueryParams,
                 getTableRowsOptions: GetTableRowsOptions,
                 client: APIClient
             ): TableCursor<_RewardsGm.types.User_row> {
@@ -166,7 +166,7 @@ export namespace _RewardsGm {
             account: NameType
             weight: UInt16Type
         }
-        export interface ConfigWhereQueryParams {
+        export interface ConfigQueryParams {
             token_symbol?: {
                 from: Symbol
                 to: Symbol
@@ -185,7 +185,7 @@ export namespace _RewardsGm {
             oracle_account?: NameType
             oracle_pairs?: Oracle_pair
         }
-        export interface UsersWhereQueryParams {
+        export interface UsersQueryParams {
             account?: {
                 from: NameType
                 to: NameType

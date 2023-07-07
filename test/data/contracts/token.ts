@@ -82,7 +82,7 @@
 //         export class accounts {
 //             static fieldToIndex = {balance: {type: 'balance', index_position: 'primary'}}
 //             static query(
-//                 queryParams: _EosioToken.types.AccountsWhereQueryParams,
+//                 queryParams: _EosioToken.types.AccountsQueryParams,
 //                 getTableRowsOptions: GetTableRowsOptions,
 //                 client: APIClient
 //             ): TableCursor<_EosioToken.types.Account> {
@@ -137,7 +137,7 @@
 //         export class stat {
 //             static fieldToIndex = {supply: {type: 'supply', index_position: 'primary'}}
 //             static query(
-//                 queryParams: _EosioToken.types.StatWhereQueryParams,
+//                 queryParams: _EosioToken.types.StatQueryParams,
 //                 getTableRowsOptions: GetTableRowsOptions,
 //                 client: APIClient
 //             ): TableCursor<_EosioToken.types.Currency_stats> {
@@ -224,7 +224,7 @@
 //             quantity: AssetType
 //             memo: string
 //         }
-//         export interface AccountsWhereQueryParams {
+//         export interface AccountsQueryParams {
 //             balance?: {
 //                 from: AssetType
 //                 to: AssetType
@@ -233,7 +233,7 @@
 //         export interface AccountsFindQueryParams {
 //             balance?: AssetType
 //         }
-//         export interface StatWhereQueryParams {
+//         export interface StatQueryParams {
 //             supply?: {
 //                 from: AssetType
 //                 to: AssetType

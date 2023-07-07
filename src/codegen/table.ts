@@ -65,7 +65,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
                     undefined,
                     ts.factory.createIdentifier('query'),
                     undefined,
-                    ts.factory.createTypeReferenceNode('WhereQuery'),
+                    ts.factory.createTypeReferenceNode('Query'),
                     undefined
                 ),
                 ts.factory.createParameterDeclaration(
@@ -73,7 +73,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
                     undefined,
                     ts.factory.createIdentifier('queryOptions'),
                     undefined,
-                    ts.factory.createTypeReferenceNode('WhereQueryOptions'),
+                    ts.factory.createTypeReferenceNode('QueryOptions'),
                     undefined
                 )
             )

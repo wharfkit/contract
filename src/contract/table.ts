@@ -3,17 +3,17 @@ import type {Contract} from '../contract'
 import {indexPositionInWords} from '../utils'
 import {TableCursor} from './table-cursor'
 
-export interface QueryOptions {
+export interface FindOptions {
     index?: string
     scope?: NameType
     key_type?: keyof API.v1.TableIndexTypes
 }
 
-export interface WhereQueryOptions extends QueryOptions {
+export interface QueryOptions extends FindOptions {
     limit?: number
 }
 
-export interface WhereQuery {
+export interface Query {
     from: API.v1.TableIndexType | string
     to: API.v1.TableIndexType | string
 }
@@ -94,8 +94,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
     query(
-        query: WhereQuery,
-        {limit = 10, scope = this.contract.account, index, key_type}: WhereQueryOptions = {}
+        query: Query,
+        {limit = 10, scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): TableCursor<TableRow> {
         if (!query) {
             throw new Error('Index value range must be provided')
@@ -134,7 +134,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     async get(
         queryValue: API.v1.TableIndexType | string,
-        queryOptions?: QueryOptions
+        {scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): Promise<TableRow> {
         if (!queryValue) {
             throw new Error('Index value must be provided')
@@ -147,15 +147,13 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
-            scope: this.contract.account,
+            scope,
             type: this.rowType!,
             limit: 1,
             lower_bound: queryValue,
             upper_bound: queryValue,
-            index_position: queryOptions?.index
-                ? fieldToIndexMapping[queryOptions?.index].index_position
-                : 'primary',
-            key_type: queryOptions?.key_type,
+            // index_position: index ? fieldToIndexMapping[index].index_position : 'primary',
+            key_type: key_type,
         }
 
         const {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)

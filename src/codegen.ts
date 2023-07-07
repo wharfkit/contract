@@ -30,7 +30,7 @@ export async function codegen(contractName, abi) {
         '@wharfkit/session'
     )
     const importContractStatement = generateImportStatement(
-        ['Contract', 'Table', 'TableCursor', 'QueryOptions', 'WhereQueryOptions', 'WhereQuery'],
+        ['Contract', 'Table', 'TableCursor', 'QueryOptions', 'QueryOptions', 'Query'],
         '@wharfkit/contract'
     )
 

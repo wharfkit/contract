@@ -1,12 +1,12 @@
 import {API, isInstanceOf, UInt64} from '@wharfkit/session'
 import {Name} from '@wharfkit/session'
 import {wrapIndexValue} from '../utils'
-import {QueryOptions, Table, WhereQuery} from './table'
+import {QueryOptions, Table, Query} from './table'
 
 interface TableCursorParams {
     table: Table
     tableParams: API.v1.GetTableRowsParams
-    next_key?: Name | UInt64 | undefined
+    next_key?: API.v1.TableIndexType | string
     indexPositionField?: string
 }
 
@@ -18,7 +18,7 @@ interface TableCursorParams {
  */
 export class TableCursor<TableRow> {
     private table: Table
-    private next_key: Name | UInt64 | undefined
+    private next_key: API.v1.TableIndexType | string | undefined
     private tableParams: API.v1.GetTableRowsParams
     private endReached = false
     private indexPositionField?: string
@@ -80,25 +80,11 @@ export class TableCursor<TableRow> {
             return []
         }
 
-        let lower_bound
-        let upper_bound
-
-        if (this.tableParams.lower_bound) {
-            lower_bound = isInstanceOf(this.tableParams.lower_bound, Name)
-                ? Name.from(this.tableParams.lower_bound)
-                : UInt64.from(this.tableParams.lower_bound)
-        }
+        let lower_bound = this.tableParams.lower_bound
+        let upper_bound = this.tableParams.upper_bound
 
         if (this.next_key) {
-            lower_bound = isInstanceOf(this.next_key, Name)
-                ? Name.from(this.next_key)
-                : UInt64.from(this.next_key)
-        }
-
-        if (this.tableParams.upper_bound) {
-            upper_bound = isInstanceOf(this.tableParams.upper_bound, Name)
-                ? Name.from(this.tableParams.upper_bound)
-                : UInt64.from(this.tableParams.upper_bound)
+            lower_bound = this.next_key
         }
 
         let indexPosition = this.tableParams.index_position || 'primary'
@@ -116,8 +102,8 @@ export class TableCursor<TableRow> {
         const {rows, next_key} = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
             limit: Math.min(this.tableParams.limit - this.rowsCount, 1000000),
-            lower_bound: lower_bound ? lower_bound : undefined,
-            upper_bound: upper_bound ? upper_bound : undefined,
+            lower_bound,
+            upper_bound,
             index_position: indexPosition,
         })
 
@@ -161,7 +147,7 @@ export class TableCursor<TableRow> {
      *
      * @returns A new cursor with updated parameters.
      */
-    query(query: WhereQuery, queryOptions?: QueryOptions) {
+    query(query: Query, queryOptions?: QueryOptions) {
         return new TableCursor({
             table: this.table,
             tableParams: {

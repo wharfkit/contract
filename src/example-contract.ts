@@ -16,7 +16,7 @@ export namespace _Blog {
             declare email: string
         }
 
-        export interface UsersWhereQueryParams {
+        export interface UsersQueryParams {
             name: {
                 from: string
                 to: string
@@ -49,7 +49,7 @@ export namespace _Blog {
             }
 
             static query(
-                queryParams: _Blog.types.UsersWhereQueryParams,
+                queryParams: _Blog.types.UsersQueryParams,
                 {limit = 10} = {},
                 client: APIClient
             ): TableCursor<_Blog.types.UsersRow> {

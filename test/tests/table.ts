@@ -1,6 +1,6 @@
 import {assert} from 'chai'
 
-import {Contract, Table} from '$lib'
+import ContractKit, {Contract, Table} from '$lib'
 
 import {makeClient} from '@wharfkit/mock-data'
 
@@ -12,20 +12,15 @@ suite('Table', () => {
     let producersTable
 
     setup(async function () {
-        nameBidTable = new Table({
-            contract: Contract.from({name: 'eosio', client: mockClient}),
-            name: 'namebids',
+        const kit = new ContractKit({
+            client: mockClient,
         })
+        const eosio = await kit.load('eosio')
+        nameBidTable = eosio.table('namebids')
+        producersTable = eosio.table('producers')
 
-        producersTable = new Table({
-            contract: Contract.from({name: 'eosio', client: mockClient}),
-            name: 'producers',
-        })
-
-        decentiumTrendingTable = new Table({
-            contract: Contract.from({name: 'decentiumorg', client: mockClient}),
-            name: 'trending',
-        })
+        const decentiumorg = await kit.load('decentiumorg')
+        decentiumTrendingTable = decentiumorg.table('trending')
     })
 
     suite('cursor', () => {

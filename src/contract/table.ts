@@ -1,6 +1,6 @@
 import {ABI, ABISerializableConstructor, API, Name, NameType} from '@wharfkit/session'
 import type {Contract} from '../contract'
-import {indexPositionInWords} from '../utils'
+import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
 
 export interface FindOptions {
@@ -113,8 +113,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             scope,
             type: this.rowType,
             limit,
-            lower_bound: from,
-            upper_bound: to,
+            lower_bound: wrapIndexValue(from),
+            upper_bound: wrapIndexValue(to),
             key_type: key_type,
         }
 
@@ -150,8 +150,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             scope,
             type: this.rowType!,
             limit: 1,
-            lower_bound: queryValue,
-            upper_bound: queryValue,
+            lower_bound: wrapIndexValue(queryValue),
+            upper_bound: wrapIndexValue(queryValue),
             // index_position: index ? fieldToIndexMapping[index].index_position : 'primary',
             key_type: key_type,
         }

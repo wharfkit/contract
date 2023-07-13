@@ -142,8 +142,6 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
 
         const fieldToIndexMapping = await this.getFieldToIndex()
 
-        console.log({queryValue})
-
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,

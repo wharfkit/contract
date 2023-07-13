@@ -1,0 +1,39 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"table\":\"producers\",\"code\":\"eosio\",\"scope\":\"eosio\",\"limit\":1,\"lower_bound\":\"teamgreymass\",\"upper_bound\":\"teamgreymass\",\"key_type\":\"name\",\"json\":true}"
+        }
+    },
+    "status": 200,
+    "json": {
+        "rows": [
+            {
+                "owner": "teamgreymass",
+                "total_votes": "10575811356148457472.00000000000000000",
+                "producer_key": "EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx",
+                "is_active": 1,
+                "url": "https://greymass.com",
+                "unpaid_blocks": 0,
+                "last_claim_time": "2023-07-12T15:01:14.000",
+                "location": 124,
+                "producer_authority": [
+                    "block_signing_authority_v0",
+                    {
+                        "threshold": 1,
+                        "keys": [
+                            {
+                                "key": "EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx",
+                                "weight": 1
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "more": false,
+        "next_key": ""
+    },
+    "text": "{\"rows\":[{\"owner\":\"teamgreymass\",\"total_votes\":\"10575811356148457472.00000000000000000\",\"producer_key\":\"EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx\",\"is_active\":1,\"url\":\"https://greymass.com\",\"unpaid_blocks\":0,\"last_claim_time\":\"2023-07-12T15:01:14.000\",\"location\":124,\"producer_authority\":[\"block_signing_authority_v0\",{\"threshold\":1,\"keys\":[{\"key\":\"EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx\",\"weight\":1}]}]}],\"more\":false,\"next_key\":\"\"}"
+}

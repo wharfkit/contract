@@ -90,8 +90,6 @@ suite('Table', () => {
         test('should fetch table row correctly when filtering by primary index is used', async () => {
             const row = await decentiumTrendingTable.get(5, {key_type: 'i64'})
 
-            console.log({row})
-
             assert.deepEqual(row, {
                 id: 5,
                 score: 102465,
@@ -124,12 +122,12 @@ suite('Table', () => {
 
             assert.deepEqual(row, {
                 owner: 'teamgreymass',
-                total_votes: '10022159900306069504.00000000000000000',
+                total_votes: '10575811356148457472.00000000000000000',
                 producer_key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
                 is_active: 1,
                 url: 'https://greymass.com',
                 unpaid_blocks: 0,
-                last_claim_time: '2023-07-05T14:59:26.000',
+                last_claim_time: '2023-07-12T15:01:14.000',
                 location: 124,
                 producer_authority: [
                     'block_signing_authority_v0',

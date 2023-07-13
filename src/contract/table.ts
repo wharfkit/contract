@@ -150,7 +150,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             limit: 1,
             lower_bound: wrapIndexValue(queryValue),
             upper_bound: wrapIndexValue(queryValue),
-            // index_position: index ? fieldToIndexMapping[index].index_position : 'primary',
+            index_position: index ? fieldToIndexMapping[index].index_position : 'primary',
             key_type: key_type,
         }
 

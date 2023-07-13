@@ -1,7 +1,6 @@
-import {API, isInstanceOf, UInt64} from '@wharfkit/session'
-import {Name} from '@wharfkit/session'
+import {API} from '@wharfkit/session'
 import {wrapIndexValue} from '../utils'
-import {QueryOptions, Table, Query} from './table'
+import {Query, QueryOptions, Table} from './table'
 
 interface TableCursorParams {
     table: Table
@@ -81,7 +80,7 @@ export class TableCursor<TableRow> {
         }
 
         let lower_bound = this.tableParams.lower_bound
-        let upper_bound = this.tableParams.upper_bound
+        const upper_bound = this.tableParams.upper_bound
 
         if (this.next_key) {
             lower_bound = this.next_key
@@ -147,11 +146,12 @@ export class TableCursor<TableRow> {
      *
      * @returns A new cursor with updated parameters.
      */
-    query(query: Query, queryOptions?: QueryOptions) {
+    query(query: Query, {limit}: QueryOptions = {}) {
         return new TableCursor({
             table: this.table,
             tableParams: {
                 ...this.tableParams,
+                limit: limit || this.tableParams.limit,
                 lower_bound: query.from || this.tableParams.lower_bound,
                 upper_bound: query.to || this.tableParams.upper_bound,
             },

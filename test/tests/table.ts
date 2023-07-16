@@ -28,6 +28,24 @@ suite('Table', () => {
             const cursor = nameBidTable.cursor()
             assert.instanceOf(cursor, TableCursor)
         })
+        suite('all', () => {
+            test('should return every single row in a table', async () => {
+                const tableCursor = decentiumTrendingTable.cursor()
+                assert.equal((await tableCursor.all()).length, 239)
+            })
+        })
+        suite('next', () => {
+            test('should allow you to fetch as many rows as possible with one request', async () => {
+                const tableCursor = decentiumTrendingTable.cursor()
+                assert.equal((await tableCursor.next()).length, 239)
+            })
+
+            test('should allow you to fetch more rows after first request', async () => {
+                const tableCursor = nameBidTable.cursor()
+                assert.equal((await tableCursor.next()).length, 3718)
+                assert.equal((await tableCursor.next()).length, 3766)
+            })
+        })
         suite('reset', () => {
             test('should allow you to reset the cursor', async () => {
                 const tableCursor = decentiumTrendingTable.query({from: 5, to: 6})
@@ -178,28 +196,6 @@ suite('Table', () => {
                 const tableCursor = decentiumTrendingTable.first(10000)
                 const firstBatch = await tableCursor.all()
                 assert.equal(firstBatch.length, 239)
-            })
-        })
-    })
-
-    suite('cursor', () => {
-        suite('all', () => {
-            test('should return every single row in a table', async () => {
-                const tableCursor = decentiumTrendingTable.cursor()
-                assert.equal((await tableCursor.all()).length, 239)
-            })
-        })
-
-        test('next', async () => {
-            test('should allow you to fetch as many rows as possible with one request', async () => {
-                const tableCursor = decentiumTrendingTable.cursor()
-                assert.equal((await tableCursor.next()).length, 239)
-            })
-
-            test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = nameBidTable.cursor()
-                assert.equal((await tableCursor.next()).length, 3718)
-                assert.equal((await tableCursor.next()).length, 3766)
             })
         })
     })

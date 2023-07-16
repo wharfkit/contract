@@ -97,15 +97,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         query: Query,
         {limit = 10, scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): TableCursor<TableRow> {
-        if (!query) {
-            throw new Error('Index value range must be provided')
-        }
-
         const {from, to} = query
-
-        if (!from && !to) {
-            throw new Error('Index value for "from" or "to" must be provided')
-        }
 
         const tableRowsParams = {
             table: this.name,
@@ -136,10 +128,6 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         queryValue: API.v1.TableIndexType | string,
         {scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): Promise<TableRow> {
-        if (!queryValue) {
-            throw new Error('Index value must be provided')
-        }
-
         const fieldToIndexMapping = await this.getFieldToIndex()
 
         const tableRowsParams = {

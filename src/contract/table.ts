@@ -208,17 +208,11 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             return this.fieldToIndex
         }
 
-        const table = this.contract.abi.tables.find((table) => this.name.equals(table.name))
-
-        if (!table) {
-            throw new Error(`Table ${this.name} not found in ABI`)
-        }
-
         const fieldToIndex = {}
 
-        for (let i = 0; i < table.key_names.length; i++) {
-            fieldToIndex[table.key_names[i]] = {
-                type: table.key_types[i],
+        for (let i = 0; i < this.abi.key_names.length; i++) {
+            fieldToIndex[this.abi.key_names[i]] = {
+                type: this.abi.key_types[i],
                 index_position: indexPositionInWords(i),
             }
         }

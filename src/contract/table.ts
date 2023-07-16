@@ -200,7 +200,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             return this.fieldToIndex
         }
 
-        const table = await this.getAbiTable()
+        const table = this.contract.abi.tables.find((table) => this.name.equals(table.name))
 
         if (!table) {
             throw new Error(`Table ${this.name} not found in ABI`)
@@ -216,25 +216,5 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         }
 
         return fieldToIndex
-    }
-
-    private async getAbi(): Promise<ABI.Def> {
-        if (!this.contract) {
-            throw new Error(
-                'Contract must be passed as a parameter in order for getAbi to be called.'
-            )
-        }
-        return this.contract.abi
-    }
-
-    private async getAbiTable(): Promise<ABI.Table | undefined> {
-        const abi = await this.getAbi()
-        return abi.tables.find((table) => this.name.equals(table.name))
-    }
-
-    private async getTableStruct(): Promise<ABI.Struct | undefined> {
-        const abi = await this.getAbi()
-        const table = await this.getAbiTable()
-        return abi.structs.find((struct) => table?.type === String(struct.name))
     }
 }

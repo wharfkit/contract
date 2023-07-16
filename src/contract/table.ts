@@ -43,6 +43,7 @@ export interface GetTableRowsOptions {
  * @typeparam TableRow The type of rows in the table.
  */
 export class Table<TableRow extends ABISerializableConstructor = ABISerializableConstructor> {
+    readonly abi: ABI.Table
     readonly name: Name
     readonly contract: Contract
     readonly rowType?: TableRow
@@ -62,6 +63,13 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     constructor({contract, name, rowType, fieldToIndex}: TableParams<TableRow>) {
         this.name = Name.from(name)
+
+        const abi = contract.abi.tables.find((table) => this.name.equals(table.name))
+        if (!abi) {
+            throw new Error(`Table ${this.name} not found in ABI`)
+        }
+
+        this.abi = abi
         this.rowType = rowType
         this.fieldToIndex = fieldToIndex
         this.contract = contract

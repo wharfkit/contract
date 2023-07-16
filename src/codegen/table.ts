@@ -22,7 +22,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
             client: new APIClient({url: 'https://jungle4.greymass.com'}),
         }),
     })
-    const fieldToIndexMapping = await tableInstance.getFieldToIndex()
+    const fieldToIndexMapping = tableInstance.getFieldToIndex()
 
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(

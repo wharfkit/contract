@@ -136,7 +136,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         queryValue: API.v1.TableIndexType | string,
         {scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): Promise<TableRow> {
-        const fieldToIndexMapping = await this.getFieldToIndex()
+        const fieldToIndexMapping = this.getFieldToIndex()
 
         const tableRowsParams = {
             table: this.name,
@@ -203,7 +203,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         return this.cursor().all()
     }
 
-    async getFieldToIndex() {
+    getFieldToIndex() {
         if (this.fieldToIndex) {
             return this.fieldToIndex
         }

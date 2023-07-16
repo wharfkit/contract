@@ -1,6 +1,6 @@
 import {assert} from 'chai'
 
-import ContractKit, {Contract, Table} from '$lib'
+import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
 import {makeClient} from '@wharfkit/mock-data'
 
@@ -24,6 +24,10 @@ suite('Table', () => {
     })
 
     suite('cursor', () => {
+        test('should return a cursor', () => {
+            const cursor = nameBidTable.cursor()
+            assert.instanceOf(cursor, TableCursor)
+        })
         suite('reset', () => {
             test('should allow you to reset the cursor', async () => {
                 const tableCursor = decentiumTrendingTable.query({from: 5, to: 6})

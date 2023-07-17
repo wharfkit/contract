@@ -43,6 +43,7 @@ export interface GetTableRowsOptions {
  * @typeparam TableRow The type of rows in the table.
  */
 export class Table<TableRow extends ABISerializableConstructor = ABISerializableConstructor> {
+    readonly abi: ABI.Table
     readonly name: Name
     readonly contract: Contract
     readonly rowType?: TableRow
@@ -62,6 +63,13 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     constructor({contract, name, rowType, fieldToIndex}: TableParams<TableRow>) {
         this.name = Name.from(name)
+
+        const abi = contract.abi.tables.find((table) => this.name.equals(table.name))
+        if (!abi) {
+            throw new Error(`Table ${this.name} not found in ABI`)
+        }
+
+        this.abi = abi
         this.rowType = rowType
         this.fieldToIndex = fieldToIndex
         this.contract = contract
@@ -97,15 +105,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         query: Query,
         {limit = 10, scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): TableCursor<TableRow> {
-        if (!query) {
-            throw new Error('Index value range must be provided')
-        }
-
         const {from, to} = query
-
-        if (!from && !to) {
-            throw new Error('Index value for "from" or "to" must be provided')
-        }
 
         const tableRowsParams = {
             table: this.name,
@@ -136,11 +136,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         queryValue: API.v1.TableIndexType | string,
         {scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): Promise<TableRow> {
-        if (!queryValue) {
-            throw new Error('Index value must be provided')
-        }
-
-        const fieldToIndexMapping = await this.getFieldToIndex()
+        const fieldToIndexMapping = this.getFieldToIndex()
 
         const tableRowsParams = {
             table: this.name,
@@ -207,46 +203,20 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         return this.cursor().all()
     }
 
-    async getFieldToIndex() {
+    getFieldToIndex() {
         if (this.fieldToIndex) {
             return this.fieldToIndex
         }
 
-        const table = await this.getAbiTable()
-
-        if (!table) {
-            throw new Error(`Table ${this.name} not found in ABI`)
-        }
-
         const fieldToIndex = {}
 
-        for (let i = 0; i < table.key_names.length; i++) {
-            fieldToIndex[table.key_names[i]] = {
-                type: table.key_types[i],
+        for (let i = 0; i < this.abi.key_names.length; i++) {
+            fieldToIndex[this.abi.key_names[i]] = {
+                type: this.abi.key_types[i],
                 index_position: indexPositionInWords(i),
             }
         }
 
         return fieldToIndex
-    }
-
-    private async getAbi(): Promise<ABI.Def> {
-        if (!this.contract) {
-            throw new Error(
-                'Contract must be passed as a parameter in order for getAbi to be called.'
-            )
-        }
-        return this.contract.abi
-    }
-
-    private async getAbiTable(): Promise<ABI.Table | undefined> {
-        const abi = await this.getAbi()
-        return abi.tables.find((table) => this.name.equals(table.name))
-    }
-
-    private async getTableStruct(): Promise<ABI.Struct | undefined> {
-        const abi = await this.getAbi()
-        const table = await this.getAbiTable()
-        return abi.structs.find((struct) => table?.type === String(struct.name))
     }
 }

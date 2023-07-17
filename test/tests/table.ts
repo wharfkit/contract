@@ -1,32 +1,99 @@
 import {assert} from 'chai'
 
-import ContractKit, {Contract, Table} from '$lib'
+import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
 import {makeClient} from '@wharfkit/mock-data'
+import {Bytes, Int64, Name, Serializer, UInt128} from '@wharfkit/session'
 
 const mockClient = makeClient('https://eos.greymass.com')
 
 suite('Table', () => {
+    let kit: ContractKit
+    let eosio: Contract
+    let decentiumorg: Contract
+
     let nameBidTable
     let decentiumTrendingTable
     let producersTable
 
     setup(async function () {
-        const kit = new ContractKit({
+        kit = new ContractKit({
             client: mockClient,
         })
-        const eosio = await kit.load('eosio')
+
+        eosio = await kit.load('eosio')
         nameBidTable = eosio.table('namebids')
         producersTable = eosio.table('producers')
 
-        const decentiumorg = await kit.load('decentiumorg')
+        decentiumorg = await kit.load('decentiumorg')
         decentiumTrendingTable = decentiumorg.table('trending')
     })
 
+    suite('construct', function () {
+        test('defaults', () => {
+            const table = new Table({
+                contract: eosio,
+                name: 'namebids',
+            })
+            assert.instanceOf(table, Table)
+        })
+        test('defaults (typed)', () => {
+            const table = new Table({
+                contract: eosio,
+                name: Name.from('namebids'),
+            })
+            assert.instanceOf(table, Table)
+        })
+        test('throws immediately on table name not included in contract', () => {
+            assert.throws(
+                () =>
+                    new Table({
+                        contract: eosio,
+                        name: 'foo',
+                    })
+            )
+        })
+        test('fieldToIndex', () => {
+            const table = new Table({
+                contract: decentiumorg,
+                name: Name.from('trending'),
+                fieldToIndex: {
+                    id: {type: 'uint64', index_position: 'primary'},
+                    score: {type: 'uint64', index_position: 'secondary'},
+                    cscore: {type: 'uint128', index_position: 'tertiary'},
+                    permlink: {type: 'uint128', index_position: 'fourth'},
+                },
+            })
+            assert.instanceOf(table, Table)
+        })
+    })
+
     suite('cursor', () => {
+        test('should return a cursor', () => {
+            const cursor = nameBidTable.cursor()
+            assert.instanceOf(cursor, TableCursor)
+        })
+        suite('all', () => {
+            test('should return every single row in a table', async () => {
+                const tableCursor = decentiumTrendingTable.cursor()
+                assert.equal((await tableCursor.all()).length, 239)
+            })
+        })
+        suite('next', () => {
+            test('should allow you to fetch as many rows as possible with one request', async () => {
+                const tableCursor = decentiumTrendingTable.cursor()
+                assert.equal((await tableCursor.next()).length, 239)
+            })
+
+            test('should allow you to fetch more rows after first request', async () => {
+                const tableCursor = nameBidTable.cursor()
+                assert.equal((await tableCursor.next()).length, 2453)
+                assert.equal((await tableCursor.next()).length, 2354)
+            })
+        })
         suite('reset', () => {
             test('should allow you to reset the cursor', async () => {
-                const tableCursor = decentiumTrendingTable.where({id: {from: 5, to: 6}})
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 6})
 
                 assert.deepEqual(
                     (await tableCursor.next()).map((row) => row.id),
@@ -51,9 +118,15 @@ suite('Table', () => {
     suite('where', () => {
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
-                const tableCursor = decentiumTrendingTable.where({
-                    score: {from: 101511, to: 105056},
-                })
+                const tableCursor = decentiumTrendingTable.query(
+                    {
+                        from: 101511,
+                        to: 105056,
+                    },
+                    {
+                        index: 'score',
+                    }
+                )
 
                 assert.deepEqual(
                     (await tableCursor.all()).map((row) => row.score),
@@ -62,10 +135,7 @@ suite('Table', () => {
             })
 
             test('should fetch correct number of table rows when limit option is used', async () => {
-                const tableCursor = decentiumTrendingTable.where(
-                    {id: {from: 5, to: 10}},
-                    {limit: 2}
-                )
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}, {limit: 2})
 
                 assert.deepEqual(
                     (await tableCursor.all()).map((row) => row.id),
@@ -76,16 +146,16 @@ suite('Table', () => {
 
         suite('next', () => {
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = decentiumTrendingTable.where({id: {from: 5}}, {limit: 10000})
+                const tableCursor = decentiumTrendingTable.query({from: 5}, {limit: 10000})
                 assert.equal((await tableCursor.next()).length, 235)
                 assert.equal((await tableCursor.next()).length, 0)
             })
         })
     })
 
-    suite('find', () => {
+    suite('get', () => {
         test('should fetch table row correctly when filtering by primary index is used', async () => {
-            const row = await decentiumTrendingTable.find({id: 5})
+            const row = await decentiumTrendingTable.get(5, {key_type: 'i64'})
 
             assert.deepEqual(row, {
                 id: 5,
@@ -113,9 +183,38 @@ suite('Table', () => {
                 extensions: [],
             })
         })
+        test('should fetch table row correctly when filtering by index', async () => {
+            const row = await decentiumTrendingTable.get(102465, {index: 'score'})
+            assert.deepEqual(row, {
+                id: 5,
+                score: 102465,
+                ref: {
+                    permlink: {
+                        author: 'eosfilestore',
+                        slug: 'eosfilestore',
+                    },
+                    timestamp: '2019-05-27T19:58:53',
+                    category: 'decentium',
+                    options: 3,
+                    tx: {
+                        block_num: 60399260,
+                        transaction_id:
+                            'de1a09302017b9bbe1ba8aec85617dd6513aaf4bc65e5e1e3663be34cd9cfaac',
+                    },
+                    edit_tx: null,
+                    endorsements: {
+                        amount: 0,
+                        count: 0,
+                    },
+                    extensions: [],
+                },
+                extensions: [],
+            })
+        })
+
         test('should fetch table row correctly with default filtering', async () => {
             // curl http://eos.greymass.com/v1/chain/get_table_rows -d '{"table":"producers","limit":10,"code":"eosio","scope":"eosio","json":true, "lower_bound": "teamgreymass", "upper_bound": "teamgreymass"}'
-            const row = await producersTable.find({owner: 'teamgreymass'})
+            const row = await producersTable.get('teamgreymass')
 
             assert.deepEqual(row, {
                 owner: 'teamgreymass',
@@ -171,28 +270,6 @@ suite('Table', () => {
                 const tableCursor = decentiumTrendingTable.first(10000)
                 const firstBatch = await tableCursor.all()
                 assert.equal(firstBatch.length, 239)
-            })
-        })
-    })
-
-    suite('cursor', () => {
-        suite('all', () => {
-            test('should return every single row in a table', async () => {
-                const tableCursor = decentiumTrendingTable.cursor()
-                assert.equal((await tableCursor.all()).length, 239)
-            })
-        })
-
-        test('next', async () => {
-            test('should allow you to fetch as many rows as possible with one request', async () => {
-                const tableCursor = decentiumTrendingTable.cursor()
-                assert.equal((await tableCursor.next()).length, 239)
-            })
-
-            test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = nameBidTable.cursor()
-                assert.equal((await tableCursor.next()).length, 3718)
-                assert.equal((await tableCursor.next()).length, 3766)
             })
         })
     })

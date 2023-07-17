@@ -1,7 +1,7 @@
 import * as ts from 'typescript'
 
 import {Contract, Table} from '../index'
-import {findExternalType, generateClassDeclaration, generateInterface} from './helpers'
+import {generateClassDeclaration} from './helpers'
 import {capitalize} from '../utils'
 import {APIClient} from '@wharfkit/session'
 
@@ -22,7 +22,7 @@ export async function generateTableClass(contractName, namespaceName, table, abi
             client: new APIClient({url: 'https://jungle4.greymass.com'}),
         }),
     })
-    const fieldToIndexMapping = await tableInstance.getFieldToIndex()
+    const fieldToIndexMapping = tableInstance.getFieldToIndex()
 
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(
@@ -63,40 +63,44 @@ export async function generateTableClass(contractName, namespaceName, table, abi
                 ts.factory.createParameterDeclaration(
                     undefined,
                     undefined,
-                    ts.factory.createIdentifier('queryParams'),
+                    ts.factory.createIdentifier('query'),
                     undefined,
-                    ts.factory.createTypeReferenceNode(
-                        `${namespaceName}.types.${capitalize(tableName)}WhereQueryParams`
-                    ),
+                    ts.factory.createTypeReferenceNode('Query'),
                     undefined
                 ),
                 ts.factory.createParameterDeclaration(
                     undefined,
                     undefined,
-                    ts.factory.createIdentifier('getTableRowsOptions'),
+                    ts.factory.createIdentifier('queryOptions'),
                     undefined,
-                    ts.factory.createTypeReferenceNode('GetTableRowsOptions'),
+                    ts.factory.createTypeReferenceNode('QueryOptions'),
                     undefined
                 )
             )
             baseClassParameters.push(
-                ts.factory.createIdentifier('queryParams'),
-                ts.factory.createIdentifier('getTableRowsOptions')
+                ts.factory.createIdentifier('query'),
+                ts.factory.createIdentifier('queryOptions')
             )
         } else if (method === 'find') {
             parameters.push(
                 ts.factory.createParameterDeclaration(
                     undefined,
                     undefined,
-                    ts.factory.createIdentifier('queryParams'),
+                    ts.factory.createIdentifier('query'),
                     undefined,
-                    ts.factory.createTypeReferenceNode(
-                        `${namespaceName}.types.${capitalize(tableName)}FindQueryParams`
-                    ),
+                    ts.factory.createTypeReferenceNode('any'),
+                    undefined
+                ),
+                ts.factory.createParameterDeclaration(
+                    undefined,
+                    undefined,
+                    ts.factory.createIdentifier('queryOptions'),
+                    undefined,
+                    ts.factory.createTypeReferenceNode('QueryOptions'),
                     undefined
                 )
             )
-            baseClassParameters.push(ts.factory.createIdentifier('queryParams'))
+            baseClassParameters.push(ts.factory.createIdentifier('query'))
         } else if (method === 'first') {
             parameters.push(
                 ts.factory.createParameterDeclaration(
@@ -231,45 +235,5 @@ export async function generateTableClass(contractName, namespaceName, table, abi
     // Construct class declaration
     const classDeclaration = generateClassDeclaration(tableName, members, {export: true})
 
-    const interfaces: ts.InterfaceDeclaration[] = [
-        generateInterface(
-            `${capitalize(tableName)}WhereQueryParams`,
-            true,
-            struct.fields.map((field) =>
-                ts.factory.createPropertySignature(
-                    undefined,
-                    field.name,
-                    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-                    ts.factory.createTypeLiteralNode([
-                        ts.factory.createPropertySignature(
-                            undefined,
-                            'from',
-                            undefined,
-                            ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
-                        ),
-                        ts.factory.createPropertySignature(
-                            undefined,
-                            'to',
-                            undefined,
-                            ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
-                        ),
-                    ])
-                )
-            )
-        ),
-        generateInterface(
-            `${capitalize(tableName)}FindQueryParams`,
-            true,
-            struct.fields.map((field) =>
-                ts.factory.createPropertySignature(
-                    undefined,
-                    field.name,
-                    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-                    ts.factory.createTypeReferenceNode(findExternalType(field.type, abi))
-                )
-            )
-        ),
-    ]
-
-    return {classDeclaration, interfaces}
+    return {classDeclaration}
 }

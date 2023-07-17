@@ -1,7 +1,7 @@
 {
     "name": "@wharfkit/contract",
     "description": "ContractKit for Wharf",
-    "version": "0.1.0-beta1",
+    "version": "0.1.0",
     "homepage": "https://github.com/wharfkit/contract",
     "license": "BSD-3-Clause",
     "main": "lib/contract.js",

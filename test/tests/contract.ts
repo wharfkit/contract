@@ -377,5 +377,14 @@ suite('Contract', () => {
             }
             assert.instanceOf(error, Error)
         })
+        test('throws for an undefined ricardian', async function () {
+            let error
+            try {
+                await tokenContract.ricardian('transfer')
+            } catch (err) {
+                error = err
+            }
+            assert.instanceOf(error, Error)
+        })
     })
 })

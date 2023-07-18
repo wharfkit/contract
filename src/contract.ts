@@ -66,7 +66,7 @@ export class Contract {
         }
     }
 
-    public get tables(): string[] {
+    public get tableNames(): string[] {
         return this.abi.tables.map((table) => String(table.name))
     }
 

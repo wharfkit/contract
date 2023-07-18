@@ -1,4 +1,4 @@
-import {ABI, ABISerializableConstructor, API, Name, NameType} from '@wharfkit/session'
+import {ABI, ABISerializableConstructor, API, Name, NameType} from '@greymass/eosio'
 import type {Contract} from '../contract'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'

@@ -2,8 +2,8 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
+import {Bytes, Int64, Name, Serializer, UInt128} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
-import {Bytes, Int64, Name, Serializer, UInt128} from '@wharfkit/session'
 
 const mockClient = makeClient('https://eos.greymass.com')
 

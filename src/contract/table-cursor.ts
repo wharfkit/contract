@@ -1,4 +1,4 @@
-import {API} from '@wharfkit/session'
+import {API} from '@greymass/eosio'
 import {wrapIndexValue} from '../utils'
 import {Query, QueryOptions, Table} from './table'
 

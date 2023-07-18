@@ -358,4 +358,24 @@ suite('Contract', () => {
             }
         })
     })
+
+    suite('ricardian', () => {
+        test('returns ricardian contract', async function () {
+            const kit = new ContractKit({
+                client: makeClient('https://eos.greymass.com'),
+            })
+            const contract = await kit.load('eosio.token')
+            const ricardian = await contract.ricardian('transfer')
+            assert.isString(ricardian)
+        })
+        test('throws for unknown action', async function () {
+            let error
+            try {
+                await tokenContract.ricardian('foo')
+            } catch (err) {
+                error = err
+            }
+            assert.instanceOf(error, Error)
+        })
+    })
 })

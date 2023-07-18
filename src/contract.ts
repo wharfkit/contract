@@ -138,4 +138,17 @@ export class Contract {
             }
         )
     }
+
+    public ricardian(name: NameType) {
+        if (!this.actionNames.includes(String(name))) {
+            throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
+        }
+        const action = this.abi.actions.find((action) => Name.from(action.name).equals(name))
+        if (!action || !action.ricardian_contract) {
+            throw new Error(
+                `Contract (${this.account}) action named (${name}) does not have a defined ricardian contract`
+            )
+        }
+        return action.ricardian_contract
+    }
 }

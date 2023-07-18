@@ -117,6 +117,14 @@ suite('Table', () => {
     })
 
     suite('query', () => {
+        test('should allow you to chain the query statements', async () => {
+            const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({ to: 8 })
+            assert.deepEqual(
+                (await tableCursor.all()).map((row) => row.id),
+                [5, 6, 7, 8]
+            )
+        })
+
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
                 const tableCursor = decentiumTrendingTable.query(

@@ -84,8 +84,12 @@ export class Contract {
         return this.abi.actions.map((action) => String(action.name))
     }
 
+    public hasAction(name: NameType): boolean {
+        return this.actionNames.includes(String(name))
+    }
+
     public action(name: NameType, data: ActionDataType, options?: ActionOptions): Action {
-        if (!this.actionNames.includes(String(name))) {
+        if (!this.hasAction(name)) {
             throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
         }
 
@@ -139,7 +143,7 @@ export class Contract {
     }
 
     public ricardian(name: NameType) {
-        if (!this.actionNames.includes(String(name))) {
+        if (!this.hasAction(name)) {
             throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
         }
         const action = this.abi.actions.find((action) => Name.from(action.name).equals(name))

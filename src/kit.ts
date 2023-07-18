@@ -1,6 +1,6 @@
 import {ABI, ABIDef, APIClient, Name, NameType} from '@greymass/eosio'
-import {ABICache} from '@wharfkit/session'
-import type {ABICacheInterface} from '@wharfkit/session'
+import {ABICache} from '@wharfkit/abicache'
+import type {ABICacheInterface} from '@wharfkit/abicache'
 import {Contract} from './contract'
 
 export interface ContractKitArgs {
@@ -24,14 +24,13 @@ export class ContractKit {
     readonly client: APIClient
 
     constructor(args: ContractKitArgs, options: ContractKitOptions = defaultContractKitOptions) {
-        // Use either the client given or get it from the session.
         if (args.client) {
             this.client = args.client
         } else {
             throw new Error('A `client` must be passed when initializing the ContractKit.')
         }
 
-        // Use either the specified cache, the cache from the session, or create one
+        // Use either the specified cache or create one
         if (options.abiCache) {
             this.abiCache = options.abiCache
         } else {

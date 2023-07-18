@@ -3,7 +3,7 @@ import {assert} from 'chai'
 import {Contract, ContractKit, ContractKitArgs, ContractKitOptions} from '$lib'
 import {makeClient} from '@wharfkit/mock-data'
 import {ABI, Name} from '@greymass/eosio'
-import {ABICache} from '@wharfkit/session'
+import {ABICache} from '@wharfkit/abicache'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 const mockContractKitArgs: ContractKitArgs = {

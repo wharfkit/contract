@@ -1322,6 +1322,16 @@
     "@typescript-eslint/types" "5.41.0"
     eslint-visitor-keys "^3.3.0"
 
+"@wharfkit/abicache@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@wharfkit/abicache/-/abicache-1.0.0.tgz#d9f7dc38dce0e9cffd7de351b366c1aa1b719c46"
+  integrity sha512-crfXFPlmxkqDdgvVIFjcHGx3kkLdXj2JbUsu3XYnxJf91tWWbHAfNn2ba3UifsFDTE9BdUFd2Cz+FLTi464Gew==
+  dependencies:
+    "@greymass/eosio" "^0.6.10"
+    eosio-signing-request "^2.5.3"
+    pako "^2.0.4"
+    tslib "^2.1.0"
+
 "@wharfkit/mock-data@^1.0.0-beta11":
   version "1.0.0-beta11"
   resolved "https://registry.yarnpkg.com/@wharfkit/mock-data/-/mock-data-1.0.0-beta11.tgz#6233eb5c3a22f27d04e8f112952bab3057df885c"

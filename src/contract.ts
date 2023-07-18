@@ -70,8 +70,12 @@ export class Contract {
         return this.abi.tables.map((table) => String(table.name))
     }
 
+    public hasTable(name: NameType): boolean {
+        return this.tableNames.includes(String(name))
+    }
+
     public table(name: NameType) {
-        if (!this.tables.includes(String(name))) {
+        if (!this.hasTable(name)) {
             throw new Error(`Contract (${this.account}) does not have a table named (${name})`)
         }
         return Table.from({

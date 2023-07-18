@@ -10,7 +10,7 @@ const mockContractKitArgs: ContractKitArgs = {
 }
 const mockContractKitOptions: ContractKitOptions = {}
 
-suite('kit', function () {
+suite('Kit', function () {
     suite('construct', function () {
         test('defaults', function () {
             const kit = new ContractKit(mockContractKitArgs)

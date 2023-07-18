@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@greymass/eosio": "^0.6.10",
+        "eosio-signing-request": "^2.5.3",
         "tslib": "^2.1.0"
     },
     "resolutions": {

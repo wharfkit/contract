@@ -215,7 +215,7 @@ suite('Contract', () => {
     })
 
     suite('actions', function () {
-        test('create array of actions', function () {
+        test('create array of actions', async function () {
             const actions: Action[] = [
                 ...systemContract.actions([
                     {
@@ -250,6 +250,11 @@ suite('Contract', () => {
             assert.isTrue(actions[3].name.equals('open'))
             assert.lengthOf(actions[3].authorization, 1)
             assert.isTrue(actions[3].authorization[0].equals(PlaceholderAuth))
+            const result = await mockSession.transact({actions})
+            if (!result.transaction) {
+                throw new Error('expected transaction')
+            }
+            assert.lengthOf(result.transaction.actions, 4)
         })
         suite('override', function () {
             test('authorization (all)', function () {

@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
-import {Bytes, Int64, Name, Serializer, UInt128} from '@greymass/eosio'
+import {Asset, Bytes, Int64, Name, Serializer, Struct, UInt128} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
@@ -161,6 +161,29 @@ suite('Table', () => {
                     )
                     .all()
                 assert.lengthOf(rows, 40)
+            })
+            // NOTE: This may not be possible without changes to the wharfkit/antelope library
+            test('should return typed rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract
+                    .table('delband')
+                    .query(
+                        {
+                            from: '',
+                            to: '',
+                        },
+                        {
+                            scope: 'wharfkittest',
+                        }
+                    )
+                    .all()
+                assert.instanceOf(rows[0].from, Name)
+                assert.instanceOf(rows[0].to, Name)
+                assert.instanceOf(rows[0].cpu_weight, Asset)
+                assert.instanceOf(rows[0].net_weight, Asset)
             })
         })
 

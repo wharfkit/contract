@@ -115,7 +115,7 @@ suite('Table', () => {
         })
     })
 
-    suite('where', () => {
+    suite('query', () => {
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
                 const tableCursor = decentiumTrendingTable.query(
@@ -141,6 +141,26 @@ suite('Table', () => {
                     (await tableCursor.all()).map((row) => row.id),
                     [5, 6]
                 )
+            })
+
+            test('should fetch all rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract
+                    .table('delband')
+                    .query(
+                        {
+                            from: '',
+                            to: '',
+                        },
+                        {
+                            scope: 'wharfkittest',
+                        }
+                    )
+                    .all()
+                assert.lengthOf(rows, 40)
             })
         })
 

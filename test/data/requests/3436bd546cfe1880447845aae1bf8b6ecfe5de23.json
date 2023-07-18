@@ -1,0 +1,77 @@
+{
+    "request": {
+        "path": "https://jungle4.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"table\":\"delband\",\"code\":\"eosio\",\"scope\":\"wharfkittest\",\"limit\":10,\"key_type\":\"name\",\"index_position\":\"primary\",\"json\":true}"
+        }
+    },
+    "status": 200,
+    "json": {
+        "rows": [
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1111",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1112",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "0.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1113",
+                "net_weight": "0.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1114",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1121",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1122",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "0.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1123",
+                "net_weight": "0.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1124",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkit1152",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            },
+            {
+                "from": "wharfkittest",
+                "to": "wharfkitnoop",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            }
+        ],
+        "more": true,
+        "next_key": "16378876895259279952"
+    },
+    "text": "{\"rows\":[{\"from\":\"wharfkittest\",\"to\":\"wharfkit1111\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkit1112\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"0.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkit1113\",\"net_weight\":\"0.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkit1114\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkit1121\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkit1122\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"0.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkit1123\",\"net_weight\":\"0.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkit1124\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkit1152\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"},{\"from\":\"wharfkittest\",\"to\":\"wharfkitnoop\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"}],\"more\":true,\"next_key\":\"16378876895259279952\"}"
+}

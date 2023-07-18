@@ -117,11 +117,11 @@ suite('Contract', () => {
         })
     })
 
-    suite('tables', function () {
+    suite('tableNames', function () {
         test('list table names', function () {
-            assert.isArray(systemContract.tables)
-            assert.lengthOf(systemContract.tables, 26)
-            assert.isTrue(systemContract.tables.includes('voters'))
+            assert.isArray(systemContract.tableNames)
+            assert.lengthOf(systemContract.tableNames, 26)
+            assert.isTrue(systemContract.tableNames.includes('voters'))
         })
     })
 

@@ -11,8 +11,7 @@ import {
 } from '@wharfkit/session'
 
 import {Table} from './contract/table'
-import {BytesType, PermissionLevel, PermissionLevelType} from '@wharfkit/session'
-import {PlaceholderAuth, PlaceholderName} from '@wharfkit/session/lib/session'
+import {BytesType, PermissionLevel, PermissionLevelType, PlaceholderAuth} from '@wharfkit/session'
 
 export type ActionDataType = BytesType | ABISerializableObject | Record<string, any>
 

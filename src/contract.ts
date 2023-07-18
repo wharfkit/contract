@@ -11,6 +11,10 @@ import {
 } from '@wharfkit/session'
 
 import {Table} from './contract/table'
+import {BytesType, PermissionLevel, PermissionLevelType} from '@wharfkit/session'
+import {PlaceholderAuth, PlaceholderName} from '@wharfkit/session/lib/session'
+
+export type ActionDataType = BytesType | ABISerializableObject | Record<string, any>
 
 export interface ContractArgs {
     abi: ABIDef
@@ -20,6 +24,20 @@ export interface ContractArgs {
 
 export interface ContractOptions {
     session?: Session
+}
+
+export interface CallOptions {
+    session?: Session
+}
+
+export interface ActionArgs {
+    name: NameType
+    data: ActionDataType
+    authorization?: PermissionLevelType[]
+}
+
+export interface ActionOptions {
+    authorization?: PermissionLevelType[]
 }
 
 /**
@@ -49,11 +67,7 @@ export class Contract {
         }
     }
 
-    static from(args: ContractArgs, options: ContractOptions = {}): Contract {
-        return new this(args, options)
-    }
-
-    get tables(): string[] {
+    public get tables(): string[] {
         return this.abi.tables.map((table) => String(table.name))
     }
 
@@ -67,28 +81,61 @@ export class Contract {
         })
     }
 
-    // TODO: reimplement call method
-    /**
-     * Calls a contract action.
-     *
-     * @param {NameType} name - The name of the action.
-     * @param {ABISerializableObject | {[key: string]: any}} data - The data for the action.
-     * @param {Session} session - The session object to use to sign the transaction.
-     * @return {Promise<TransactResult>} A promise that resolves with the transaction data.
-     */
-    async call(
-        name: NameType,
-        data: ABISerializableObject | {[key: string]: any},
-        session: Session
-    ): Promise<TransactResult> {
-        const action: Action = Action.from({
-            account: this.account,
-            name,
-            authorization: [],
-            data,
-        })
+    public get actionNames(): string[] {
+        return this.abi.actions.map((action) => String(action.name))
+    }
 
-        // Trigger the transaction using the session kit
-        return session.transact({action})
+    public action(name: NameType, data: ActionDataType, options?: ActionOptions): Action {
+        if (!this.actionNames.includes(String(name))) {
+            throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
+        }
+
+        let authorization = [PlaceholderAuth]
+        if (options && options.authorization) {
+            authorization = options.authorization.map((auth) => PermissionLevel.from(auth))
+        }
+
+        return Action.from(
+            {
+                account: this.account,
+                name,
+                authorization,
+                data,
+            },
+            this.abi
+        )
+    }
+
+    public actions(actions: ActionArgs[], options?: ActionOptions): Action[] {
+        return actions.map((action) =>
+            this.action(action.name, action.data, {
+                authorization: action.authorization || options?.authorization,
+            })
+        )
+    }
+
+    public async call(
+        name: NameType,
+        data: ActionDataType,
+        options?: CallOptions
+    ): Promise<TransactResult> {
+        const session = options ? options.session : this.session
+        if (!session) {
+            throw new Error(`Cannot call action (${this.account}::${name}) without a Session.`)
+        }
+
+        return session.transact(
+            {
+                action: this.action(name, data),
+            },
+            {
+                abis: [
+                    {
+                        account: this.account,
+                        abi: this.abi,
+                    },
+                ],
+            }
+        )
     }
 }

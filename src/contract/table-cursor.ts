@@ -5,6 +5,7 @@ import {Query, QueryOptions, Table} from './table'
 interface TableCursorParams {
     table: Table
     tableParams: API.v1.GetTableRowsParams
+    maxRows?: number
     next_key?: API.v1.TableIndexType | string
     indexPositionField?: string
 }
@@ -22,6 +23,7 @@ export class TableCursor<TableRow> {
     private endReached = false
     private indexPositionField?: string
     private rowsCount = 0
+    private maxRows: number = Number.MAX_SAFE_INTEGER
 
     /**
      * @param {TableCursorParams} params - Parameters for creating a new table cursor.
@@ -38,11 +40,14 @@ export class TableCursor<TableRow> {
      * that the cursor can fetch. This is used for pagination when there are more rows than can be
      * fetched in a single API call.
      */
-    constructor({table, tableParams, indexPositionField, next_key}: TableCursorParams) {
+    constructor({table, tableParams, indexPositionField, maxRows, next_key}: TableCursorParams) {
         this.table = table
         this.tableParams = tableParams
         this.next_key = next_key
         this.indexPositionField = indexPositionField
+        if (maxRows) {
+            this.maxRows = maxRows
+        }
     }
 
     /**
@@ -96,7 +101,7 @@ export class TableCursor<TableRow> {
 
         const result = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
-            limit: Math.min(this.tableParams.limit - this.rowsCount, 1000000),
+            limit: Math.min(this.maxRows - this.rowsCount, this.tableParams.limit),
             lower_bound: wrapIndexValue(lower_bound),
             upper_bound: wrapIndexValue(upper_bound),
             index_position: indexPosition,
@@ -105,11 +110,11 @@ export class TableCursor<TableRow> {
         let {rows} = result
         this.next_key = result.next_key
 
-        if (!result.next_key || rows.length === 0 || this.rowsCount === this.tableParams.limit) {
+        this.rowsCount += rows.length
+
+        if (!result.next_key || rows.length === 0 || this.rowsCount === this.maxRows) {
             this.endReached = true
         }
-
-        this.rowsCount += rows.length
 
         rows = rows.map((row) =>
             Serializer.decode({

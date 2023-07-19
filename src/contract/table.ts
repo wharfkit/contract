@@ -186,6 +186,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         }
 
         return new TableCursor({
+            maxRows: limit,
             table: this,
             tableParams: tableRowsParams,
         })

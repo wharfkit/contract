@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
-import {Asset, Bytes, Int64, Name, Serializer, Struct, UInt128} from '@greymass/eosio'
+import {Asset, Name, Serializer} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
@@ -141,25 +141,6 @@ suite('Table', () => {
                 )
             })
 
-            test('should fetch correct number of table rows when limit option is used', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10, limit: 2})
-
-                assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
-                    [5, 6]
-                )
-
-                assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
-                    [7, 8]
-                )
-
-                assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
-                    [9, 10]
-                )
-            })
-
             test('should fetch all rows', async () => {
                 const contractKit = new ContractKit({
                     client: makeClient('https://jungle4.greymass.com'),
@@ -208,6 +189,26 @@ suite('Table', () => {
                 assert.instanceOf(rows[0].to, Name)
                 assert.instanceOf(rows[0].cpu_weight, Asset)
                 assert.instanceOf(rows[0].net_weight, Asset)
+            })
+
+
+            test('should fetch correct number of table rows when limit option is used', async () => {
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10})
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    [5, 6]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    [7, 8]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    [9, 10]
+                )
             })
         })
     })
@@ -360,11 +361,14 @@ suite('Table', () => {
                 const allRequestedRows = await cursor.all()
                 assert.equal(allRequestedRows.length, 10000)
             })
-
             test('should stop if requesting more than exists', async () => {
                 const tableCursor = decentiumTrendingTable.first(10000)
                 const firstBatch = await tableCursor.all()
                 assert.equal(firstBatch.length, 239)
+            })
+            test('should not fetch more rows than what is requested', async () => {
+                const tableCursor = decentiumTrendingTable.first(10000)
+
             })
             test('should return typed data', async () => {
                 const tableCursor = decentiumTrendingTable.first(10000)

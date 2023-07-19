@@ -75,7 +75,7 @@ export class TableCursor<TableRow> {
      *
      * @returns The new rows.
      */
-    async next(): Promise<TableRow[]> {
+    async next(rowsCount?: number): Promise<TableRow[]> {
         if (this.endReached) {
             return []
         }
@@ -101,7 +101,7 @@ export class TableCursor<TableRow> {
 
         const result = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
-            limit: Math.min(this.maxRows - this.rowsCount, this.tableParams.limit),
+            limit: Math.min(this.maxRows - this.rowsCount, rowsCount || this.tableParams.limit),
             lower_bound: wrapIndexValue(lower_bound),
             upper_bound: wrapIndexValue(upper_bound),
             index_position: indexPosition,

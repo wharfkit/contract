@@ -162,8 +162,8 @@ export class TableCursor<TableRow> {
             tableParams: {
                 ...this.tableParams,
                 limit: query.limit || this.tableParams.limit,
-                lower_bound: query.from || this.tableParams.lower_bound,
-                upper_bound: query.to || this.tableParams.upper_bound,
+                lower_bound: query.from ? wrapIndexValue(query.from) : this.tableParams.lower_bound,
+                upper_bound: query.to ? wrapIndexValue(query.to) :  this.tableParams.upper_bound,
             },
         })
     }

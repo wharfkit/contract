@@ -3,15 +3,15 @@ import type {Contract} from '../contract'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
 
-export interface GetOptions {
+export interface QueryOptions {
     index?: string
     scope?: NameType
     key_type?: keyof API.v1.TableIndexTypes
 }
 
-export interface Query extends GetOptions {
-    from: API.v1.TableIndexType | string
-    to: API.v1.TableIndexType | string
+export interface Query extends QueryOptions {
+    from?: API.v1.TableIndexType | string | number
+    to?: API.v1.TableIndexType | string | number
     limit?: number
 }
 
@@ -133,7 +133,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     async get(
         queryValue: API.v1.TableIndexType | string,
-        {scope = this.contract.account, index, key_type}: GetOptions = {}
+        {scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): Promise<TableRow> {
         const fieldToIndexMapping = this.getFieldToIndex()
 
@@ -172,7 +172,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(limit: number, options: FindOptions = {}): TableCursor<TableRow> {
+    first(limit: number, options: QueryOptions = {}): TableCursor<TableRow> {
         const tableRowsParams = {
             table: this.name,
             limit,

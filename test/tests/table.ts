@@ -118,9 +118,9 @@ suite('Table', () => {
 
     suite('query', () => {
         test('should allow you to chain the query statements', async () => {
-            const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({ to: 8 })
+            const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({to: 8})
             assert.deepEqual(
-                (await tableCursor.all()).map((row) => row.id),
+                Serializer.objectify((await tableCursor.all())).map((row) => row.id),
                 [5, 6, 7, 8]
             )
         })
@@ -131,8 +131,6 @@ suite('Table', () => {
                     {
                         from: 101511,
                         to: 105056,
-                    },
-                    {
                         index: 'score',
                     }
                 )
@@ -144,7 +142,7 @@ suite('Table', () => {
             })
 
             test('should fetch correct number of table rows when limit option is used', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}, {limit: 2})
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10, limit: 2})
 
                 assert.deepEqual(
                     Serializer.objectify(await tableCursor.next()).map((row) => row.id),
@@ -169,15 +167,7 @@ suite('Table', () => {
                 const contract = await contractKit.load('eosio')
                 const rows = await contract
                     .table('delband')
-                    .query(
-                        {
-                            from: '',
-                            to: '',
-                        },
-                        {
-                            scope: 'wharfkittest',
-                        }
-                    )
+                    .query({ scope: 'wharfkittest' })
                     .all()
                 assert.lengthOf(rows, 40)
             })
@@ -189,15 +179,7 @@ suite('Table', () => {
                 const contract = await contractKit.load('eosio')
                 const rows = await contract
                     .table('delband')
-                    .query(
-                        {
-                            from: '',
-                            to: '',
-                        },
-                        {
-                            scope: 'wharfkittest',
-                        }
-                    )
+                    .query({ scope: 'wharfkittest'})
                     .all()
                 assert.instanceOf(rows[0].from, Name)
                 assert.instanceOf(rows[0].to, Name)
@@ -208,7 +190,7 @@ suite('Table', () => {
 
         suite('next', () => {
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5}, {limit: 10000})
+                const tableCursor = decentiumTrendingTable.query({from: 5, limit: 10000})
                 assert.equal((await tableCursor.next()).length, 235)
                 assert.equal((await tableCursor.next()).length, 0)
             })
@@ -220,15 +202,7 @@ suite('Table', () => {
                 const contract = await contractKit.load('eosio')
                 const rows = await contract
                     .table('delband')
-                    .query(
-                        {
-                            from: '',
-                            to: '',
-                        },
-                        {
-                            scope: 'wharfkittest',
-                        }
-                    )
+                    .query({ scope: 'wharfkittest'})
                     .next()
                 assert.instanceOf(rows[0].from, Name)
                 assert.instanceOf(rows[0].to, Name)

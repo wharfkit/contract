@@ -197,6 +197,11 @@ suite('Table', () => {
                     Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
                     [9, 10]
                 )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    []
+                )
             })
         })
     })

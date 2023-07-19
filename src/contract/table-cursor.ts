@@ -1,6 +1,6 @@
 import {API, Serializer} from '@greymass/eosio'
 import {wrapIndexValue} from '../utils'
-import {Query, QueryOptions, Table} from './table'
+import {Query, Table} from './table'
 
 interface TableCursorParams {
     table: Table
@@ -156,12 +156,12 @@ export class TableCursor<TableRow> {
      *
      * @returns A new cursor with updated parameters.
      */
-    query(query: Query, {limit}: QueryOptions = {}) {
+    query(query: Query) {
         return new TableCursor({
             table: this.table,
             tableParams: {
                 ...this.tableParams,
-                limit: limit || this.tableParams.limit,
+                limit: query.limit || this.tableParams.limit,
                 lower_bound: query.from || this.tableParams.lower_bound,
                 upper_bound: query.to || this.tableParams.upper_bound,
             },

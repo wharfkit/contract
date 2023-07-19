@@ -101,9 +101,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    query(
-        query: Query
-    ): TableCursor<TableRow> {
+    query(query: Query): TableCursor<TableRow> {
         const {from, to, limit} = query
 
         const tableRowsParams = {

@@ -96,7 +96,7 @@ suite('Table', () => {
                 const tableCursor = decentiumTrendingTable.query({from: 5, to: 6})
 
                 assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
                     [5, 6]
                 )
 
@@ -108,7 +108,7 @@ suite('Table', () => {
                 tableCursor.reset()
 
                 assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
                     [5, 6]
                 )
             })
@@ -129,7 +129,7 @@ suite('Table', () => {
                 )
 
                 assert.deepEqual(
-                    (await tableCursor.all()).map((row) => row.score),
+                    Serializer.objectify(await tableCursor.all()).map((row) => row.score),
                     [101511, 102465, 102507, 103688, 103734, 105056]
                 )
             })
@@ -138,7 +138,7 @@ suite('Table', () => {
                 const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}, {limit: 2})
 
                 assert.deepEqual(
-                    (await tableCursor.all()).map((row) => row.id),
+                    Serializer.objectify(await tableCursor.all()).map((row) => row.id),
                     [5, 6]
                 )
             })
@@ -223,7 +223,7 @@ suite('Table', () => {
         test('should fetch table row correctly when filtering by primary index is used', async () => {
             const row = await decentiumTrendingTable.get(5, {key_type: 'i64'})
 
-            assert.deepEqual(row, {
+            assert.deepEqual(Serializer.objectify(row), {
                 id: 5,
                 score: 102465,
                 ref: {
@@ -251,7 +251,7 @@ suite('Table', () => {
         })
         test('should fetch table row correctly when filtering by index', async () => {
             const row = await decentiumTrendingTable.get(102465, {index: 'score'})
-            assert.deepEqual(row, {
+            assert.deepEqual(Serializer.objectify(row), {
                 id: 5,
                 score: 102465,
                 ref: {
@@ -282,10 +282,10 @@ suite('Table', () => {
             // curl http://eos.greymass.com/v1/chain/get_table_rows -d '{"table":"producers","limit":10,"code":"eosio","scope":"eosio","json":true, "lower_bound": "teamgreymass", "upper_bound": "teamgreymass"}'
             const row = await producersTable.get('teamgreymass')
 
-            assert.deepEqual(row, {
+            assert.deepEqual(Serializer.objectify(row), {
                 owner: 'teamgreymass',
-                total_votes: '10022159900306069504.00000000000000000',
-                producer_key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
+                total_votes: '10022159900306070000',
+                producer_key: 'PUB_K1_5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMMJwz2A',
                 is_active: 1,
                 url: 'https://greymass.com',
                 unpaid_blocks: 0,
@@ -297,7 +297,7 @@ suite('Table', () => {
                         threshold: 1,
                         keys: [
                             {
-                                key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
+                                key: 'PUB_K1_5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMMJwz2A',
                                 weight: 1,
                             },
                         ],
@@ -317,7 +317,7 @@ suite('Table', () => {
             test('should fetch a specific number of table rows correctly', async () => {
                 const tableCursor = decentiumTrendingTable.first(10)
                 assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
                     [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
                 )
             })

@@ -313,6 +313,24 @@ suite('Table', () => {
     })
 
     suite('first', () => {
+        test('should establish cursor with first parameters', () => {
+            const tableCursor = decentiumTrendingTable.first(10)
+            assert.equal(tableCursor.tableParams.limit, 10)
+        })
+        suite('scope', function () {
+            test('should default to no scope', async () => {
+                const table = eosio.table('delband')
+                const tableCursor = table.first(10)
+                const rows = await tableCursor.all()
+                assert.lengthOf(rows, 2)
+            })
+            test('should accept a scope', async () => {
+                const table = eosio.table('delband')
+                const tableCursor = table.first(10, {scope: 'teamgreymass'})
+                const rows = await tableCursor.all()
+                assert.lengthOf(rows, 3)
+            })
+        })
         suite('next', () => {
             test('should fetch a specific number of table rows correctly', async () => {
                 const tableCursor = decentiumTrendingTable.first(10)

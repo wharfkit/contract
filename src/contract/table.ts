@@ -176,12 +176,13 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(limit: number): TableCursor<TableRow> {
+    first(limit: number, options: FindOptions = {}): TableCursor<TableRow> {
         const tableRowsParams = {
             table: this.name,
             limit,
             code: this.contract.account,
             type: this.rowType,
+            scope: options.scope,
         }
 
         return new TableCursor({

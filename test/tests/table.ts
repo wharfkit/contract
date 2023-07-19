@@ -193,6 +193,29 @@ suite('Table', () => {
                 assert.equal((await tableCursor.next()).length, 235)
                 assert.equal((await tableCursor.next()).length, 0)
             })
+
+            test('should return typed rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract
+                    .table('delband')
+                    .query(
+                        {
+                            from: '',
+                            to: '',
+                        },
+                        {
+                            scope: 'wharfkittest',
+                        }
+                    )
+                    .next()
+                assert.instanceOf(rows[0].from, Name)
+                assert.instanceOf(rows[0].to, Name)
+                assert.instanceOf(rows[0].cpu_weight, Asset)
+                assert.instanceOf(rows[0].net_weight, Asset)
+            })
         })
     })
 
@@ -282,6 +305,11 @@ suite('Table', () => {
                 ],
             })
         })
+
+        test('should return typed data', async () => {
+            const row = await producersTable.get('teamgreymass')
+            assert.instanceOf(row.owner, Name)
+        })
     })
 
     suite('first', () => {
@@ -300,6 +328,11 @@ suite('Table', () => {
                 const secondBatch = await tableCursor.next()
                 assert.equal(secondBatch.length, 2268)
             })
+            test('should return typed data', async () => {
+                const tableCursor = nameBidTable.first(100000)
+                const batch = await tableCursor.next()
+                assert.instanceOf(batch[0].high_bidder, Name)
+            })
         })
 
         suite('all', () => {
@@ -314,6 +347,11 @@ suite('Table', () => {
                 const firstBatch = await tableCursor.all()
                 assert.equal(firstBatch.length, 239)
             })
+            test('should return typed data', async () => {
+                const tableCursor = decentiumTrendingTable.first(10000)
+                const batch = await tableCursor.all()
+                assert.instanceOf(batch[0].ref.category, Name)
+            })
         })
     })
 
@@ -321,6 +359,10 @@ suite('Table', () => {
         test('should return every single row in a table', async () => {
             const tableRows = await nameBidTable.all()
             assert.equal(tableRows.length, 53102)
+        })
+        test('should return typed data', async () => {
+            const tableRows = await nameBidTable.all()
+            assert.instanceOf(tableRows[0].high_bidder, Name)
         })
     })
 })

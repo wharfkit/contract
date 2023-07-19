@@ -29,6 +29,7 @@ interface TableParams<TableRow = any> {
     name: NameType
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
+    defaultRowLimit?: number
 }
 
 export interface GetTableRowsOptions {
@@ -49,6 +50,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
     readonly rowType?: TableRow
 
     private fieldToIndex?: any
+
+    public defaultRowLimit = 1000
 
     /**
      * Constructs a new `Table` instance.
@@ -103,7 +106,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     query(
         query: Query,
-        {limit = 10, scope = this.contract.account, index, key_type}: QueryOptions = {}
+        {limit, scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): TableCursor<TableRow> {
         const {from, to} = query
 
@@ -112,7 +115,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             code: this.contract.account,
             scope,
             type: this.rowType,
-            limit,
+            limit: limit || this.defaultRowLimit,
             lower_bound: wrapIndexValue(from),
             upper_bound: wrapIndexValue(to),
             key_type: key_type,
@@ -196,7 +199,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             table: this.name,
             code: this.contract.account,
             type: this.rowType,
-            limit: 1000000,
+            limit: this.defaultRowLimit,
         }
 
         return new TableCursor({

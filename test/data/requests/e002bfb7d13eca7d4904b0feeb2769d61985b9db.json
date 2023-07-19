@@ -6,18 +6,6 @@
             "body": "{\"table\":\"trending\",\"code\":\"decentiumorg\",\"scope\":\"decentiumorg\",\"limit\":1,\"lower_bound\":\"5\",\"upper_bound\":\"5\",\"index_position\":\"primary\",\"key_type\":\"i64\",\"json\":true}"
         }
     },
-    "headers": {
-        "access-control-allow-headers": "X-Requested-With,Accept,Content-Type,Origin",
-        "access-control-allow-methods": "GET, POST, OPTIONS",
-        "access-control-allow-origin": "*",
-        "connection": "close",
-        "content-length": "394",
-        "content-type": "application/json",
-        "date": "Wed, 05 Jul 2023 22:30:05 GMT",
-        "host": "eos.greymass.com",
-        "server": "nginx",
-        "x-cached": "MISS"
-    },
     "status": 200,
     "json": {
         "rows": [

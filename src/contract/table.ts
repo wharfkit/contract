@@ -1,4 +1,4 @@
-import {ABI, ABISerializableConstructor, API, Name, NameType} from '@greymass/eosio'
+import {ABI, ABISerializableConstructor, API, Name, NameType, Serializer} from '@greymass/eosio'
 import type {Contract} from '../contract'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
@@ -29,6 +29,7 @@ interface TableParams<TableRow = any> {
     name: NameType
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
+    defaultRowLimit?: number
 }
 
 export interface GetTableRowsOptions {
@@ -49,6 +50,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
     readonly rowType?: TableRow
 
     private fieldToIndex?: any
+
+    public defaultRowLimit = 1000
 
     /**
      * Constructs a new `Table` instance.
@@ -103,7 +106,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      */
     query(
         query: Query,
-        {limit = 10, scope = this.contract.account, index, key_type}: QueryOptions = {}
+        {limit, scope = this.contract.account, index, key_type}: QueryOptions = {}
     ): TableCursor<TableRow> {
         const {from, to} = query
 
@@ -112,7 +115,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             code: this.contract.account,
             scope,
             type: this.rowType,
-            limit,
+            limit: limit || this.defaultRowLimit,
             lower_bound: wrapIndexValue(from),
             upper_bound: wrapIndexValue(to),
             key_type: key_type,
@@ -150,7 +153,17 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             key_type: key_type,
         }
 
-        const {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
+        let {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
+
+        if (!this.rowType) {
+            rows = [
+                Serializer.decode({
+                    object: rows[0],
+                    abi: this.contract.abi,
+                    type: this.abi.type,
+                }),
+            ]
+        }
 
         return rows[0]
     }
@@ -163,15 +176,17 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(limit: number): TableCursor<TableRow> {
+    first(limit: number, options: FindOptions = {}): TableCursor<TableRow> {
         const tableRowsParams = {
             table: this.name,
             limit,
             code: this.contract.account,
             type: this.rowType,
+            scope: options.scope,
         }
 
         return new TableCursor({
+            maxRows: limit,
             table: this,
             tableParams: tableRowsParams,
         })
@@ -186,7 +201,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             table: this.name,
             code: this.contract.account,
             type: this.rowType,
-            limit: 1000000,
+            limit: this.defaultRowLimit,
         }
 
         return new TableCursor({

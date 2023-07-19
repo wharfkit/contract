@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
-import {Bytes, Int64, Name, Serializer, UInt128} from '@greymass/eosio'
+import {Asset, Bytes, Int64, Name, Serializer, Struct, UInt128} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
@@ -87,8 +87,9 @@ suite('Table', () => {
 
             test('should allow you to fetch more rows after first request', async () => {
                 const tableCursor = nameBidTable.cursor()
-                assert.equal((await tableCursor.next()).length, 2453)
-                assert.equal((await tableCursor.next()).length, 2354)
+                assert.equal((await tableCursor.next()).length, 1000)
+                assert.equal((await tableCursor.next()).length, 1000)
+                assert.equal((await tableCursor.next()).length, 1000)
             })
         })
         suite('reset', () => {
@@ -96,7 +97,7 @@ suite('Table', () => {
                 const tableCursor = decentiumTrendingTable.query({from: 5, to: 6})
 
                 assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
                     [5, 6]
                 )
 
@@ -108,14 +109,14 @@ suite('Table', () => {
                 tableCursor.reset()
 
                 assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
                     [5, 6]
                 )
             })
         })
     })
 
-    suite('where', () => {
+    suite('query', () => {
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
                 const tableCursor = decentiumTrendingTable.query(
@@ -129,7 +130,7 @@ suite('Table', () => {
                 )
 
                 assert.deepEqual(
-                    (await tableCursor.all()).map((row) => row.score),
+                    Serializer.objectify(await tableCursor.all()).map((row) => row.score),
                     [101511, 102465, 102507, 103688, 103734, 105056]
                 )
             })
@@ -138,9 +139,62 @@ suite('Table', () => {
                 const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}, {limit: 2})
 
                 assert.deepEqual(
-                    (await tableCursor.all()).map((row) => row.id),
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
                     [5, 6]
                 )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    [7, 8]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    [9, 10]
+                )
+            })
+
+            test('should fetch all rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract
+                    .table('delband')
+                    .query(
+                        {
+                            from: '',
+                            to: '',
+                        },
+                        {
+                            scope: 'wharfkittest',
+                        }
+                    )
+                    .all()
+                assert.lengthOf(rows, 40)
+            })
+            // NOTE: This may not be possible without changes to the wharfkit/antelope library
+            test('should return typed rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract
+                    .table('delband')
+                    .query(
+                        {
+                            from: '',
+                            to: '',
+                        },
+                        {
+                            scope: 'wharfkittest',
+                        }
+                    )
+                    .all()
+                assert.instanceOf(rows[0].from, Name)
+                assert.instanceOf(rows[0].to, Name)
+                assert.instanceOf(rows[0].cpu_weight, Asset)
+                assert.instanceOf(rows[0].net_weight, Asset)
             })
         })
 
@@ -150,6 +204,29 @@ suite('Table', () => {
                 assert.equal((await tableCursor.next()).length, 235)
                 assert.equal((await tableCursor.next()).length, 0)
             })
+
+            test('should return typed rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract
+                    .table('delband')
+                    .query(
+                        {
+                            from: '',
+                            to: '',
+                        },
+                        {
+                            scope: 'wharfkittest',
+                        }
+                    )
+                    .next()
+                assert.instanceOf(rows[0].from, Name)
+                assert.instanceOf(rows[0].to, Name)
+                assert.instanceOf(rows[0].cpu_weight, Asset)
+                assert.instanceOf(rows[0].net_weight, Asset)
+            })
         })
     })
 
@@ -157,7 +234,7 @@ suite('Table', () => {
         test('should fetch table row correctly when filtering by primary index is used', async () => {
             const row = await decentiumTrendingTable.get(5, {key_type: 'i64'})
 
-            assert.deepEqual(row, {
+            assert.deepEqual(Serializer.objectify(row), {
                 id: 5,
                 score: 102465,
                 ref: {
@@ -185,7 +262,7 @@ suite('Table', () => {
         })
         test('should fetch table row correctly when filtering by index', async () => {
             const row = await decentiumTrendingTable.get(102465, {index: 'score'})
-            assert.deepEqual(row, {
+            assert.deepEqual(Serializer.objectify(row), {
                 id: 5,
                 score: 102465,
                 ref: {
@@ -216,14 +293,14 @@ suite('Table', () => {
             // curl http://eos.greymass.com/v1/chain/get_table_rows -d '{"table":"producers","limit":10,"code":"eosio","scope":"eosio","json":true, "lower_bound": "teamgreymass", "upper_bound": "teamgreymass"}'
             const row = await producersTable.get('teamgreymass')
 
-            assert.deepEqual(row, {
+            assert.deepEqual(Serializer.objectify(row), {
                 owner: 'teamgreymass',
-                total_votes: '10022159900306069504.00000000000000000',
-                producer_key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
+                total_votes: '10609167676440100000',
+                producer_key: 'PUB_K1_5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMMJwz2A',
                 is_active: 1,
                 url: 'https://greymass.com',
                 unpaid_blocks: 0,
-                last_claim_time: '2023-07-05T14:59:26.000',
+                last_claim_time: '2023-07-18T15:02:08.000',
                 location: 124,
                 producer_authority: [
                     'block_signing_authority_v0',
@@ -231,7 +308,7 @@ suite('Table', () => {
                         threshold: 1,
                         keys: [
                             {
-                                key: 'EOS5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMNuojbx',
+                                key: 'PUB_K1_5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMMJwz2A',
                                 weight: 1,
                             },
                         ],
@@ -239,23 +316,59 @@ suite('Table', () => {
                 ],
             })
         })
+
+        test('should return typed data', async () => {
+            const row = await producersTable.get('teamgreymass')
+            assert.instanceOf(row.owner, Name)
+        })
     })
 
     suite('first', () => {
+        test('should establish cursor with first parameters', () => {
+            const tableCursor = decentiumTrendingTable.first(10)
+            assert.equal(tableCursor.tableParams.limit, 10)
+        })
+        suite('scope', function () {
+            test('should default to no scope', async () => {
+                const table = eosio.table('delband')
+                const tableCursor = table.first(10)
+                const rows = await tableCursor.all()
+                assert.lengthOf(rows, 2)
+            })
+            test('should accept a scope', async () => {
+                const table = eosio.table('delband')
+                const tableCursor = table.first(10, {scope: 'teamgreymass'})
+                const rows = await tableCursor.all()
+                assert.lengthOf(rows, 3)
+            })
+        })
         suite('next', () => {
             test('should fetch a specific number of table rows correctly', async () => {
                 const tableCursor = decentiumTrendingTable.first(10)
+                const rows = await tableCursor.next()
+                assert.lengthOf(rows, 10)
                 assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(rows).map((row) => row.id),
                     [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
+                )
+                const rows2 = await tableCursor.next()
+                assert.lengthOf(rows2, 0)
+                assert.deepEqual(
+                    Serializer.objectify(rows2).map((row) => row.id),
+                    []
                 )
             })
             test('should allow you to fetch more rows after first request', async () => {
                 const tableCursor = nameBidTable.first(100000)
                 const firstBatch = await tableCursor.next()
-                assert.equal(firstBatch.length, 2199)
+                assert.equal(firstBatch.length, 2157)
                 const secondBatch = await tableCursor.next()
-                assert.equal(secondBatch.length, 2268)
+                assert.equal(secondBatch.length, 2179)
+            })
+            test('should return typed data', async () => {
+                const tableCursor = nameBidTable.first(100000)
+                const batch = await tableCursor.next()
+                assert.instanceOf(batch[0].high_bidder, Name)
             })
         })
 
@@ -271,13 +384,22 @@ suite('Table', () => {
                 const firstBatch = await tableCursor.all()
                 assert.equal(firstBatch.length, 239)
             })
+            test('should return typed data', async () => {
+                const tableCursor = decentiumTrendingTable.first(10000)
+                const batch = await tableCursor.all()
+                assert.instanceOf(batch[0].ref.category, Name)
+            })
         })
     })
 
     suite('all', () => {
         test('should return every single row in a table', async () => {
             const tableRows = await nameBidTable.all()
-            assert.equal(tableRows.length, 53102)
+            assert.equal(tableRows.length, 53097)
+        })
+        test('should return typed data', async () => {
+            const tableRows = await nameBidTable.all()
+            assert.instanceOf(tableRows[0].high_bidder, Name)
         })
     })
 })

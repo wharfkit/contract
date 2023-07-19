@@ -6,19 +6,6 @@
             "body": "{\"account_name\":\"eosio\"}"
         }
     },
-    "headers": {
-        "access-control-allow-headers": "X-Requested-With,Accept,Content-Type,Origin",
-        "access-control-allow-methods": "GET, POST, OPTIONS",
-        "access-control-allow-origin": "*",
-        "connection": "close",
-        "content-encoding": "gzip",
-        "content-type": "application/json",
-        "date": "Wed, 05 Jul 2023 22:30:05 GMT",
-        "host": "eos.greymass.com",
-        "server": "nginx",
-        "transfer-encoding": "chunked",
-        "x-cached": "MISS"
-    },
     "status": 200,
     "json": {
         "account_name": "eosio",

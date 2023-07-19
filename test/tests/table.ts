@@ -345,9 +345,17 @@ suite('Table', () => {
         suite('next', () => {
             test('should fetch a specific number of table rows correctly', async () => {
                 const tableCursor = decentiumTrendingTable.first(10)
+                const rows = await tableCursor.next()
+                assert.lengthOf(rows, 10)
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(rows).map((row) => row.id),
                     [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
+                )
+                const rows2 = await tableCursor.next()
+                assert.lengthOf(rows2, 0)
+                assert.deepEqual(
+                    Serializer.objectify(rows2).map((row) => row.id),
+                    []
                 )
             })
             test('should allow you to fetch more rows after first request', async () => {

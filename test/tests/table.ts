@@ -87,8 +87,9 @@ suite('Table', () => {
 
             test('should allow you to fetch more rows after first request', async () => {
                 const tableCursor = nameBidTable.cursor()
-                assert.equal((await tableCursor.next()).length, 2453)
-                assert.equal((await tableCursor.next()).length, 2354)
+                assert.equal((await tableCursor.next()).length, 1000)
+                assert.equal((await tableCursor.next()).length, 1000)
+                assert.equal((await tableCursor.next()).length, 1000)
             })
         })
         suite('reset', () => {

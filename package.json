@@ -19,10 +19,13 @@
         "wharf-generate": "./scripts/codegen-cli.js"
     },
     "dependencies": {
-        "@wharfkit/mock-data": "^1.0.0-beta11",
-        "@wharfkit/session": "^1.0.0-beta4",
-        "rollup-plugin-cleanup": "^3.2.1",
+        "@greymass/eosio": "^0.6.10",
+        "@wharfkit/abicache": "^1.0.0",
+        "eosio-signing-request": "^2.5.3",
         "tslib": "^2.1.0"
+    },
+    "resolutions": {
+        "@greymass/eosio": "^0.6.10"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.20.2",
@@ -39,6 +42,8 @@
         "@types/node": "^18.7.18",
         "@typescript-eslint/eslint-plugin": "^5.20.0",
         "@typescript-eslint/parser": "^5.20.0",
+        "@wharfkit/mock-data": "^1.0.0-beta11",
+        "@wharfkit/session": "^1.0.0-beta4",
         "assert": "^2.0.0",
         "chai": "^4.3.4",
         "eslint": "^8.13.0",

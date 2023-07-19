@@ -7,7 +7,7 @@ import {
     Name,
     UInt128,
     UInt64,
-} from '@wharfkit/session'
+} from '@greymass/eosio'
 
 export function pascalCase(value: string): string {
     return value

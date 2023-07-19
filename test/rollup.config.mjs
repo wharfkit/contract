@@ -89,7 +89,7 @@ export default [
             }),
             alias({
                 entries: [
-                    {find: '$lib', replacement: path.join(__dirname, '..', 'lib/session.m.js')},
+                    {find: '$lib', replacement: path.join(__dirname, '..', 'lib/contract.m.js')},
                     {
                         find: '$test/utils/mock-fetch',
                         replacement: './test/utils/browser-fetch.ts',

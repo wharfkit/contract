@@ -2,18 +2,8 @@ import {assert} from 'chai'
 import {makeClient, mockPrivateKey, mockSession} from '@wharfkit/mock-data'
 
 import ContractKit, {Contract, ContractArgs, Table} from '$lib'
-import {
-    ABI,
-    Action,
-    Asset,
-    Name,
-    PlaceholderAuth,
-    PrivateKey,
-    ResolvedSigningRequest,
-    Serializer,
-    Session,
-    Transaction,
-} from '@wharfkit/session'
+import {ABI, Action, Asset, Name, PrivateKey, Serializer, Transaction} from '@greymass/eosio'
+import {PlaceholderAuth, ResolvedSigningRequest} from 'eosio-signing-request'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 
@@ -109,11 +99,6 @@ suite('Contract', () => {
         test('untyped', function () {
             const contract = new Contract(systemContractArgs)
             assert.instanceOf(contract, Contract)
-        })
-        test('with Session', function () {
-            const contract = new Contract(systemContractArgs, {session: mockSession})
-            assert.instanceOf(contract, Contract)
-            assert.instanceOf(contract.session, Session)
         })
     })
 
@@ -321,46 +306,6 @@ suite('Contract', () => {
             assert.isArray(systemContract.actionNames)
             assert.lengthOf(systemContract.actionNames, 62)
             assert.isTrue(systemContract.actionNames.includes('newaccount'))
-        })
-    })
-
-    suite('call', () => {
-        test('succeeds with session', async function () {
-            await systemContract.call('newaccount', newAccountData, {session: mockSession})
-        })
-        test('throws without a session', async function () {
-            let error
-            try {
-                await systemContract.call('newaccount', newAccountData)
-            } catch (err) {
-                error = err
-            }
-            assert.instanceOf(error, Error)
-        })
-        test('templates using placeholders', async function () {
-            const response = await tokenContract.call('transfer', transferData, {
-                session: mockSession,
-            })
-            const {resolved} = response
-            assert.instanceOf(resolved, ResolvedSigningRequest)
-            if (resolved) {
-                const {transaction} = resolved
-                assert.instanceOf(transaction, Transaction)
-                if (transaction) {
-                    assert.equal(transaction.actions.length, 1)
-                    const action = transaction.actions[0]
-                    assert.isTrue(action.account.equals('eosio.token'))
-                    assert.isTrue(action.name.equals('transfer'))
-                    assert.lengthOf(action.authorization, 1)
-                    assert.isTrue(action.authorization[0].actor.equals('wharfkit1111'))
-                    assert.isTrue(action.authorization[0].permission.equals('test'))
-                    assert.isTrue(
-                        action.data.equals(
-                            '104208d9c1754de3000000000000285d102700000000000004454f53000000000f696e697469616c2062616c616e6365'
-                        )
-                    )
-                }
-            }
         })
     })
 

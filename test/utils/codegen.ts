@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import {ABI} from '@wharfkit/session'
+import {ABI} from '@greymass/eosio'
 import {codegen} from '../../src/codegen'
 import {Contract} from 'src/contract'
 

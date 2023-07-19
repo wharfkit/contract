@@ -1,8 +1,9 @@
 import {assert} from 'chai'
 
 import {Contract, ContractKit, ContractKitArgs, ContractKitOptions} from '$lib'
-import {makeClient, mockSession} from '@wharfkit/mock-data'
-import {ABI, ABICache, Name} from '@wharfkit/session'
+import {makeClient} from '@wharfkit/mock-data'
+import {ABI, Name} from '@greymass/eosio'
+import {ABICache} from '@wharfkit/abicache'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 const mockContractKitArgs: ContractKitArgs = {
@@ -16,18 +17,9 @@ suite('Kit', function () {
             const kit = new ContractKit(mockContractKitArgs)
             assert.instanceOf(kit, ContractKit)
         })
-        test('throws if no client/session', function () {
-            assert.throws(() => new ContractKit({}))
-        })
         test('args: client', function () {
             assert.doesNotThrow(() => {
                 const kit = new ContractKit({client: mockClient})
-                assert.instanceOf(kit, ContractKit)
-            })
-        })
-        test('args: session', function () {
-            assert.doesNotThrow(() => {
-                const kit = new ContractKit({session: mockSession})
                 assert.instanceOf(kit, ContractKit)
             })
         })

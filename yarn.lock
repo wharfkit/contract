@@ -1322,18 +1322,28 @@
     "@typescript-eslint/types" "5.41.0"
     eslint-visitor-keys "^3.3.0"
 
-"@wharfkit/mock-data@^1.0.0-beta11":
-  version "1.0.0-beta9"
-  resolved "https://registry.yarnpkg.com/@wharfkit/mock-data/-/mock-data-1.0.0-beta9.tgz#757ec38f2724e3e866e25a05e0bbffaf8fe4a7ac"
-  integrity sha512-fZnkBeMCep22P2+FTsysjOD4vZ7CmoOShyMLnTjmICZ8FM0VzWEMak2z2XcGbgcFDhLAugcNbMZj1RvbxfFjgA==
+"@wharfkit/abicache@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@wharfkit/abicache/-/abicache-1.0.0.tgz#d9f7dc38dce0e9cffd7de351b366c1aa1b719c46"
+  integrity sha512-crfXFPlmxkqDdgvVIFjcHGx3kkLdXj2JbUsu3XYnxJf91tWWbHAfNn2ba3UifsFDTE9BdUFd2Cz+FLTi464Gew==
   dependencies:
     "@greymass/eosio" "^0.6.10"
-    "@wharfkit/session" "^1.0.0-beta2"
+    eosio-signing-request "^2.5.3"
+    pako "^2.0.4"
+    tslib "^2.1.0"
+
+"@wharfkit/mock-data@^1.0.0-beta11":
+  version "1.0.0-beta11"
+  resolved "https://registry.yarnpkg.com/@wharfkit/mock-data/-/mock-data-1.0.0-beta11.tgz#6233eb5c3a22f27d04e8f112952bab3057df885c"
+  integrity sha512-llLZtnXdoK6x4cZv3BT64WiRwW4k1Rp672Fn1BgBqoFCfLHuqvejku/B6UCQryPjil/BOAFH+z3iRF28XOciKg==
+  dependencies:
+    "@greymass/eosio" "^0.6.10"
+    "@wharfkit/session" "^1.0.0-beta4"
     "@wharfkit/wallet-plugin-privatekey" "^0.5.0"
     node-fetch "^2.6.1"
     tslib "^2.1.0"
 
-"@wharfkit/session@^1.0.0-beta2", "@wharfkit/session@^1.0.0-beta4":
+"@wharfkit/session@^1.0.0-beta4":
   version "1.0.0-beta4"
   resolved "https://registry.yarnpkg.com/@wharfkit/session/-/session-1.0.0-beta4.tgz#68f8cc85d048e801c4c24973956a6fe35964d192"
   integrity sha512-YnCBra6+GZHHnalS208L14KN7tWy2wat5gTcDkfhBtL/Ol/B7MvvCvA9VUoELlgaq4dSknd6MbmzE77BcgF+mQ==
@@ -1345,7 +1355,7 @@
 
 "@wharfkit/wallet-plugin-privatekey@^0.5.0":
   version "0.5.0"
-  resolved "https://registry.npmjs.org/@wharfkit/wallet-plugin-privatekey/-/wallet-plugin-privatekey-0.5.0.tgz"
+  resolved "https://registry.yarnpkg.com/@wharfkit/wallet-plugin-privatekey/-/wallet-plugin-privatekey-0.5.0.tgz#e6a954e08bf80777c4cb12c7ce69c1d9f5e62da2"
   integrity sha512-dBpCLWnGfx2kUQUb3OKsKsTxbiFZvBkbh3v8LbnNHd4o/KyOCVbTwFQt6Jl+9QdlNzY2lESe+Ni/HDmfOHKVgg==
   dependencies:
     tslib "^2.1.0"
@@ -2029,7 +2039,7 @@ estraverse@^5.1.0, estraverse@^5.2.0:
 
 estree-walker@^0.6.1:
   version "0.6.1"
-  resolved "https://registry.npmjs.org/estree-walker/-/estree-walker-0.6.1.tgz"
+  resolved "https://registry.yarnpkg.com/estree-walker/-/estree-walker-0.6.1.tgz#53049143f40c6eb918b23671d1fe3219f3a1b362"
   integrity sha512-SqmZANLWS0mnatqbSfRP5g8OXZC12Fgg1IwNtLsyHDzJizORW4khDfjPqJZsemPWBB2uqykUah5YpQ6epsqC/w==
 
 estree-walker@^1.0.1:
@@ -2639,7 +2649,7 @@ jest-worker@^26.2.1:
 
 js-cleanup@^1.2.0:
   version "1.2.0"
-  resolved "https://registry.npmjs.org/js-cleanup/-/js-cleanup-1.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/js-cleanup/-/js-cleanup-1.2.0.tgz#8dbc65954b1d38b255f1e8cf02cd17b3f7a053f9"
   integrity sha512-JeDD0yiiSt80fXzAVa/crrS0JDPQljyBG/RpOtaSbyDq03VHa9szJWMaWOYU/bcTn412uMN2MxApXq8v79cUiQ==
   dependencies:
     magic-string "^0.25.7"
@@ -3111,7 +3121,7 @@ pathval@^1.1.1:
 
 perf-regexes@^1.0.1:
   version "1.0.1"
-  resolved "https://registry.npmjs.org/perf-regexes/-/perf-regexes-1.0.1.tgz"
+  resolved "https://registry.yarnpkg.com/perf-regexes/-/perf-regexes-1.0.1.tgz#6da1d62f5a94bf9353a0451bccacf69068b75d0b"
   integrity sha512-L7MXxUDtqr4PUaLFCDCXBfGV/6KLIuSEccizDI7JxT+c9x1G1v04BQ4+4oag84SHaCdrBgQAIs/Cqn+flwFPng==
 
 picocolors@^1.0.0:
@@ -3294,7 +3304,7 @@ rimraf@^3.0.0, rimraf@^3.0.2:
 
 rollup-plugin-cleanup@^3.2.1:
   version "3.2.1"
-  resolved "https://registry.npmjs.org/rollup-plugin-cleanup/-/rollup-plugin-cleanup-3.2.1.tgz"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-cleanup/-/rollup-plugin-cleanup-3.2.1.tgz#8cbc92ecf58babd7c210051929797f137bbf777c"
   integrity sha512-zuv8EhoO3TpnrU8MX8W7YxSbO4gmOR0ny06Lm3nkFfq0IVKdBUtHwhVzY1OAJyNCIAdLiyPnOrU0KnO0Fri1GQ==
   dependencies:
     js-cleanup "^1.2.0"
@@ -3321,7 +3331,7 @@ rollup-plugin-terser@^7.0.2:
 
 rollup-pluginutils@^2.8.2:
   version "2.8.2"
-  resolved "https://registry.npmjs.org/rollup-pluginutils/-/rollup-pluginutils-2.8.2.tgz"
+  resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.8.2.tgz#72f2af0748b592364dbd3389e600e5a9444a351e"
   integrity sha512-EEp9NhnUkwY8aif6bxgovPHMoMoNr2FulJziTndpt5H9RdwC47GSGuII9XxpSdzVGM0GWrNPHV6ie1LTNJPaLQ==
   dependencies:
     estree-walker "^0.6.1"
@@ -3405,7 +3415,7 @@ signal-exit@^3.0.2:
 
 skip-regex@^1.0.2:
   version "1.0.2"
-  resolved "https://registry.npmjs.org/skip-regex/-/skip-regex-1.0.2.tgz"
+  resolved "https://registry.yarnpkg.com/skip-regex/-/skip-regex-1.0.2.tgz#ac655d77e7c771ac2b9f37585fea37bff56ad65b"
   integrity sha512-pEjMUbwJ5Pl/6Vn6FsamXHXItJXSRftcibixDmNCWbWhic0hzHrwkMZo0IZ7fMRH9KxcWDFSkzhccB4285PutA==
 
 slash@^3.0.0:

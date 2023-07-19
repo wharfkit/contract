@@ -1,0 +1,35 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"table\":\"delband\",\"limit\":10,\"code\":\"eosio\",\"scope\":\"teamgreymass\",\"index_position\":\"primary\",\"key_type\":\"name\",\"json\":true}"
+        }
+    },
+    "status": 200,
+    "json": {
+        "rows": [
+            {
+                "from": "teamgreymass",
+                "to": "gm",
+                "net_weight": "0.0100 EOS",
+                "cpu_weight": "5.0000 EOS"
+            },
+            {
+                "from": "teamgreymass",
+                "to": "rentals.gm",
+                "net_weight": "0.0100 EOS",
+                "cpu_weight": "5.0000 EOS"
+            },
+            {
+                "from": "teamgreymass",
+                "to": "webclientsdk",
+                "net_weight": "0.0001 EOS",
+                "cpu_weight": "0.0001 EOS"
+            }
+        ],
+        "more": false,
+        "next_key": ""
+    },
+    "text": "{\"rows\":[{\"from\":\"teamgreymass\",\"to\":\"gm\",\"net_weight\":\"0.0100 EOS\",\"cpu_weight\":\"5.0000 EOS\"},{\"from\":\"teamgreymass\",\"to\":\"rentals.gm\",\"net_weight\":\"0.0100 EOS\",\"cpu_weight\":\"5.0000 EOS\"},{\"from\":\"teamgreymass\",\"to\":\"webclientsdk\",\"net_weight\":\"0.0001 EOS\",\"cpu_weight\":\"0.0001 EOS\"}],\"more\":false,\"next_key\":\"\"}"
+}

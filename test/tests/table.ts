@@ -295,12 +295,12 @@ suite('Table', () => {
 
             assert.deepEqual(Serializer.objectify(row), {
                 owner: 'teamgreymass',
-                total_votes: '10022159900306070000',
+                total_votes: '10609167676440100000',
                 producer_key: 'PUB_K1_5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMMJwz2A',
                 is_active: 1,
                 url: 'https://greymass.com',
                 unpaid_blocks: 0,
-                last_claim_time: '2023-07-05T14:59:26.000',
+                last_claim_time: '2023-07-18T15:02:08.000',
                 location: 124,
                 producer_authority: [
                     'block_signing_authority_v0',
@@ -361,9 +361,9 @@ suite('Table', () => {
             test('should allow you to fetch more rows after first request', async () => {
                 const tableCursor = nameBidTable.first(100000)
                 const firstBatch = await tableCursor.next()
-                assert.equal(firstBatch.length, 2199)
+                assert.equal(firstBatch.length, 2157)
                 const secondBatch = await tableCursor.next()
-                assert.equal(secondBatch.length, 2268)
+                assert.equal(secondBatch.length, 2179)
             })
             test('should return typed data', async () => {
                 const tableCursor = nameBidTable.first(100000)
@@ -395,7 +395,7 @@ suite('Table', () => {
     suite('all', () => {
         test('should return every single row in a table', async () => {
             const tableRows = await nameBidTable.all()
-            assert.equal(tableRows.length, 53102)
+            assert.equal(tableRows.length, 53097)
         })
         test('should return typed data', async () => {
             const tableRows = await nameBidTable.all()

@@ -1,0 +1,29 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"table\":\"delband\",\"limit\":10,\"code\":\"eosio\",\"scope\":\"eosio\",\"index_position\":\"primary\",\"key_type\":\"name\",\"json\":true}"
+        }
+    },
+    "status": 200,
+    "json": {
+        "rows": [
+            {
+                "from": "eosio",
+                "to": "eosio.assert",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "1.0000 EOS"
+            },
+            {
+                "from": "eosio",
+                "to": "eosio.lost",
+                "net_weight": "1.0000 EOS",
+                "cpu_weight": "10.0000 EOS"
+            }
+        ],
+        "more": false,
+        "next_key": ""
+    },
+    "text": "{\"rows\":[{\"from\":\"eosio\",\"to\":\"eosio.assert\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"1.0000 EOS\"},{\"from\":\"eosio\",\"to\":\"eosio.lost\",\"net_weight\":\"1.0000 EOS\",\"cpu_weight\":\"10.0000 EOS\"}],\"more\":false,\"next_key\":\"\"}"
+}

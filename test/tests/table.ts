@@ -139,8 +139,18 @@ suite('Table', () => {
                 const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}, {limit: 2})
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.all()).map((row) => row.id),
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
                     [5, 6]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    [7, 8]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    [9, 10]
                 )
             })
 

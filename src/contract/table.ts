@@ -1,4 +1,4 @@
-import {ABI, ABISerializableConstructor, API, Name, NameType} from '@greymass/eosio'
+import {ABI, ABISerializableConstructor, API, Name, NameType, Serializer} from '@greymass/eosio'
 import type {Contract} from '../contract'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
@@ -150,7 +150,17 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             key_type: key_type,
         }
 
-        const {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
+        let {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
+
+        if (!this.rowType) {
+            rows = [
+                Serializer.decode({
+                    object: rows[0],
+                    abi: this.contract.abi,
+                    type: this.abi.type,
+                }),
+            ]
+        }
 
         return rows[0]
     }

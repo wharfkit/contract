@@ -1,4 +1,4 @@
-import {API} from '@greymass/eosio'
+import {API, Serializer} from '@greymass/eosio'
 import {wrapIndexValue} from '../utils'
 import {Query, QueryOptions, Table} from './table'
 
@@ -94,7 +94,7 @@ export class TableCursor<TableRow> {
             indexPosition = fieldToIndexMapping[this.indexPositionField].index_position
         }
 
-        const {rows, next_key} = await this.table.contract.client!.v1.chain.get_table_rows({
+        const result = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
             limit: Math.min(this.tableParams.limit - this.rowsCount, 1000000),
             lower_bound: wrapIndexValue(lower_bound),
@@ -102,13 +102,22 @@ export class TableCursor<TableRow> {
             index_position: indexPosition,
         })
 
-        this.next_key = next_key
+        let {rows} = result
+        this.next_key = result.next_key
 
-        if (!next_key || rows.length === 0 || this.rowsCount === this.tableParams.limit) {
+        if (!result.next_key || rows.length === 0 || this.rowsCount === this.tableParams.limit) {
             this.endReached = true
         }
 
         this.rowsCount += rows.length
+
+        rows = rows.map((row) =>
+            Serializer.decode({
+                object: row,
+                abi: this.table.contract.abi,
+                type: this.table.abi.type,
+            })
+        )
 
         return rows
     }

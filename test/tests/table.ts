@@ -180,7 +180,7 @@ suite('Table', () => {
                 assert.instanceOf(rows[0].net_weight, Asset)
             })
 
-            test('should fetch correct number of table rows when limit option is used', async () => {
+            test('should fetch correct number of table rows when number is specified in `next` call', async () => {
                 const tableCursor = decentiumTrendingTable.query({from: 5, to: 10})
 
                 assert.deepEqual(
@@ -196,6 +196,35 @@ suite('Table', () => {
                 assert.deepEqual(
                     Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
                     [9, 10]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    []
+                )
+            })
+
+            test('should fetch correct number of table rows when default limit is used', async () => {
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10, limit: 2})
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    [5, 6]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    [7, 8]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    [9, 10]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    []
                 )
             })
         })

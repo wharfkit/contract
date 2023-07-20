@@ -108,6 +108,7 @@ export class TableCursor<TableRow> {
             lower_bound: wrapIndexValue(lower_bound),
             upper_bound: wrapIndexValue(upper_bound),
             index_position: indexPosition,
+            json: false,
         })
 
         let {rows} = result
@@ -121,7 +122,7 @@ export class TableCursor<TableRow> {
 
         rows = rows.map((row) =>
             Serializer.decode({
-                object: row,
+                data: row,
                 abi: this.table.contract.abi,
                 type: this.table.abi.type,
             })

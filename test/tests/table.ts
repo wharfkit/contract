@@ -117,7 +117,7 @@ suite('Table', () => {
     })
 
     suite('query', () => {
-        test('should allow you to chain the query statements', async () => {
+        test('should allow you to chain index query statements', async () => {
             const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({to: 8})
             assert.deepEqual(
                 Serializer.objectify(await tableCursor.all()).map((row) => row.id),
@@ -163,7 +163,7 @@ suite('Table', () => {
 
         suite('next', () => {
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5, limit: 10000})
+                const tableCursor = decentiumTrendingTable.query({from: 5})
                 assert.equal((await tableCursor.next()).length, 235)
                 assert.equal((await tableCursor.next()).length, 0)
             })
@@ -204,7 +204,7 @@ suite('Table', () => {
                 )
             })
 
-            test('should fetch correct number of table rows when default limit is used', async () => {
+            test('should fetch correct number of table rows when rowsPerAPIRequest is used', async () => {
                 const tableCursor = decentiumTrendingTable.query({
                     from: 5,
                     to: 10,

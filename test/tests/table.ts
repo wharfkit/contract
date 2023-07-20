@@ -205,7 +205,7 @@ suite('Table', () => {
             })
 
             test('should fetch correct number of table rows when default limit is used', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10, limit: 2})
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10, rowsPerAPIRequest: 2})
 
                 assert.deepEqual(
                     Serializer.objectify(await tableCursor.next()).map((row) => row.id),

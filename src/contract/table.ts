@@ -12,7 +12,7 @@ export interface QueryOptions {
 export interface Query extends QueryOptions {
     from?: API.v1.TableIndexType | string | number
     to?: API.v1.TableIndexType | string | number
-    limit?: number
+    rowsPerAPIRequest?: number
 }
 
 interface FieldToIndex {
@@ -102,21 +102,20 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
     query(query: Query): TableCursor<TableRow> {
-        const {from, to, limit} = query
+        const {from, to, rowsPerAPIRequest} = query
 
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
             scope: query.scope || this.contract.account,
             type: this.rowType,
-            limit: limit || this.defaultRowLimit,
+            limit: rowsPerAPIRequest || this.defaultRowLimit,
             lower_bound: wrapIndexValue(from),
             upper_bound: wrapIndexValue(to),
             key_type: query.key_type,
         }
 
         return new TableCursor({
-            maxRows: limit || this.defaultRowLimit,
             table: this,
             tableParams: tableRowsParams,
             indexPositionField: query.index,

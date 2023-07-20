@@ -354,9 +354,6 @@ suite('Table', () => {
                 const firstBatch = await tableCursor.all()
                 assert.equal(firstBatch.length, 239)
             })
-            test('should not fetch more rows than what is requested', async () => {
-                // const tableCursor = decentiumTrendingTable.first(10000)
-            })
             test('should return typed data', async () => {
                 const tableCursor = decentiumTrendingTable.first(10000)
                 const batch = await tableCursor.all()

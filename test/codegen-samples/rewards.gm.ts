@@ -1,30 +1,17 @@
-import {Contract, Table, TableCursor, GetTableRowsOptions} from '../../src/index'
+import {Contract, GetTableRowsOptions, Table, TableCursor} from '../../src/index'
 import {
     APIClient,
-    Session,
-    Struct,
-    TransactResult,
     Asset,
-    Checksum256,
+    AssetType,
     Float64,
     Name,
-    TimePoint,
-    TimePointSec,
-    UInt128,
-    UInt16,
-    UInt32,
-    UInt64,
-    UInt8,
-    AssetType,
-    Checksum256Type,
-    Float64Type,
     NameType,
-    TimePointType,
-    UInt128Type,
+    Session,
+    Struct,
+    TimePoint,
+    TransactResult,
+    UInt16,
     UInt16Type,
-    UInt32Type,
-    UInt64Type,
-    UInt8Type,
 } from '@wharfkit/session'
 export class _RewardsGm extends Contract {
     adduser(
@@ -150,7 +137,7 @@ export namespace _RewardsGm {
             amount: AssetType
         }
         export interface ConfigureParams {
-            token_symbol: Symbol
+            token_symbol: symbol
             oracle_account: NameType
             oracle_pairs: Oracle_pair
         }
@@ -168,8 +155,8 @@ export namespace _RewardsGm {
         }
         export interface ConfigQueryParams {
             token_symbol?: {
-                from: Symbol
-                to: Symbol
+                from: symbol
+                to: symbol
             }
             oracle_account?: {
                 from: NameType
@@ -181,7 +168,7 @@ export namespace _RewardsGm {
             }
         }
         export interface ConfigFindQueryParams {
-            token_symbol?: Symbol
+            token_symbol?: symbol
             oracle_account?: NameType
             oracle_pairs?: Oracle_pair
         }
@@ -221,7 +208,7 @@ export namespace _RewardsGm {
         @Struct.type('config')
         export class Config extends Struct {
             @Struct.field('token_symbol')
-            declare token_symbol: Symbol
+            declare token_symbol: symbol
             @Struct.field('oracle_account')
             declare oracle_account: Name
             @Struct.field('oracle_pairs')
@@ -230,7 +217,7 @@ export namespace _RewardsGm {
         @Struct.type('configure')
         export class Configure extends Struct {
             @Struct.field('token_symbol')
-            declare token_symbol: Symbol
+            declare token_symbol: symbol
             @Struct.field('oracle_account')
             declare oracle_account: Name
             @Struct.field('oracle_pairs')
@@ -251,7 +238,7 @@ export namespace _RewardsGm {
         @Struct.type('price_info')
         export class Price_info extends Struct {
             @Struct.field('pair')
-            declare pair: String
+            declare pair: string
             @Struct.field('price')
             declare price: Float64
             @Struct.field('timestamp')

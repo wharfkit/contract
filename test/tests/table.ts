@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
-import {Asset, Bytes, Int64, Name, Serializer, Struct, UInt128} from '@greymass/eosio'
+import {Asset, Name, Serializer} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
@@ -117,17 +117,21 @@ suite('Table', () => {
     })
 
     suite('query', () => {
+        test('should allow you to chain index query statements', async () => {
+            const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({to: 8})
+            assert.deepEqual(
+                Serializer.objectify(await tableCursor.all()).map((row) => row.id),
+                [5, 6, 7, 8]
+            )
+        })
+
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
-                const tableCursor = decentiumTrendingTable.query(
-                    {
-                        from: 101511,
-                        to: 105056,
-                    },
-                    {
-                        index: 'score',
-                    }
-                )
+                const tableCursor = decentiumTrendingTable.query({
+                    from: 101511,
+                    to: 105056,
+                    index: 'score',
+                })
 
                 assert.deepEqual(
                     Serializer.objectify(await tableCursor.all()).map((row) => row.score),
@@ -135,8 +139,77 @@ suite('Table', () => {
                 )
             })
 
-            test('should fetch correct number of table rows when limit option is used', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}, {limit: 2})
+            test('should fetch all rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract.table('delband').query({scope: 'wharfkittest'}).all()
+                assert.lengthOf(rows, 40)
+            })
+            // NOTE: This may not be possible without changes to the wharfkit/antelope library
+            test('should return typed rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract.table('delband').query({scope: 'wharfkittest'}).all()
+                assert.instanceOf(rows[0].from, Name)
+                assert.instanceOf(rows[0].to, Name)
+                assert.instanceOf(rows[0].cpu_weight, Asset)
+                assert.instanceOf(rows[0].net_weight, Asset)
+            })
+        })
+
+        suite('next', () => {
+            test('should allow you to fetch more rows after first request', async () => {
+                const tableCursor = decentiumTrendingTable.query({from: 5})
+                assert.equal((await tableCursor.next()).length, 235)
+                assert.equal((await tableCursor.next()).length, 0)
+            })
+
+            test('should return typed rows', async () => {
+                const contractKit = new ContractKit({
+                    client: makeClient('https://jungle4.greymass.com'),
+                })
+                const contract = await contractKit.load('eosio')
+                const rows = await contract.table('delband').query({scope: 'wharfkittest'}).next()
+                assert.instanceOf(rows[0].from, Name)
+                assert.instanceOf(rows[0].to, Name)
+                assert.instanceOf(rows[0].cpu_weight, Asset)
+                assert.instanceOf(rows[0].net_weight, Asset)
+            })
+
+            test('should fetch correct number of table rows when number is specified in `next` call', async () => {
+                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10})
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    [5, 6]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    [7, 8]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    [9, 10]
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    []
+                )
+            })
+
+            test('should fetch correct number of table rows when rowsPerAPIRequest is used', async () => {
+                const tableCursor = decentiumTrendingTable.query({
+                    from: 5,
+                    to: 10,
+                    rowsPerAPIRequest: 2,
+                })
 
                 assert.deepEqual(
                     Serializer.objectify(await tableCursor.next()).map((row) => row.id),
@@ -152,80 +225,11 @@ suite('Table', () => {
                     Serializer.objectify(await tableCursor.next()).map((row) => row.id),
                     [9, 10]
                 )
-            })
 
-            test('should fetch all rows', async () => {
-                const contractKit = new ContractKit({
-                    client: makeClient('https://jungle4.greymass.com'),
-                })
-                const contract = await contractKit.load('eosio')
-                const rows = await contract
-                    .table('delband')
-                    .query(
-                        {
-                            from: '',
-                            to: '',
-                        },
-                        {
-                            scope: 'wharfkittest',
-                        }
-                    )
-                    .all()
-                assert.lengthOf(rows, 40)
-            })
-            // NOTE: This may not be possible without changes to the wharfkit/antelope library
-            test('should return typed rows', async () => {
-                const contractKit = new ContractKit({
-                    client: makeClient('https://jungle4.greymass.com'),
-                })
-                const contract = await contractKit.load('eosio')
-                const rows = await contract
-                    .table('delband')
-                    .query(
-                        {
-                            from: '',
-                            to: '',
-                        },
-                        {
-                            scope: 'wharfkittest',
-                        }
-                    )
-                    .all()
-                assert.instanceOf(rows[0].from, Name)
-                assert.instanceOf(rows[0].to, Name)
-                assert.instanceOf(rows[0].cpu_weight, Asset)
-                assert.instanceOf(rows[0].net_weight, Asset)
-            })
-        })
-
-        suite('next', () => {
-            test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5}, {limit: 10000})
-                assert.equal((await tableCursor.next()).length, 235)
-                assert.equal((await tableCursor.next()).length, 0)
-            })
-
-            test('should return typed rows', async () => {
-                const contractKit = new ContractKit({
-                    client: makeClient('https://jungle4.greymass.com'),
-                })
-                const contract = await contractKit.load('eosio')
-                const rows = await contract
-                    .table('delband')
-                    .query(
-                        {
-                            from: '',
-                            to: '',
-                        },
-                        {
-                            scope: 'wharfkittest',
-                        }
-                    )
-                    .next()
-                assert.instanceOf(rows[0].from, Name)
-                assert.instanceOf(rows[0].to, Name)
-                assert.instanceOf(rows[0].cpu_weight, Asset)
-                assert.instanceOf(rows[0].net_weight, Asset)
+                assert.deepEqual(
+                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    []
+                )
             })
         })
     })
@@ -378,7 +382,6 @@ suite('Table', () => {
                 const allRequestedRows = await cursor.all()
                 assert.equal(allRequestedRows.length, 10000)
             })
-
             test('should stop if requesting more than exists', async () => {
                 const tableCursor = decentiumTrendingTable.first(10000)
                 const firstBatch = await tableCursor.all()

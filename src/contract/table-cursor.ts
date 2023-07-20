@@ -1,6 +1,6 @@
 import {API, Serializer} from '@greymass/eosio'
 import {wrapIndexValue} from '../utils'
-import {Query, QueryOptions, Table} from './table'
+import {Query, Table} from './table'
 
 interface TableCursorParams {
     table: Table
@@ -75,7 +75,7 @@ export class TableCursor<TableRow> {
      *
      * @returns The new rows.
      */
-    async next(): Promise<TableRow[]> {
+    async next(rowsPerAPIRequest?: number): Promise<TableRow[]> {
         if (this.endReached) {
             return []
         }
@@ -101,7 +101,10 @@ export class TableCursor<TableRow> {
 
         const result = await this.table.contract.client!.v1.chain.get_table_rows({
             ...this.tableParams,
-            limit: Math.min(this.maxRows - this.rowsCount, this.tableParams.limit),
+            limit: Math.min(
+                this.maxRows - this.rowsCount,
+                rowsPerAPIRequest || this.tableParams.limit
+            ),
             lower_bound: wrapIndexValue(lower_bound),
             upper_bound: wrapIndexValue(upper_bound),
             index_position: indexPosition,
@@ -156,14 +159,15 @@ export class TableCursor<TableRow> {
      *
      * @returns A new cursor with updated parameters.
      */
-    query(query: Query, {limit}: QueryOptions = {}) {
+    query(query: Query) {
         return new TableCursor({
             table: this.table,
             tableParams: {
                 ...this.tableParams,
-                limit: limit || this.tableParams.limit,
-                lower_bound: query.from || this.tableParams.lower_bound,
-                upper_bound: query.to || this.tableParams.upper_bound,
+                limit: query.rowsPerAPIRequest || this.tableParams.limit,
+                scope: query.scope || this.tableParams.scope,
+                lower_bound: query.from ? wrapIndexValue(query.from) : this.tableParams.lower_bound,
+                upper_bound: query.to ? wrapIndexValue(query.to) : this.tableParams.upper_bound,
             },
         })
     }

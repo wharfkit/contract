@@ -3,19 +3,16 @@ import type {Contract} from '../contract'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
 
-export interface FindOptions {
+export interface QueryOptions {
     index?: string
     scope?: NameType
     key_type?: keyof API.v1.TableIndexTypes
 }
 
-export interface QueryOptions extends FindOptions {
-    limit?: number
-}
-
-export interface Query {
-    from: API.v1.TableIndexType | string
-    to: API.v1.TableIndexType | string
+export interface Query extends QueryOptions {
+    from?: API.v1.TableIndexType | string | number
+    to?: API.v1.TableIndexType | string | number
+    rowsPerAPIRequest?: number
 }
 
 interface FieldToIndex {
@@ -104,27 +101,24 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    query(
-        query: Query,
-        {limit, scope = this.contract.account, index, key_type}: QueryOptions = {}
-    ): TableCursor<TableRow> {
-        const {from, to} = query
+    query(query: Query): TableCursor<TableRow> {
+        const {from, to, rowsPerAPIRequest} = query
 
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
-            scope,
+            scope: query.scope || this.contract.account,
             type: this.rowType,
-            limit: limit || this.defaultRowLimit,
+            limit: rowsPerAPIRequest || this.defaultRowLimit,
             lower_bound: wrapIndexValue(from),
             upper_bound: wrapIndexValue(to),
-            key_type: key_type,
+            key_type: query.key_type,
         }
 
         return new TableCursor({
             table: this,
             tableParams: tableRowsParams,
-            indexPositionField: index,
+            indexPositionField: query.index,
         })
     }
 
@@ -176,17 +170,17 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(limit: number, options: FindOptions = {}): TableCursor<TableRow> {
+    first(maxRows: number, options: QueryOptions = {}): TableCursor<TableRow> {
         const tableRowsParams = {
             table: this.name,
-            limit,
+            limit: maxRows,
             code: this.contract.account,
             type: this.rowType,
             scope: options.scope,
         }
 
         return new TableCursor({
-            maxRows: limit,
+            maxRows,
             table: this,
             tableParams: tableRowsParams,
         })

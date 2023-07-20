@@ -145,6 +145,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
             upper_bound: wrapIndexValue(queryValue),
             index_position: index ? fieldToIndexMapping[index].index_position : 'primary',
             key_type: key_type,
+            json: false,
         }
 
         let {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
@@ -152,7 +153,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
         if (!this.rowType) {
             rows = [
                 Serializer.decode({
-                    object: rows[0],
+                    data: rows[0],
                     abi: this.contract.abi,
                     type: this.abi.type,
                 }),

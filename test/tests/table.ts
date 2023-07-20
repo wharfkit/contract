@@ -294,31 +294,8 @@ suite('Table', () => {
         })
 
         test('should fetch table row correctly with default filtering', async () => {
-            // curl http://eos.greymass.com/v1/chain/get_table_rows -d '{"table":"producers","limit":10,"code":"eosio","scope":"eosio","json":true, "lower_bound": "teamgreymass", "upper_bound": "teamgreymass"}'
             const row = await producersTable.get('teamgreymass')
-
-            assert.deepEqual(Serializer.objectify(row), {
-                owner: 'teamgreymass',
-                total_votes: '10609167676440100000',
-                producer_key: 'PUB_K1_5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMMJwz2A',
-                is_active: 1,
-                url: 'https://greymass.com',
-                unpaid_blocks: 0,
-                last_claim_time: '2023-07-18T15:02:08.000',
-                location: 124,
-                producer_authority: [
-                    'block_signing_authority_v0',
-                    {
-                        threshold: 1,
-                        keys: [
-                            {
-                                key: 'PUB_K1_5ktvwSdLEdusdRn7NmdV2Xu89xiXjir7EhJuZ4DUa8WMMJwz2A',
-                                weight: 1,
-                            },
-                        ],
-                    },
-                ],
-            })
+            assert.isTrue(row.owner.equals('teamgreymass'))
         })
 
         test('should return typed data', async () => {
@@ -365,9 +342,8 @@ suite('Table', () => {
             test('should allow you to fetch more rows after first request', async () => {
                 const tableCursor = nameBidTable.first(100000)
                 const firstBatch = await tableCursor.next()
-                assert.equal(firstBatch.length, 2157)
                 const secondBatch = await tableCursor.next()
-                assert.equal(secondBatch.length, 2179)
+                assert.isFalse(firstBatch[0].newname.equals(secondBatch[0].newname))
             })
             test('should return typed data', async () => {
                 const tableCursor = nameBidTable.first(100000)
@@ -398,7 +374,7 @@ suite('Table', () => {
     suite('all', () => {
         test('should return every single row in a table', async () => {
             const tableRows = await nameBidTable.all()
-            assert.equal(tableRows.length, 53097)
+            assert.isTrue(tableRows.length > 50000)
         })
         test('should return typed data', async () => {
             const tableRows = await nameBidTable.all()

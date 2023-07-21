@@ -1,0 +1,16 @@
+{
+    "request": {
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"json\":false,\"code\":\"decentiumorg\",\"table\":\"trending\",\"lower_bound\":\"5\",\"upper_bound\":\"\",\"limit\":2,\"scope\":\"decentiumorg\",\"key_type\":\"name\"}"
+        }
+    },
+    "status": 200,
+    "json": {
+        "rows": [],
+        "more": false,
+        "next_key": ""
+    },
+    "text": "{\"rows\":[],\"more\":false,\"next_key\":\"\"}"
+}

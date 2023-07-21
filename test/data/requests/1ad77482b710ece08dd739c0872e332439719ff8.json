@@ -1,0 +1,18 @@
+{
+    "request": {
+        "path": "https://jungle4.greymass.com/v1/chain/get_table_rows",
+        "params": {
+            "method": "POST",
+            "body": "{\"code\":\"eosio\",\"table\":\"delband\",\"scope\":\"wharfkittest\",\"limit\":1,\"lower_bound\":\"wharfte21111\",\"json\":false,\"key_type\":\"name\"}"
+        }
+    },
+    "status": 200,
+    "json": {
+        "rows": [
+            "90b1cad9c1754de310420842e5754de3102700000000000004454f5300000000102700000000000004454f5300000000"
+        ],
+        "more": true,
+        "next_key": "16378877047332160032"
+    },
+    "text": "{\"rows\":[\"90b1cad9c1754de310420842e5754de3102700000000000004454f5300000000102700000000000004454f5300000000\"],\"more\":true,\"next_key\":\"16378877047332160032\"}"
+}

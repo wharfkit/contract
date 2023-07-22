@@ -1,4 +1,13 @@
-import {API, Serializer} from '@greymass/eosio'
+import {
+    API,
+    Checksum160,
+    Checksum256,
+    Float64,
+    Name,
+    Serializer,
+    UInt128,
+    UInt64,
+} from '@greymass/eosio'
 import {wrapIndexValue} from '../utils'
 import {Query, Table} from './table'
 
@@ -6,19 +15,17 @@ interface TableCursorParams {
     table: Table
     tableParams: API.v1.GetTableRowsParams
     maxRows?: number
-    next_key?: API.v1.TableIndexType | string
+    next_key?: Name | UInt64 | UInt128 | Float64 | Checksum256 | Checksum160 | undefined
     indexPositionField?: string
 }
 
 /**
  * Represents a cursor for a table in the blockchain. Provides methods for
  * iterating over the rows of the table.
- *
- * @typeparam TableRow The type of rows in the table.
  */
-export class TableCursor<TableRow> {
+export class TableCursor {
     private table: Table
-    private next_key: API.v1.TableIndexType | string | undefined
+    private next_key: Name | UInt64 | UInt128 | Float64 | Checksum256 | Checksum160 | undefined
     private tableParams: API.v1.GetTableRowsParams
     private endReached = false
     private indexPositionField?: string
@@ -27,9 +34,6 @@ export class TableCursor<TableRow> {
 
     /**
      * @param {TableCursorParams} params - Parameters for creating a new table cursor.
-     *
-     * @param {TableRow[]} params.rows - An array of rows that the cursor will iterate over.
-     * Each row represents an entry in the table.
      *
      * @param {Table} params.table - The table that the rows belong to.
      *
@@ -75,7 +79,7 @@ export class TableCursor<TableRow> {
      *
      * @returns The new rows.
      */
-    async next(rowsPerAPIRequest?: number): Promise<TableRow[]> {
+    async next(rowsPerAPIRequest?: number): Promise<any[]> {
         if (this.endReached) {
             return []
         }
@@ -150,7 +154,7 @@ export class TableCursor<TableRow> {
      * @returns All rows in the cursor query.
      */
     async all() {
-        const rows: TableRow[] = []
+        const rows: any[] = []
         for await (const row of this) {
             rows.push(row)
         }

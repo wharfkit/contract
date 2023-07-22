@@ -89,8 +89,8 @@ suite('Table', () => {
             assert.instanceOf(table, Table)
             const rows = await table.first(1).next()
             assert.instanceOf(rows[0], NameBid)
-            // assert.instanceOf(rows[0].newname, Name)
-            console.log(JSON.stringify(rows[0].newname))
+            assert.instanceOf(rows[0].newname, Name)
+            assert.instanceOf(rows[0].high_bid, Int64)
         })
         suite('all', () => {
             test('should return every single row in a table', async () => {

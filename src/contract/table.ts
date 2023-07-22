@@ -1,4 +1,4 @@
-import {ABI, ABISerializableConstructor, API, Name, NameType, Serializer} from '@greymass/eosio'
+import {ABI, API, Name, NameType, Serializer} from '@greymass/eosio'
 import type {Contract} from '../contract'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
@@ -40,11 +40,11 @@ export interface GetTableRowsOptions {
  *
  * @typeparam TableRow The type of rows in the table.
  */
-export class Table<TableRow extends ABISerializableConstructor = ABISerializableConstructor> {
+export class Table {
     readonly abi: ABI.Table
     readonly name: Name
     readonly contract: Contract
-    readonly rowType?: TableRow
+    readonly rowType?
 
     private fieldToIndex?: any
 
@@ -53,7 +53,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
     /**
      * Constructs a new `Table` instance.
      *
-     * @param {TableParams<TableRow>} tableParams - Parameters for the table.
+     * @param {TableParams} tableParams - Parameters for the table.
      * The parameters should include:
      *  - `contract`: Name of the contract that this table is associated with.
      *  - `name`: Name of the table.
@@ -61,7 +61,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `rowType`: (optional) Custom row type.
      *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      */
-    constructor({contract, name, rowType, fieldToIndex}: TableParams<TableRow>) {
+    constructor({contract, name, rowType, fieldToIndex}: TableParams) {
         this.name = Name.from(name)
 
         const abi = contract.abi.tables.find((table) => this.name.equals(table.name))
@@ -101,7 +101,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    query(query: Query): TableCursor<TableRow> {
+    query(query: Query): TableCursor {
         const {from, to, rowsPerAPIRequest} = query
 
         const tableRowsParams = {
@@ -132,7 +132,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
     async get(
         queryValue: API.v1.TableIndexType | string,
         {scope = this.contract.account, index, key_type}: QueryOptions = {}
-    ): Promise<TableRow> {
+    ) {
         const fieldToIndexMapping = this.getFieldToIndex()
 
         const tableRowsParams = {
@@ -171,7 +171,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(maxRows: number, options: QueryOptions = {}): TableCursor<TableRow> {
+    first(maxRows: number, options: QueryOptions = {}): TableCursor {
         const tableRowsParams = {
             table: this.name,
             limit: maxRows,
@@ -189,9 +189,9 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
 
     /**
      * Returns a cursor to get every single rows on the table.
-     * @returns {TableCursor<TableRow>}
+     * @returns {TableCursor}
      */
-    cursor(): TableCursor<TableRow> {
+    cursor(): TableCursor {
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
@@ -209,7 +209,7 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * Returns all the rows from the table.
      * @returns {Promise<TableRow[]>} Promise resolving to an array of table rows.
      */
-    async all(): Promise<TableRow[]> {
+    async all(): Promise<any[]> {
         return this.cursor().all()
     }
 

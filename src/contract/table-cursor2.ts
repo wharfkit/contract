@@ -18,13 +18,7 @@ const defaultParams = {
     limit: 1000,
 }
 
-/**
- * Represents a cursor for a table in the blockchain. Provides methods for
- * iterating over the rows of the table.
- *
- * @typeparam TableRow The type of rows in the table.
- */
-export class TableCursor2 {
+export class TableCursor2<RowType = any> {
     readonly abi: ABI
     readonly type: string
     readonly params: TableRowParamsTypes
@@ -67,7 +61,7 @@ export class TableCursor2 {
         }
     }
 
-    async next(rowsPerAPIRequest?: number) {
+    async next(rowsPerAPIRequest?: number): Promise<RowType[]> {
         if (this.endReached) {
             return []
         }
@@ -115,7 +109,7 @@ export class TableCursor2 {
         this.rowsCount = 0
     }
 
-    async all() {
+    async all(): Promise<RowType[]> {
         const rows: any[] = []
         for await (const row of this) {
             rows.push(row)

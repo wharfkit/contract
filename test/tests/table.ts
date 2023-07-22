@@ -81,13 +81,13 @@ suite('Table', () => {
                 @Struct.field(Int64) high_bid!: Int64
                 @Struct.field(TimePoint) last_bid_time!: TimePoint
             }
-            const table = new Table({
+            const table = new Table<NameBid>({
                 contract: eosio,
                 name: 'namebids',
                 rowType: NameBid,
             })
             assert.instanceOf(table, Table)
-            const rows = await table.first(1).next()
+            const rows: NameBid[] = await table.first(1).next()
             assert.instanceOf(rows[0], NameBid)
             // assert.instanceOf(rows[0].newname, Name)
             console.log(JSON.stringify(rows[0].newname))

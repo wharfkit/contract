@@ -1,4 +1,4 @@
-import {API, Serializer} from '@greymass/eosio'
+import {ABISerializableConstructor, API, Serializer} from '@greymass/eosio'
 import {wrapIndexValue} from '../utils'
 import {Query, Table} from './table'
 
@@ -16,7 +16,7 @@ interface TableCursorParams {
  *
  * @typeparam TableRow The type of rows in the table.
  */
-export class TableCursor<TableRow> {
+export class TableCursor<TableRow extends ABISerializableConstructor> {
     private table: Table
     private next_key: API.v1.TableIndexType | string | undefined
     private tableParams: API.v1.GetTableRowsParams
@@ -75,7 +75,7 @@ export class TableCursor<TableRow> {
      *
      * @returns The new rows.
      */
-    async next(rowsPerAPIRequest?: number): Promise<TableRow[]> {
+    async next<Key extends keyof API.v1.TableIndexTypes = 'name'>(rowsPerAPIRequest?: number): Promise<TableRow[]> {
         if (this.endReached) {
             return []
         }
@@ -99,7 +99,7 @@ export class TableCursor<TableRow> {
             indexPosition = fieldToIndexMapping[this.indexPositionField].index_position
         }
 
-        const result = await this.table.contract.client!.v1.chain.get_table_rows({
+        const result = await this.table.contract.client!.v1.chain.get_table_rows<TableRow, Key>({
             ...this.tableParams,
             limit: Math.min(
                 this.maxRows - this.rowsCount,

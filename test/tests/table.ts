@@ -81,7 +81,7 @@ suite('Table', () => {
                 @Struct.field(Int64) high_bid!: Int64
                 @Struct.field(TimePoint) last_bid_time!: TimePoint
             }
-            const table = new Table({
+            const table = new Table<NameBid>({
                 contract: eosio,
                 name: 'namebids',
                 rowType: NameBid,

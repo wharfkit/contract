@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
-import {Asset, Name, Serializer} from '@greymass/eosio'
+import {Asset, Int64, Name, Serializer, Struct, TimePoint} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
@@ -72,6 +72,25 @@ suite('Table', () => {
         test('should return a cursor', () => {
             const cursor = nameBidTable.cursor()
             assert.instanceOf(cursor, TableCursor)
+        })
+        test('rowType', async () => {
+            @Struct.type('name_bid')
+            class NameBid extends Struct {
+                @Struct.field(Name) newname!: Name
+                @Struct.field(Name) high_bidder!: Name
+                @Struct.field(Int64) high_bid!: Int64
+                @Struct.field(TimePoint) last_bid_time!: TimePoint
+            }
+            const table = new Table({
+                contract: eosio,
+                name: 'namebids',
+                rowType: NameBid,
+            })
+            assert.instanceOf(table, Table)
+            const rows = await table.first(1).next()
+            assert.instanceOf(rows[0], NameBid)
+            // assert.instanceOf(rows[0].newname, Name)
+            console.log(JSON.stringify(rows[0].newname))
         })
         suite('all', () => {
             test('should return every single row in a table', async () => {

@@ -40,11 +40,11 @@ export interface GetTableRowsOptions {
  *
  * @typeparam TableRow The type of rows in the table.
  */
-export class Table {
+export class Table<RowType = any> {
     readonly abi: ABI.Table
     readonly name: Name
     readonly contract: Contract
-    readonly rowType?
+    readonly rowType?: RowType
 
     private fieldToIndex?: any
 
@@ -101,7 +101,7 @@ export class Table {
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    query(query: Query): TableCursor {
+    query(query: Query): TableCursor<RowType> {
         const {from, to, rowsPerAPIRequest} = query
 
         const tableRowsParams = {
@@ -115,7 +115,7 @@ export class Table {
             key_type: query.key_type,
         }
 
-        return new TableCursor({
+        return new TableCursor<RowType>({
             table: this,
             tableParams: tableRowsParams,
             indexPositionField: query.index,
@@ -132,7 +132,7 @@ export class Table {
     async get(
         queryValue: API.v1.TableIndexType | string,
         {scope = this.contract.account, index, key_type}: QueryOptions = {}
-    ) {
+    ): Promise<RowType> {
         const fieldToIndexMapping = this.getFieldToIndex()
 
         const tableRowsParams = {
@@ -171,7 +171,7 @@ export class Table {
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(maxRows: number, options: QueryOptions = {}): TableCursor {
+    first(maxRows: number, options: QueryOptions = {}): TableCursor<RowType> {
         const tableRowsParams = {
             table: this.name,
             limit: maxRows,
@@ -180,7 +180,7 @@ export class Table {
             scope: options.scope,
         }
 
-        return new TableCursor({
+        return new TableCursor<RowType>({
             maxRows,
             table: this,
             tableParams: tableRowsParams,
@@ -191,7 +191,7 @@ export class Table {
      * Returns a cursor to get every single rows on the table.
      * @returns {TableCursor}
      */
-    cursor(): TableCursor {
+    cursor(): TableCursor<RowType> {
         const tableRowsParams = {
             table: this.name,
             code: this.contract.account,
@@ -199,7 +199,7 @@ export class Table {
             limit: this.defaultRowLimit,
         }
 
-        return new TableCursor({
+        return new TableCursor<RowType>({
             table: this,
             tableParams: tableRowsParams,
         })
@@ -209,7 +209,7 @@ export class Table {
      * Returns all the rows from the table.
      * @returns {Promise<TableRow[]>} Promise resolving to an array of table rows.
      */
-    async all(): Promise<any[]> {
+    async all(): Promise<RowType[]> {
         return this.cursor().all()
     }
 

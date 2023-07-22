@@ -12,7 +12,7 @@ import {wrapIndexValue} from '../utils'
 import {Query, Table} from './table'
 
 interface TableCursorParams {
-    table: Table
+    table: Table<any>
     tableParams: API.v1.GetTableRowsParams
     maxRows?: number
     next_key?: Name | UInt64 | UInt128 | Float64 | Checksum256 | Checksum160 | undefined
@@ -23,8 +23,8 @@ interface TableCursorParams {
  * Represents a cursor for a table in the blockchain. Provides methods for
  * iterating over the rows of the table.
  */
-export class TableCursor {
-    private table: Table
+export class TableCursor<RowType = any> {
+    private table: Table<RowType>
     private next_key: Name | UInt64 | UInt128 | Float64 | Checksum256 | Checksum160 | undefined
     private tableParams: API.v1.GetTableRowsParams
     private endReached = false
@@ -79,7 +79,7 @@ export class TableCursor {
      *
      * @returns The new rows.
      */
-    async next(rowsPerAPIRequest?: number): Promise<any[]> {
+    async next(rowsPerAPIRequest?: number): Promise<RowType[]> {
         if (this.endReached) {
             return []
         }
@@ -153,7 +153,7 @@ export class TableCursor {
      *
      * @returns All rows in the cursor query.
      */
-    async all() {
+    async all(): Promise<RowType[]> {
         const rows: any[] = []
         for await (const row of this) {
             rows.push(row)

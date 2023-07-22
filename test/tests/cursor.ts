@@ -5,7 +5,7 @@ import ContractKit, {Contract, TableCursor2} from '$lib'
 import {Name, Serializer, UInt64} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
 import {TrendingRow} from '$test/utils/decentium'
-import {NameBid} from '$test/utils/eosio'
+import {DelegatedBandwidth, NameBid} from '$test/utils/eosio'
 
 const mockClient = makeClient('https://eos.greymass.com')
 
@@ -23,6 +23,57 @@ suite('Cursor', () => {
     })
 
     suite('constructor', function () {
+        suite('generics', function () {
+            test('without generics or type', async function () {
+                const cursor = new TableCursor2({
+                    abi: eosio.abi,
+                    client: mockClient,
+                    params: {
+                        code: Name.from('eosio'),
+                        table: Name.from('delband'),
+                    },
+                })
+                assert.instanceOf(cursor, TableCursor2)
+                const result = await cursor.next(1)
+                assert.lengthOf(result, 1)
+                assert.isObject(result[0])
+                assert.notInstanceOf(result[0], DelegatedBandwidth)
+                assert.instanceOf(result[0].from, Name)
+            })
+            test('with generics and no type', async function () {
+                const cursor = new TableCursor2<DelegatedBandwidth>({
+                    abi: eosio.abi,
+                    client: mockClient,
+                    params: {
+                        code: Name.from('eosio'),
+                        table: Name.from('delband'),
+                    },
+                })
+                assert.instanceOf(cursor, TableCursor2)
+                const result = await cursor.next(1)
+                assert.lengthOf(result, 1)
+                assert.isObject(result[0])
+                assert.notInstanceOf(result[0], DelegatedBandwidth)
+                assert.instanceOf(result[0].from, Name)
+            })
+            test('with generics and type', async function () {
+                const cursor = new TableCursor2<DelegatedBandwidth>({
+                    abi: eosio.abi,
+                    client: mockClient,
+                    params: {
+                        code: Name.from('eosio'),
+                        table: Name.from('delband'),
+                        type: DelegatedBandwidth,
+                    },
+                })
+                assert.instanceOf(cursor, TableCursor2)
+                const result = await cursor.next(1)
+                assert.lengthOf(result, 1)
+                assert.isObject(result[0])
+                assert.instanceOf(result[0], DelegatedBandwidth)
+                assert.instanceOf(result[0].from, Name)
+            })
+        })
         suite('params', function () {
             test('typed minimal', async () => {
                 const cursor = new TableCursor2({
@@ -277,7 +328,7 @@ suite('Cursor', () => {
                             table: 'trending',
                         },
                     })
-                    // assert.equal((await cursor.all()).length, 239)
+                    assert.equal((await cursor.all()).length, 239)
                 })
             })
             suite('next', () => {

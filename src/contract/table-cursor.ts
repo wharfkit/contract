@@ -120,13 +120,15 @@ export class TableCursor<TableRow> {
             this.endReached = true
         }
 
-        rows = rows.map((row) =>
-            Serializer.decode({
-                data: row,
-                abi: this.table.contract.abi,
-                type: this.table.abi.type,
-            })
-        )
+        if (!this.table.rowType) {
+            rows = rows.map((row) =>
+                Serializer.decode({
+                    data: row,
+                    abi: this.table.contract.abi,
+                    type: this.table.abi.type,
+                })
+            )
+        }
 
         return rows
     }

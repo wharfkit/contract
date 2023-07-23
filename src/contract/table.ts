@@ -104,7 +104,7 @@ export class Table<RowType = any> {
     query(query: Query): TableCursor<RowType> {
         const {from, to, rowsPerAPIRequest} = query
 
-        const tableRowsParams = {
+        const tableRowsParams: any = {
             table: this.name,
             code: this.contract.account,
             scope: query.scope || this.contract.account,
@@ -115,10 +115,20 @@ export class Table<RowType = any> {
             key_type: query.key_type,
         }
 
+        if (query.index) {
+            const fieldToIndexMapping = this.getFieldToIndex()
+
+            if (!fieldToIndexMapping[query.index]) {
+                throw new Error(`Field ${query.index} is not a valid index.`)
+            }
+
+            tableRowsParams.index_position = fieldToIndexMapping[query.index].index_position
+        }
+
         return new TableCursor<RowType>({
-            table: this,
-            tableParams: tableRowsParams,
-            indexPositionField: query.index,
+            abi: this.contract.abi,
+            client: this.contract.client,
+            params: tableRowsParams,
         })
     }
 
@@ -181,9 +191,10 @@ export class Table<RowType = any> {
         }
 
         return new TableCursor<RowType>({
+            abi: this.contract.abi,
+            client: this.contract.client,
             maxRows,
-            table: this,
-            tableParams: tableRowsParams,
+            params: tableRowsParams,
         })
     }
 
@@ -200,8 +211,9 @@ export class Table<RowType = any> {
         }
 
         return new TableCursor<RowType>({
-            table: this,
-            tableParams: tableRowsParams,
+            abi: this.contract.abi,
+            client: this.contract.client,
+            params: tableRowsParams,
         })
     }
 

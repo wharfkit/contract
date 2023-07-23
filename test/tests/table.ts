@@ -136,13 +136,14 @@ suite('Table', () => {
     })
 
     suite('query', () => {
-        test('should allow you to chain index query statements', async () => {
-            const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({to: 8})
-            assert.deepEqual(
-                Serializer.objectify(await tableCursor.all()).map((row) => row.id),
-                [5, 6, 7, 8]
-            )
-        })
+        // TODO: Discuss and remove? No longer works since query is a Table method
+        // test('should allow you to chain index query statements', async () => {
+        //     const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({to: 8})
+        //     assert.deepEqual(
+        //         Serializer.objectify(await tableCursor.all()).map((row) => row.id),
+        //         [5, 6, 7, 8]
+        //     )
+        // })
 
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
@@ -326,7 +327,7 @@ suite('Table', () => {
     suite('first', () => {
         test('should establish cursor with first parameters', () => {
             const tableCursor = decentiumTrendingTable.first(10)
-            assert.equal(tableCursor.tableParams.limit, 10)
+            assert.equal(tableCursor.params.limit, 10)
         })
         suite('scope', function () {
             test('should default to no scope', async () => {

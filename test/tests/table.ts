@@ -32,14 +32,18 @@ suite('Table', () => {
     suite('construct', function () {
         test('defaults', () => {
             const table = new Table({
-                contract: eosio,
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
                 name: 'namebids',
             })
             assert.instanceOf(table, Table)
         })
         test('defaults (typed)', () => {
             const table = new Table({
-                contract: eosio,
+                abi: eosio.abi,
+                account: eosio.account,
+                client: mockClient,
                 name: Name.from('namebids'),
             })
             assert.instanceOf(table, Table)
@@ -48,14 +52,18 @@ suite('Table', () => {
             assert.throws(
                 () =>
                     new Table({
-                        contract: eosio,
+                        abi: eosio.abi,
+                        account: eosio.account,
+                        client: mockClient,
                         name: 'foo',
                     })
             )
         })
         test('fieldToIndex', () => {
             const table = new Table({
-                contract: decentiumorg,
+                abi: decentiumorg.abi,
+                account: decentiumorg.account,
+                client: mockClient,
                 name: Name.from('trending'),
                 fieldToIndex: {
                     id: {type: 'uint64', index_position: 'primary'},
@@ -82,7 +90,9 @@ suite('Table', () => {
                 @Struct.field(TimePoint) last_bid_time!: TimePoint
             }
             const table = new Table<NameBid>({
-                contract: eosio,
+                abi: eosio.abi,
+                account: eosio.account,
+                client: mockClient,
                 name: 'namebids',
                 rowType: NameBid,
             })

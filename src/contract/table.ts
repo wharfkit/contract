@@ -1,5 +1,4 @@
-import {ABI, API, Name, NameType, Serializer} from '@greymass/eosio'
-import type {Contract} from '../contract'
+import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@greymass/eosio'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
 
@@ -22,7 +21,9 @@ interface FieldToIndex {
     }
 }
 interface TableParams<TableRow = any> {
-    contract: Contract
+    abi: ABIDef
+    account: NameType
+    client: APIClient
     name: NameType
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
@@ -41,10 +42,12 @@ export interface GetTableRowsOptions {
  * @typeparam TableRow The type of rows in the table.
  */
 export class Table<RowType = any> {
-    readonly abi: ABI.Table
+    readonly abi: ABI
+    readonly account: Name
+    readonly client: APIClient
     readonly name: Name
-    readonly contract: Contract
     readonly rowType?: RowType
+    readonly tableABI: ABI.Table
 
     private fieldToIndex?: any
 
@@ -61,18 +64,18 @@ export class Table<RowType = any> {
      *  - `rowType`: (optional) Custom row type.
      *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      */
-    constructor({contract, name, rowType, fieldToIndex}: TableParams) {
-        this.name = Name.from(name)
-
-        const abi = contract.abi.tables.find((table) => this.name.equals(table.name))
-        if (!abi) {
+    constructor(args: TableParams) {
+        this.abi = ABI.from(args.abi)
+        this.account = Name.from(args.account)
+        this.name = Name.from(args.name)
+        this.client = args.client
+        this.rowType = args.rowType
+        this.fieldToIndex = args.fieldToIndex
+        const tableABI = this.abi.tables.find((table) => this.name.equals(table.name))
+        if (!tableABI) {
             throw new Error(`Table ${this.name} not found in ABI`)
         }
-
-        this.abi = abi
-        this.rowType = rowType
-        this.fieldToIndex = fieldToIndex
-        this.contract = contract
+        this.tableABI = tableABI
     }
 
     /**
@@ -106,8 +109,8 @@ export class Table<RowType = any> {
 
         const tableRowsParams: any = {
             table: this.name,
-            code: this.contract.account,
-            scope: query.scope || this.contract.account,
+            code: this.account,
+            scope: query.scope || this.account,
             type: this.rowType,
             limit: rowsPerAPIRequest || this.defaultRowLimit,
             lower_bound: wrapIndexValue(from),
@@ -126,8 +129,8 @@ export class Table<RowType = any> {
         }
 
         return new TableCursor<RowType>({
-            abi: this.contract.abi,
-            client: this.contract.client,
+            abi: this.abi,
+            client: this.client,
             params: tableRowsParams,
         })
     }
@@ -141,13 +144,13 @@ export class Table<RowType = any> {
      */
     async get(
         queryValue: API.v1.TableIndexType | string,
-        {scope = this.contract.account, index, key_type}: QueryOptions = {}
+        {scope = this.account, index, key_type}: QueryOptions = {}
     ): Promise<RowType> {
         const fieldToIndexMapping = this.getFieldToIndex()
 
         const tableRowsParams = {
             table: this.name,
-            code: this.contract.account,
+            code: this.account,
             scope,
             type: this.rowType!,
             limit: 1,
@@ -158,14 +161,14 @@ export class Table<RowType = any> {
             json: false,
         }
 
-        let {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
+        let {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
 
         if (!this.rowType) {
             rows = [
                 Serializer.decode({
                     data: rows[0],
-                    abi: this.contract.abi,
-                    type: this.abi.type,
+                    abi: this.abi,
+                    type: this.tableABI.type,
                 }),
             ]
         }
@@ -185,14 +188,14 @@ export class Table<RowType = any> {
         const tableRowsParams = {
             table: this.name,
             limit: maxRows,
-            code: this.contract.account,
+            code: this.account,
             type: this.rowType,
             scope: options.scope,
         }
 
         return new TableCursor<RowType>({
-            abi: this.contract.abi,
-            client: this.contract.client,
+            abi: this.abi,
+            client: this.client,
             maxRows,
             params: tableRowsParams,
         })
@@ -205,14 +208,14 @@ export class Table<RowType = any> {
     cursor(): TableCursor<RowType> {
         const tableRowsParams = {
             table: this.name,
-            code: this.contract.account,
+            code: this.account,
             type: this.rowType,
             limit: this.defaultRowLimit,
         }
 
         return new TableCursor<RowType>({
-            abi: this.contract.abi,
-            client: this.contract.client,
+            abi: this.abi,
+            client: this.client,
             params: tableRowsParams,
         })
     }
@@ -232,9 +235,9 @@ export class Table<RowType = any> {
 
         const fieldToIndex = {}
 
-        for (let i = 0; i < this.abi.key_names.length; i++) {
-            fieldToIndex[this.abi.key_names[i]] = {
-                type: this.abi.key_types[i],
+        for (let i = 0; i < this.tableABI.key_names.length; i++) {
+            fieldToIndex[this.tableABI.key_names[i]] = {
+                type: this.tableABI.key_types[i],
                 index_position: indexPositionInWords(i),
             }
         }

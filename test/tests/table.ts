@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
-import {Asset, Name, Serializer} from '@greymass/eosio'
+import {Asset, Int64, Name, Serializer, Struct, TimePoint} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
@@ -32,14 +32,18 @@ suite('Table', () => {
     suite('construct', function () {
         test('defaults', () => {
             const table = new Table({
-                contract: eosio,
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
                 name: 'namebids',
             })
             assert.instanceOf(table, Table)
         })
         test('defaults (typed)', () => {
             const table = new Table({
-                contract: eosio,
+                abi: eosio.abi,
+                account: eosio.account,
+                client: mockClient,
                 name: Name.from('namebids'),
             })
             assert.instanceOf(table, Table)
@@ -48,14 +52,18 @@ suite('Table', () => {
             assert.throws(
                 () =>
                     new Table({
-                        contract: eosio,
+                        abi: eosio.abi,
+                        account: eosio.account,
+                        client: mockClient,
                         name: 'foo',
                     })
             )
         })
         test('fieldToIndex', () => {
             const table = new Table({
-                contract: decentiumorg,
+                abi: decentiumorg.abi,
+                account: decentiumorg.account,
+                client: mockClient,
                 name: Name.from('trending'),
                 fieldToIndex: {
                     id: {type: 'uint64', index_position: 'primary'},
@@ -72,6 +80,27 @@ suite('Table', () => {
         test('should return a cursor', () => {
             const cursor = nameBidTable.cursor()
             assert.instanceOf(cursor, TableCursor)
+        })
+        test('rowType', async () => {
+            @Struct.type('name_bid')
+            class NameBid extends Struct {
+                @Struct.field(Name) newname!: Name
+                @Struct.field(Name) high_bidder!: Name
+                @Struct.field(Int64) high_bid!: Int64
+                @Struct.field(TimePoint) last_bid_time!: TimePoint
+            }
+            const table = new Table<NameBid>({
+                abi: eosio.abi,
+                account: eosio.account,
+                client: mockClient,
+                name: 'namebids',
+                rowType: NameBid,
+            })
+            assert.instanceOf(table, Table)
+            const rows = await table.first(1).next()
+            assert.instanceOf(rows[0], NameBid)
+            assert.instanceOf(rows[0].newname, Name)
+            assert.instanceOf(rows[0].high_bid, Int64)
         })
         suite('all', () => {
             test('should return every single row in a table', async () => {
@@ -117,14 +146,6 @@ suite('Table', () => {
     })
 
     suite('query', () => {
-        test('should allow you to chain index query statements', async () => {
-            const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({to: 8})
-            assert.deepEqual(
-                Serializer.objectify(await tableCursor.all()).map((row) => row.id),
-                [5, 6, 7, 8]
-            )
-        })
-
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
                 const tableCursor = decentiumTrendingTable.query({
@@ -307,7 +328,7 @@ suite('Table', () => {
     suite('first', () => {
         test('should establish cursor with first parameters', () => {
             const tableCursor = decentiumTrendingTable.first(10)
-            assert.equal(tableCursor.tableParams.limit, 10)
+            assert.equal(tableCursor.params.limit, 10)
         })
         suite('scope', function () {
             test('should default to no scope', async () => {

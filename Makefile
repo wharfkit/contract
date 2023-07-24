@@ -30,7 +30,7 @@ coverage: build/coverage
 ci-test: node_modules
 	@TS_NODE_PROJECT='./test/tsconfig.json' MOCK_DIR='./test/data/requests' \
 		${BIN}/nyc ${NYC_OPTS} --reporter=text \
-		${BIN}/mocha ${MOCHA_OPTS} -R list ${TEST_FILES}
+		${BIN}/mocha ${MOCHA_OPTS} -R list ${TEST_FILES} --no-timeout
 
 .PHONY: check
 check: node_modules

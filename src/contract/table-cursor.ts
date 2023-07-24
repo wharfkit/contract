@@ -1,59 +1,78 @@
-import {API, Serializer} from '@greymass/eosio'
+import {ABI, ABIDef, API, APIClient, Serializer} from '@greymass/eosio'
 import {wrapIndexValue} from '../utils'
-import {Query, Table} from './table'
 
-interface TableCursorParams {
-    table: Table
-    tableParams: API.v1.GetTableRowsParams
+/** Mashup of valid types for an APIClient call to v1.chain.get_table_rows */
+export type TableRowParamsTypes =
+    | API.v1.GetTableRowsParams
+    | API.v1.GetTableRowsParamsKeyed
+    | API.v1.GetTableRowsParamsTyped
+
+export interface TableCursorArgs {
+    /** The ABI for the contract this table belongs to */
+    abi: ABIDef
+    /** The APIClient instance to use for API requests */
+    client: APIClient
+    /** The parameters used for the v1/chain/get_table_rows call */
+    params: TableRowParamsTypes
+    /** The maximum number of rows the cursor should retrieve */
     maxRows?: number
-    next_key?: API.v1.TableIndexType | string
-    indexPositionField?: string
 }
 
-/**
- * Represents a cursor for a table in the blockchain. Provides methods for
- * iterating over the rows of the table.
- *
- * @typeparam TableRow The type of rows in the table.
- */
-export class TableCursor<TableRow> {
-    private table: Table
+/** The default parameters to use on a v1/chain/get_table_rows call */
+const defaultParams = {
+    json: false,
+    limit: 1000,
+}
+
+export class TableCursor<RowType = any> {
+    /** The ABI for the contract this table belongs to */
+    readonly abi: ABI
+    /** The type of the table, as defined in the ABI */
+    readonly type: string
+    /** The parameters used for the v1/chain/get_table_rows call */
+    readonly params: TableRowParamsTypes
+    /** The APIClient instance to use for API requests */
+    readonly client: APIClient
+
+    /** For iterating on the cursor, the next key to query against lower_bounds */
     private next_key: API.v1.TableIndexType | string | undefined
-    private tableParams: API.v1.GetTableRowsParams
+    /** Whether or not the cursor believes it has reached the end of its results */
     private endReached = false
-    private indexPositionField?: string
+    /** The number of rows the cursor has retrieved */
     private rowsCount = 0
+    /** The maximum number of rows the cursor should retrieve */
     private maxRows: number = Number.MAX_SAFE_INTEGER
 
     /**
-     * @param {TableCursorParams} params - Parameters for creating a new table cursor.
+     * Create a new TableCursor instance.
      *
-     * @param {TableRow[]} params.rows - An array of rows that the cursor will iterate over.
-     * Each row represents an entry in the table.
-     *
-     * @param {Table} params.table - The table that the rows belong to.
-     *
-     * @param {API.v1.GetTableRowsParams} params.tableParams - Parameters for the `get_table_rows`
-     * API call, which are used to fetch the rows from the blockchain.
-     *
-     * @param {(Name | UInt64 | undefined)} [params.next_key] - The key for the next set of rows
-     * that the cursor can fetch. This is used for pagination when there are more rows than can be
-     * fetched in a single API call.
+     * @param args.abi The ABI for the contract.
+     * @param args.client The APIClient instance to use for API requests.
+     * @param args.params The parameters to use for the table query.
+     * @param args.maxRows The maximum number of rows to fetch.
+     * @returns A new TableCursor instance.
      */
-    constructor({table, tableParams, indexPositionField, maxRows, next_key}: TableCursorParams) {
-        this.table = table
-        this.tableParams = tableParams
-        this.next_key = next_key
-        this.indexPositionField = indexPositionField
-        if (maxRows) {
-            this.maxRows = maxRows
+    constructor(args: TableCursorArgs) {
+        this.abi = ABI.from(args.abi)
+        this.client = args.client
+        this.params = {
+            ...defaultParams,
+            ...args.params,
         }
+        if (args.maxRows) {
+            this.maxRows = args.maxRows
+        }
+        const table = this.abi.tables.find((t) => t.name === String(this.params.table))
+        if (!table) {
+            throw new Error('Table not found')
+        }
+        this.type = table.type
     }
 
     /**
      * Implements the async iterator protocol for the cursor.
      *
-     * @returns An iterator for the rows in the table.
+     * @returns An iterator for all rows in the table.
      */
     async *[Symbol.asyncIterator]() {
         while (true) {
@@ -63,7 +82,6 @@ export class TableCursor<TableRow> {
                 yield row
             }
 
-            // If no rows are returned or next_key is undefined, we have exhausted all rows
             if (rows.length === 0 || !this.next_key) {
                 return
             }
@@ -71,70 +89,70 @@ export class TableCursor<TableRow> {
     }
 
     /**
-     * Fetches more rows from the table and appends them to the cursor.
+     * Fetch the next batch of rows from the cursor.
      *
-     * @returns The new rows.
+     * @param rowsPerAPIRequest The number of rows to fetch per API request.
+     * @returns A promise containing the next batch of rows.
      */
-    async next(rowsPerAPIRequest?: number): Promise<TableRow[]> {
+    async next(rowsPerAPIRequest: number = Number.MAX_SAFE_INTEGER): Promise<RowType[]> {
+        // If the cursor has deemed its at the end, return an empty array
         if (this.endReached) {
             return []
         }
 
-        let lower_bound = this.tableParams.lower_bound
-        const upper_bound = this.tableParams.upper_bound
-
+        // Set the lower_bound, and override if the cursor has a next_key value
+        let lower_bound = this.params.lower_bound
         if (this.next_key) {
             lower_bound = this.next_key
         }
 
-        let indexPosition = this.tableParams.index_position || 'primary'
+        // Determine the maximum number of remaining rows for the cursor
+        const rowsRemaining = this.maxRows - this.rowsCount
 
-        if (this.indexPositionField) {
-            const fieldToIndexMapping = this.table.getFieldToIndex()
+        // Find the lowest amount between rows remaining, rows per request, or the provided query params limit
+        const limit = Math.min(rowsRemaining, rowsPerAPIRequest, this.params.limit)
 
-            if (!fieldToIndexMapping[this.indexPositionField]) {
-                throw new Error(`Field ${this.indexPositionField} is not a valid index.`)
-            }
-
-            indexPosition = fieldToIndexMapping[this.indexPositionField].index_position
+        // Assemble and perform the v1/chain/get_table_rows query
+        const query = {
+            ...this.params,
+            limit,
+            lower_bound: wrapIndexValue(lower_bound),
+            upper_bound: wrapIndexValue(this.params.upper_bound),
         }
 
-        const result = await this.table.contract.client!.v1.chain.get_table_rows({
-            ...this.tableParams,
-            limit: Math.min(
-                this.maxRows - this.rowsCount,
-                rowsPerAPIRequest || this.tableParams.limit
-            ),
-            lower_bound: wrapIndexValue(lower_bound),
-            upper_bound: wrapIndexValue(upper_bound),
-            index_position: indexPosition,
-            json: false,
-        })
+        const result = await this.client!.v1.chain.get_table_rows(query)
 
-        let {rows} = result
+        // Determine if we need to decode the rows, based on if:
+        // - json parameter is false, meaning hex data will be returned
+        // - type parameter is not set, meaning the APIClient will not automatically decode
+        const requiresDecoding =
+            this.params.json === false && !(query as API.v1.GetTableRowsParamsTyped).type
+
+        // Retrieve the rows from the result, decoding if needed
+        const rows: RowType[] = requiresDecoding
+            ? result.rows.map((data) =>
+                  Serializer.decode({
+                      data,
+                      abi: this.abi,
+                      type: this.type,
+                  })
+              )
+            : result.rows
+
+        // Persist cursor state for subsequent calls
         this.next_key = result.next_key
-
         this.rowsCount += rows.length
 
+        // Determine if we've reached the end of the cursor
         if (!result.next_key || rows.length === 0 || this.rowsCount === this.maxRows) {
             this.endReached = true
         }
-
-        rows = rows.map((row) =>
-            Serializer.decode({
-                data: row,
-                abi: this.table.contract.abi,
-                type: this.table.abi.type,
-            })
-        )
 
         return rows
     }
 
     /**
-     * Resets the cursor to the beginning of the table and returns the first rows.
-     *
-     * @returns The first rows in the table.
+     * Reset the internal state of the cursor
      */
     async reset() {
         this.next_key = undefined
@@ -143,33 +161,15 @@ export class TableCursor<TableRow> {
     }
 
     /**
-     * Returns all rows in the cursor query.
+     * Fetch all rows from the cursor by recursively calling next() until the end is reached.
      *
-     * @returns All rows in the cursor query.
+     * @returns A promise containing all rows for the cursor.
      */
-    async all() {
-        const rows: TableRow[] = []
+    async all(): Promise<RowType[]> {
+        const rows: RowType[] = []
         for await (const row of this) {
             rows.push(row)
         }
         return rows
-    }
-
-    /**
-     * Returns a new cursor with updated parameters.
-     *
-     * @returns A new cursor with updated parameters.
-     */
-    query(query: Query) {
-        return new TableCursor({
-            table: this.table,
-            tableParams: {
-                ...this.tableParams,
-                limit: query.rowsPerAPIRequest || this.tableParams.limit,
-                scope: query.scope || this.tableParams.scope,
-                lower_bound: query.from ? wrapIndexValue(query.from) : this.tableParams.lower_bound,
-                upper_bound: query.to ? wrapIndexValue(query.to) : this.tableParams.upper_bound,
-            },
-        })
     }
 }

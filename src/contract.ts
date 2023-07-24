@@ -67,7 +67,9 @@ export class Contract {
             throw new Error(`Contract (${this.account}) does not have a table named (${name})`)
         }
         return Table.from({
-            contract: this,
+            abi: this.abi,
+            account: this.account,
+            client: this.client,
             name,
         })
     }

@@ -82,16 +82,22 @@ export class TableCursor<RowType = any> {
 
         const result = await this.client!.v1.chain.get_table_rows(query)
 
-        const rows =
+        // Determine if we need to decode the rows, based on if:
+        // - json parameter is false, meaning hex data will be returned
+        // - type parameter is not set, meaning the APIClient will not automatically decode
+        const requiresDecoding =
             this.params.json === false && !(query as API.v1.GetTableRowsParamsTyped).type
-                ? result.rows.map((row) =>
-                      Serializer.decode({
-                          data: row,
-                          abi: this.abi,
-                          type: this.type,
-                      })
-                  )
-                : result.rows
+
+        // Retrieve the rows from the result, decoding if needed
+        const rows: RowType[] = requiresDecoding
+            ? result.rows.map((data) =>
+                  Serializer.decode({
+                      data,
+                      abi: this.abi,
+                      type: this.type,
+                  })
+              )
+            : result.rows
 
         this.next_key = result.next_key
         this.rowsCount += rows.length

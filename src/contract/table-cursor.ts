@@ -110,7 +110,7 @@ export class TableCursor<RowType = any> {
     }
 
     async all(): Promise<RowType[]> {
-        const rows: any[] = []
+        const rows: RowType[] = []
         for await (const row of this) {
             rows.push(row)
         }

@@ -61,7 +61,7 @@ export class TableCursor<RowType = any> {
         }
     }
 
-    async next(rowsPerAPIRequest?: number): Promise<RowType[]> {
+    async next(rowsPerAPIRequest: number = Number.MAX_SAFE_INTEGER): Promise<RowType[]> {
         if (this.endReached) {
             return []
         }

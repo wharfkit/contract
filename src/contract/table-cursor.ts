@@ -67,17 +67,22 @@ export class TableCursor<RowType = any> {
         }
 
         let lower_bound = this.params.lower_bound
-        const upper_bound = this.params.upper_bound
-
         if (this.next_key) {
             lower_bound = this.next_key
         }
 
+        // Determine the maximum number of remaining rows for the cursor
+        const rowsRemaining = this.maxRows - this.rowsCount
+
+        // Find the lowest amount between rows remaining, rows per request, or the provided query params limit
+        const limit = Math.min(rowsRemaining, rowsPerAPIRequest, this.params.limit)
+
+        // Assemble and perform the v1/chain/get_table_rows query
         const query = {
             ...this.params,
-            limit: Math.min(this.maxRows - this.rowsCount, rowsPerAPIRequest || this.params.limit),
+            limit,
             lower_bound: wrapIndexValue(lower_bound),
-            upper_bound: wrapIndexValue(upper_bound),
+            upper_bound: wrapIndexValue(this.params.upper_bound),
         }
 
         const result = await this.client!.v1.chain.get_table_rows(query)

@@ -146,15 +146,6 @@ suite('Table', () => {
     })
 
     suite('query', () => {
-        // TODO: Discuss and remove? No longer works since query is a Table method
-        // test('should allow you to chain index query statements', async () => {
-        //     const tableCursor = decentiumTrendingTable.query({from: 5, to: 10}).query({to: 8})
-        //     assert.deepEqual(
-        //         Serializer.objectify(await tableCursor.all()).map((row) => row.id),
-        //         [5, 6, 7, 8]
-        //     )
-        // })
-
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
                 const tableCursor = decentiumTrendingTable.query({

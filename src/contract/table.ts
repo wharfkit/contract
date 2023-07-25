@@ -143,7 +143,7 @@ export class Table<RowType = any> {
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
     async get(
-        queryValue: API.v1.TableIndexType | string,
+        queryValue?: API.v1.TableIndexType | string,
         {scope = this.account, index, key_type}: QueryOptions = {}
     ): Promise<RowType> {
         const fieldToIndexMapping = this.getFieldToIndex()

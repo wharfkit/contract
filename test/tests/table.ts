@@ -4,6 +4,7 @@ import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
 import {Asset, Int64, Name, Serializer, Struct, TimePoint} from '@greymass/eosio'
 import {makeClient} from '@wharfkit/mock-data'
+import {EosioGlobalState} from '$test/data/structs/eosio'
 
 const mockClient = makeClient('https://eos.greymass.com')
 
@@ -322,6 +323,13 @@ suite('Table', () => {
         test('should return typed data', async () => {
             const row = await producersTable.get('teamgreymass')
             assert.instanceOf(row.owner, Name)
+        })
+
+        test('should just get first row without params', async function () {
+            const table = eosio.table<EosioGlobalState>('global', EosioGlobalState)
+            const row = await table.get()
+            assert.instanceOf(row, EosioGlobalState)
+            assert.instanceOf(row.pervote_bucket, Int64)
         })
     })
 

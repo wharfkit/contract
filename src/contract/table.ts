@@ -90,8 +90,8 @@ export class Table<RowType = any> {
      *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      * @returns {Table} A new Table instance.
      */
-    static from(tableParams: TableParams) {
-        return new Table(tableParams)
+    static from<RowType = any>(tableParams: TableParams): Table<RowType> {
+        return new Table<RowType>(tableParams)
     }
 
     /**

@@ -4,6 +4,7 @@ import {makeClient, mockPrivateKey, mockSession} from '@wharfkit/mock-data'
 import ContractKit, {Contract, ContractArgs, Table} from '$lib'
 import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@greymass/eosio'
 import {PlaceholderAuth} from 'eosio-signing-request'
+import {ProducerInfo} from '$test/data/structs/eosio'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 
@@ -123,6 +124,14 @@ suite('Contract', () => {
         })
         test('throws on invalid name', function () {
             assert.throws(() => systemContract.table('foo'))
+        })
+        test('should pass rowType', async function () {
+            const table = systemContract.table<ProducerInfo>('producers', ProducerInfo)
+            assert.instanceOf(table, Table)
+            const producer = await table.get('lioninjungle')
+            assert.instanceOf(producer, ProducerInfo)
+            assert.instanceOf(producer.owner, Name)
+            assert.isTrue(producer.owner.equals('lioninjungle'))
         })
     })
 

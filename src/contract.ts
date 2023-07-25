@@ -2,7 +2,6 @@ import {
     ABI,
     ABIDef,
     ABISerializableObject,
-    Action,
     APIClient,
     BytesType,
     Name,
@@ -13,6 +12,7 @@ import {
 import {PlaceholderAuth} from 'eosio-signing-request'
 
 import {Table} from './contract/table'
+import {ContractAction} from './contract/action'
 
 export type ActionDataType = BytesType | ABISerializableObject | Record<string, any>
 
@@ -82,7 +82,7 @@ export class Contract {
         return this.actionNames.includes(String(name))
     }
 
-    public action(name: NameType, data: ActionDataType, options?: ActionOptions): Action {
+    public action(name: NameType, data: ActionDataType, options?: ActionOptions): ContractAction {
         if (!this.hasAction(name)) {
             throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
         }
@@ -92,7 +92,7 @@ export class Contract {
             authorization = options.authorization.map((auth) => PermissionLevel.from(auth))
         }
 
-        return Action.from(
+        return ContractAction.from(
             {
                 account: this.account,
                 name,
@@ -103,7 +103,7 @@ export class Contract {
         )
     }
 
-    public actions(actions: ActionArgs[], options?: ActionOptions): Action[] {
+    public actions(actions: ActionArgs[], options?: ActionOptions): ContractAction[] {
         return actions.map((action) =>
             this.action(action.name, action.data, {
                 authorization: action.authorization || options?.authorization,

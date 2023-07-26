@@ -5,50 +5,19 @@ import {generateClassDeclaration} from './helpers'
 import {capitalize} from '../utils'
 import {APIClient} from '@wharfkit/antelope'
 
-export async function generateTableClass(contractName, namespaceName, table, abi) {
-    const tableName = table.name
-    const struct = abi.structs.find((struct) => struct.name === table.type)
+export async function generateContractClass(namespaceName, contractName, abi) {
     const members: ts.ClassElement[] = []
-    const rowType = `${namespaceName}.types.${capitalize(struct.name)}`
-
-    const tableInstance = Table.from({
-        name: tableName,
-        contract: Contract.from({
-            account: contractName,
-            abi,
-            // TODO: Remove the need for a table instance to need the full contract.
-            // The line below was added because `client` is now required for a contract
-            // It's not a good solution here, but it's a quick fix for now
-            client: new APIClient({url: 'https://jungle4.greymass.com'}),
-        }),
-    })
-    const fieldToIndexMapping = tableInstance.getFieldToIndex()
-
+    const abiHex = abi.toHex()
+   
     // Define fieldToIndex static property
     const fieldToIndex = ts.factory.createPropertyDeclaration(
         undefined,
         [ts.factory.createModifier(ts.SyntaxKind.StaticKeyword)],
-        'fieldToIndex',
+        'abi',
         undefined,
         undefined,
-        ts.factory.createObjectLiteralExpression(
-            Object.keys(fieldToIndexMapping).map((keyName) => {
-                return ts.factory.createPropertyAssignment(
-                    keyName,
-                    ts.factory.createObjectLiteralExpression([
-                        ts.factory.createPropertyAssignment(
-                            'type',
-                            ts.factory.createStringLiteral(fieldToIndexMapping[keyName].type)
-                        ),
-                        ts.factory.createPropertyAssignment(
-                            'index_position',
-                            ts.factory.createStringLiteral(
-                                fieldToIndexMapping[keyName].index_position
-                            )
-                        ),
-                    ])
-                )
-            })
+        ts.factory.createStringLiteral(
+            abiHex
         )
     )
     members.push(fieldToIndex)

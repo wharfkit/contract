@@ -1,4 +1,5 @@
 import {ABI} from '@wharfkit/antelope'
+
 import * as ts from 'typescript'
 
 import {
@@ -10,8 +11,7 @@ import {
     getFieldTypesFromAbi,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
-import {generateActions} from './codegen/actions'
-import {generateTableClass} from './codegen/table'
+import {generateContractClass} from './codegen/contract'
 
 const printer = ts.createPrinter()
 
@@ -34,29 +34,8 @@ export async function codegen(contractName, abi) {
         '@wharfkit/contract'
     )
 
-    const {methods: actionMethods, interfaces: actionsInterfaces} = generateActions(
-        contractName,
-        namespaceName,
-        ABI.from(abi)
-    )
-
-    // Generate actions namespace
-    const actionsNamespace = generateNamespace(namespaceName, [
-        generateNamespace('actions', actionMethods),
-    ])
-
-    const tableClasses: ts.ClassDeclaration[] = []
-    const tableInterfaces: ts.InterfaceDeclaration[] = []
-
-    for (const table of abi.tables) {
-        const {classDeclaration} = await generateTableClass(contractName, namespaceName, table, abi)
-        tableClasses.push(classDeclaration)
-    }
-
-    // Generate tables namespace
-    const tableNamespace = generateNamespace(namespaceName, [
-        generateNamespace('tables', tableClasses),
-    ])
+    
+    const {classDeclaration} = await generateContractClass(namespaceName, contractName, abi)
 
     // Extract fields from the ABI
     const structs = getFieldTypesFromAbi(abi)
@@ -76,20 +55,15 @@ export async function codegen(contractName, abi) {
 
     // Generate types namespace
     const typesDeclaration = generateNamespace(namespaceName, [
-        generateNamespace('types', [
-            ...actionsInterfaces,
-            ...tableInterfaces,
-            ...structDeclarations,
-        ]),
+        generateNamespace('types', structDeclarations),
     ])
 
     const sourceFile = ts.factory.createSourceFile(
         [
             importContractStatement,
             importCoreStatement,
-            actionsNamespace,
-            tableNamespace,
             typesDeclaration,
+            classDeclaration,
         ],
         ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
         ts.NodeFlags.None

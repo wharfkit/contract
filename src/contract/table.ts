@@ -109,7 +109,7 @@ export class Table<RowType = any> {
             table: this.name,
             code: this.account,
             scope: params.scope || this.account,
-            // Response tping
+            // Response typing
             type: this.rowType,
             // Filtering
             key_type: params.key_type,

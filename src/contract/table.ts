@@ -2,15 +2,14 @@ import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@greymass
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
 
-export interface QueryOptions {
+export interface QueryParams {
     index?: string
     scope?: NameType
     key_type?: keyof API.v1.TableIndexTypes
-}
-
-export interface Query extends QueryOptions {
+    json?: boolean
     from?: API.v1.TableIndexType | string | number
     to?: API.v1.TableIndexType | string | number
+    maxRows?: number
     rowsPerAPIRequest?: number
 }
 
@@ -104,33 +103,35 @@ export class Table<RowType = any> {
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    query(query: Query): TableCursor<RowType> {
-        const {from, to, rowsPerAPIRequest} = query
-
+    query(params: QueryParams = {}): TableCursor<RowType> {
         const tableRowsParams: any = {
+            // Table query
             table: this.name,
             code: this.account,
-            scope: query.scope || this.account,
+            scope: params.scope || this.account,
+            // Response typing
             type: this.rowType,
-            limit: rowsPerAPIRequest || this.defaultRowLimit,
-            lower_bound: wrapIndexValue(from),
-            upper_bound: wrapIndexValue(to),
-            key_type: query.key_type,
+            // Filtering
+            key_type: params.key_type,
+            lower_bound: wrapIndexValue(params.from),
+            upper_bound: wrapIndexValue(params.to),
+            limit: params.rowsPerAPIRequest || this.defaultRowLimit,
         }
 
-        if (query.index) {
+        if (params.index) {
             const fieldToIndexMapping = this.getFieldToIndex()
 
-            if (!fieldToIndexMapping[query.index]) {
-                throw new Error(`Field ${query.index} is not a valid index.`)
+            if (!fieldToIndexMapping[params.index]) {
+                throw new Error(`Field ${params.index} is not a valid index.`)
             }
 
-            tableRowsParams.index_position = fieldToIndexMapping[query.index].index_position
+            tableRowsParams.index_position = fieldToIndexMapping[params.index].index_position
         }
 
         return new TableCursor<RowType>({
             abi: this.abi,
             client: this.client,
+            maxRows: params.maxRows,
             params: tableRowsParams,
         })
     }
@@ -142,38 +143,40 @@ export class Table<RowType = any> {
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
-    async get(
-        queryValue?: API.v1.TableIndexType | string,
-        {scope = this.account, index, key_type}: QueryOptions = {}
-    ): Promise<RowType> {
+    async get(value?: API.v1.TableIndexType | string, params: QueryParams = {}): Promise<RowType> {
         const fieldToIndexMapping = this.getFieldToIndex()
 
         const tableRowsParams = {
             table: this.name,
             code: this.account,
-            scope,
+            scope: params.scope || this.account,
             type: this.rowType!,
             limit: 1,
-            lower_bound: wrapIndexValue(queryValue),
-            upper_bound: wrapIndexValue(queryValue),
-            index_position: index ? fieldToIndexMapping[index].index_position : 'primary',
-            key_type: key_type,
+            lower_bound: wrapIndexValue(value),
+            upper_bound: wrapIndexValue(value),
+            index_position: params.index
+                ? fieldToIndexMapping[params.index].index_position
+                : 'primary',
+            key_type: params.key_type,
             json: false,
         }
 
-        let {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
+        const {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
+        let [row] = rows
 
         if (!this.rowType) {
-            rows = [
-                Serializer.decode({
-                    data: rows[0],
-                    abi: this.abi,
-                    type: this.tableABI.type,
-                }),
-            ]
+            row = Serializer.decode({
+                data: row,
+                abi: this.abi,
+                type: this.tableABI.type,
+            })
         }
 
-        return rows[0]
+        if (params.json) {
+            row = Serializer.objectify(row)
+        }
+
+        return row
     }
 
     /**
@@ -184,39 +187,10 @@ export class Table<RowType = any> {
      *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(maxRows: number, options: QueryOptions = {}): TableCursor<RowType> {
-        const tableRowsParams = {
-            table: this.name,
-            limit: maxRows,
-            code: this.account,
-            type: this.rowType,
-            scope: options.scope,
-        }
-
-        return new TableCursor<RowType>({
-            abi: this.abi,
-            client: this.client,
+    first(maxRows: number, params: QueryParams = {}): TableCursor<RowType> {
+        return this.query({
+            ...params,
             maxRows,
-            params: tableRowsParams,
-        })
-    }
-
-    /**
-     * Returns a cursor to get every single rows on the table.
-     * @returns {TableCursor}
-     */
-    cursor(): TableCursor<RowType> {
-        const tableRowsParams = {
-            table: this.name,
-            code: this.account,
-            type: this.rowType,
-            limit: this.defaultRowLimit,
-        }
-
-        return new TableCursor<RowType>({
-            abi: this.abi,
-            client: this.client,
-            params: tableRowsParams,
         })
     }
 
@@ -224,8 +198,8 @@ export class Table<RowType = any> {
      * Returns all the rows from the table.
      * @returns {Promise<TableRow[]>} Promise resolving to an array of table rows.
      */
-    async all(): Promise<RowType[]> {
-        return this.cursor().all()
+    async all(params: QueryParams = {}): Promise<RowType[]> {
+        return this.query(params).all()
     }
 
     getFieldToIndex() {

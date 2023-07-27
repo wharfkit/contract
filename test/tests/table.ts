@@ -79,7 +79,7 @@ suite('Table', () => {
 
     suite('cursor', () => {
         test('should return a cursor', () => {
-            const cursor = nameBidTable.cursor()
+            const cursor = nameBidTable.query()
             assert.instanceOf(cursor, TableCursor)
         })
         test('rowType', async () => {
@@ -98,25 +98,25 @@ suite('Table', () => {
                 rowType: NameBid,
             })
             assert.instanceOf(table, Table)
-            const rows = await table.first(1).next()
-            assert.instanceOf(rows[0], NameBid)
-            assert.instanceOf(rows[0].newname, Name)
-            assert.instanceOf(rows[0].high_bid, Int64)
+            const row = await table.get()
+            assert.instanceOf(row, NameBid)
+            assert.instanceOf(row.newname, Name)
+            assert.instanceOf(row.high_bid, Int64)
         })
         suite('all', () => {
             test('should return every single row in a table', async () => {
-                const tableCursor = decentiumTrendingTable.cursor()
+                const tableCursor = decentiumTrendingTable.query()
                 assert.equal((await tableCursor.all()).length, 239)
             })
         })
         suite('next', () => {
             test('should allow you to fetch as many rows as possible with one request', async () => {
-                const tableCursor = decentiumTrendingTable.cursor()
+                const tableCursor = decentiumTrendingTable.query()
                 assert.equal((await tableCursor.next()).length, 239)
             })
 
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = nameBidTable.cursor()
+                const tableCursor = nameBidTable.query()
                 assert.equal((await tableCursor.next()).length, 1000)
                 assert.equal((await tableCursor.next()).length, 1000)
                 assert.equal((await tableCursor.next()).length, 1000)
@@ -335,26 +335,26 @@ suite('Table', () => {
 
     suite('first', () => {
         test('should establish cursor with first parameters', () => {
-            const tableCursor = decentiumTrendingTable.first(10)
-            assert.equal(tableCursor.params.limit, 10)
+            const tableCursor = decentiumTrendingTable.query({maxRows: 10})
+            assert.equal(tableCursor.maxRows, 10)
         })
         suite('scope', function () {
             test('should default to no scope', async () => {
                 const table = eosio.table('delband')
-                const tableCursor = table.first(10)
+                const tableCursor = table.query({maxRows: 10})
                 const rows = await tableCursor.all()
                 assert.lengthOf(rows, 2)
             })
             test('should accept a scope', async () => {
                 const table = eosio.table('delband')
-                const tableCursor = table.first(10, {scope: 'teamgreymass'})
+                const tableCursor = table.query({maxRows: 10, scope: 'teamgreymass'})
                 const rows = await tableCursor.all()
                 assert.lengthOf(rows, 3)
             })
         })
         suite('next', () => {
             test('should fetch a specific number of table rows correctly', async () => {
-                const tableCursor = decentiumTrendingTable.first(10)
+                const tableCursor = decentiumTrendingTable.query({maxRows: 10})
                 const rows = await tableCursor.next()
                 assert.lengthOf(rows, 10)
                 assert.deepEqual(
@@ -369,13 +369,13 @@ suite('Table', () => {
                 )
             })
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = nameBidTable.first(100000)
+                const tableCursor = nameBidTable.query({maxRows: 100000})
                 const firstBatch = await tableCursor.next()
                 const secondBatch = await tableCursor.next()
                 assert.isFalse(firstBatch[0].newname.equals(secondBatch[0].newname))
             })
             test('should return typed data', async () => {
-                const tableCursor = nameBidTable.first(100000)
+                const tableCursor = nameBidTable.query({maxRows: 100000})
                 const batch = await tableCursor.next()
                 assert.instanceOf(batch[0].high_bidder, Name)
             })
@@ -383,17 +383,17 @@ suite('Table', () => {
 
         suite('all', () => {
             test('should fetch all table rows recursively', async () => {
-                const cursor = nameBidTable.first(10000)
+                const cursor = nameBidTable.query({maxRows: 10000})
                 const allRequestedRows = await cursor.all()
                 assert.equal(allRequestedRows.length, 10000)
             })
             test('should stop if requesting more than exists', async () => {
-                const tableCursor = decentiumTrendingTable.first(10000)
+                const tableCursor = decentiumTrendingTable.query({maxRows: 10000})
                 const firstBatch = await tableCursor.all()
                 assert.equal(firstBatch.length, 239)
             })
             test('should return typed data', async () => {
-                const tableCursor = decentiumTrendingTable.first(10000)
+                const tableCursor = decentiumTrendingTable.query({maxRows: 10000})
                 const batch = await tableCursor.all()
                 assert.instanceOf(batch[0].ref.category, Name)
             })

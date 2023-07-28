@@ -1,208 +1,62 @@
 import * as ts from 'typescript'
+import { ABI, Serializer } from '@wharfkit/session'
+import { generateClassDeclaration } from './helpers'
 
-import {Contract, Table} from '../index'
-import {generateClassDeclaration} from './helpers'
-import {capitalize} from '../utils'
-import {APIClient} from '@wharfkit/antelope'
+export async function generateContractClass(namespaceName: string, contractName: string, abi: ABI) {
+    // Encode the ABI as a binary hex string
+    const abiHex = Serializer.encode({ object: abi }).hexString
 
-export async function generateContractClass(namespaceName, contractName, abi) {
-    const members: ts.ClassElement[] = []
-    const abiHex = abi.toHex()
-   
-    // Define fieldToIndex static property
-    const fieldToIndex = ts.factory.createPropertyDeclaration(
+    // Prepare the member fields of the class
+    const classMembers: ts.ClassElement[] = []
+
+    // Generate the private `abi` member
+    const abiField = ts.factory.createPropertyDeclaration(
         undefined,
-        [ts.factory.createModifier(ts.SyntaxKind.StaticKeyword)],
+        [ts.factory.createModifier(ts.SyntaxKind.PrivateKeyword)],
         'abi',
         undefined,
         undefined,
-        ts.factory.createStringLiteral(
-            abiHex
-        )
+        ts.factory.createStringLiteral(abiHex)
     )
-    members.push(fieldToIndex)
+    classMembers.push(abiField)
 
-    // Create 'where', 'find' and 'all' methods
-    ;['where', 'find', 'first', 'cursor', 'all'].forEach((method) => {
-        const parameters: ts.ParameterDeclaration[] = []
-        const baseClassParameters: ts.Identifier[] = []
-
-        if (method === 'where') {
-            parameters.push(
-                ts.factory.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    ts.factory.createIdentifier('query'),
-                    undefined,
-                    ts.factory.createTypeReferenceNode('Query'),
-                    undefined
-                ),
-                ts.factory.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    ts.factory.createIdentifier('queryOptions'),
-                    undefined,
-                    ts.factory.createTypeReferenceNode('QueryOptions'),
-                    undefined
-                )
-            )
-            baseClassParameters.push(
-                ts.factory.createIdentifier('query'),
-                ts.factory.createIdentifier('queryOptions')
-            )
-        } else if (method === 'find') {
-            parameters.push(
-                ts.factory.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    ts.factory.createIdentifier('query'),
-                    undefined,
-                    ts.factory.createTypeReferenceNode('any'),
-                    undefined
-                ),
-                ts.factory.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    ts.factory.createIdentifier('queryOptions'),
-                    undefined,
-                    ts.factory.createTypeReferenceNode('QueryOptions'),
-                    undefined
-                )
-            )
-            baseClassParameters.push(ts.factory.createIdentifier('query'))
-        } else if (method === 'first') {
-            parameters.push(
-                ts.factory.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    ts.factory.createIdentifier('limit'),
-                    undefined,
-                    ts.factory.createTypeReferenceNode('number'),
-                    undefined
-                )
-            )
-            baseClassParameters.push(ts.factory.createIdentifier('limit'))
-        }
-
-        parameters.push(
-            ts.factory.createParameterDeclaration(
-                undefined,
-                undefined,
-                ts.factory.createIdentifier('client'),
-                undefined,
-                ts.factory.createTypeReferenceNode('APIClient'),
-                undefined
-            )
-        )
-
-        const methodBody = ts.factory.createBlock(
-            [
-                ts.factory.createVariableStatement(
-                    undefined,
-                    ts.factory.createVariableDeclarationList(
-                        [
-                            ts.factory.createVariableDeclaration(
-                                ts.factory.createIdentifier(`${tableName.toLowerCase()}Table`),
-                                undefined,
-                                undefined,
-                                ts.factory.createCallExpression(
-                                    ts.factory.createPropertyAccessExpression(
-                                        ts.factory.createIdentifier('Table'),
-                                        ts.factory.createIdentifier('from')
-                                    ),
-                                    undefined,
-                                    [
-                                        ts.factory.createObjectLiteralExpression([
-                                            ts.factory.createPropertyAssignment(
-                                                'contract',
-                                                ts.factory.createCallExpression(
-                                                    ts.factory.createPropertyAccessExpression(
-                                                        ts.factory.createIdentifier('Contract'),
-                                                        ts.factory.createIdentifier('from')
-                                                    ),
-                                                    undefined,
-                                                    [
-                                                        ts.factory.createObjectLiteralExpression([
-                                                            ts.factory.createPropertyAssignment(
-                                                                'name',
-                                                                ts.factory.createStringLiteral(
-                                                                    contractName
-                                                                )
-                                                            ),
-                                                            ts.factory.createPropertyAssignment(
-                                                                'client',
-                                                                ts.factory.createIdentifier(
-                                                                    'client'
-                                                                )
-                                                            ),
-                                                        ]),
-                                                    ]
-                                                )
-                                            ),
-                                            ts.factory.createPropertyAssignment(
-                                                'name',
-                                                ts.factory.createStringLiteral(
-                                                    tableName.toLowerCase()
-                                                )
-                                            ),
-                                            ts.factory.createPropertyAssignment(
-                                                'rowType',
-                                                ts.factory.createIdentifier(rowType)
-                                            ),
-                                            ts.factory.createPropertyAssignment(
-                                                'fieldToIndex',
-                                                ts.factory.createPropertyAccessExpression(
-                                                    ts.factory.createIdentifier(tableName),
-                                                    ts.factory.createIdentifier('fieldToIndex')
-                                                )
-                                            ),
-                                        ]),
-                                    ]
-                                )
-                            ),
-                        ],
-                        ts.NodeFlags.Const
-                    )
-                ),
-                ts.factory.createReturnStatement(
-                    ts.factory.createCallExpression(
-                        ts.factory.createPropertyAccessExpression(
-                            ts.factory.createIdentifier(`${tableName.toLowerCase()}Table`),
-                            ts.factory.createIdentifier(method)
-                        ),
-                        undefined,
-                        baseClassParameters
-                    )
-                ),
-            ],
-            true
-        )
-
-        let returnedType: string
-
-        if (method === 'find') {
-            returnedType = `Promise<${rowType}>`
-        } else if (method === 'all') {
-            returnedType = `Promise<${rowType}[]>`
-        } else {
-            returnedType = `TableCursor<${rowType}>`
-        }
-
-        const methodDeclaration = ts.factory.createMethodDeclaration(
-            [ts.factory.createModifier(ts.SyntaxKind.StaticKeyword)], // decorators
-            undefined, // modifiers
-            ts.factory.createIdentifier(method), // name
+    // Generate the `constructor` member
+    const constructorParams: ts.ParameterDeclaration[] = [
+        ts.factory.createParameterDeclaration(
             undefined,
-            undefined, // questionToken
-            parameters, // parameters
-            ts.factory.createTypeReferenceNode(returnedType), // return type
-            methodBody
+            undefined,
+            undefined,
+            'args',
+            undefined,
+            ts.factory.createTypeReferenceNode('ContractArgs', undefined),
+            undefined
         )
-        members.push(methodDeclaration)
-    })
+    ]
+
+    const constructorBody = ts.factory.createBlock([
+        ts.factory.createExpressionStatement(ts.factory.createCallExpression(ts.factory.createSuper(), undefined, [])),
+        ts.factory.createExpressionStatement(ts.factory.createAssignment(
+            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), 'abi'),
+            ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('ABI'), 'from'), undefined, [ts.factory.createPropertyAccessExpression(ts.factory.createThis(), 'abi')]))),
+        ts.factory.createExpressionStatement(ts.factory.createAssignment(
+            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), 'account'),
+            ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('Name'), 'from'), undefined, [ts.factory.createStringLiteral(contractName)]))),
+        ts.factory.createExpressionStatement(ts.factory.createAssignment(
+            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), 'client'),
+            ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('args'), 'client')))
+    ], true)
+
+    const constructorMember = ts.factory.createConstructorDeclaration(
+        undefined,
+        undefined,
+        constructorParams,
+        constructorBody
+    )
+
+    classMembers.push(constructorMember)
 
     // Construct class declaration
-    const classDeclaration = generateClassDeclaration(tableName, members, {export: true})
+    const classDeclaration = generateClassDeclaration(namespaceName, classMembers, {parent: 'Contract', export: true})
 
-    return {classDeclaration}
+    return { classDeclaration }
 }

@@ -30,10 +30,9 @@ export async function codegen(contractName, abi) {
         '@wharfkit/session'
     )
     const importContractStatement = generateImportStatement(
-        ['Contract', 'Table', 'TableCursor', 'QueryOptions', 'QueryOptions', 'Query'],
+        ['Contract', 'ContractArgs', 'ABI'],
         '@wharfkit/contract'
     )
-
     
     const {classDeclaration} = await generateContractClass(namespaceName, contractName, abi)
 
@@ -62,8 +61,8 @@ export async function codegen(contractName, abi) {
         [
             importContractStatement,
             importCoreStatement,
-            typesDeclaration,
             classDeclaration,
+            typesDeclaration,
         ],
         ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
         ts.NodeFlags.None

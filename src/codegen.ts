@@ -20,6 +20,7 @@ export async function codegen(contractName, abi) {
 
     const importCoreStatement = generateImportStatement(
         [
+            'ABI',
             'APIClient',
             'Session',
             'Struct',
@@ -30,8 +31,8 @@ export async function codegen(contractName, abi) {
         '@wharfkit/session'
     )
     const importContractStatement = generateImportStatement(
-        ['Contract', 'ContractArgs', 'ABI'],
-        '@wharfkit/contract'
+        ['Contract', 'ContractArgs', 'blobStringToAbi'],
+        '../src/index-module' //'@wharfkit/contract'
     )
     
     const {classDeclaration} = await generateContractClass(namespaceName, contractName, abi)

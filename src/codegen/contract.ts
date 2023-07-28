@@ -1,22 +1,24 @@
 import * as ts from 'typescript'
-import { ABI, Serializer } from '@wharfkit/session'
+import { ABI } from '@wharfkit/session'
+
 import { generateClassDeclaration } from './helpers'
+import { abiToBlob } from '../utils'
 
 export async function generateContractClass(namespaceName: string, contractName: string, abi: ABI) {
     // Encode the ABI as a binary hex string
-    const abiHex = Serializer.encode({ object: abi }).hexString
+    const abiBlob = abiToBlob(abi)
 
     // Prepare the member fields of the class
     const classMembers: ts.ClassElement[] = []
 
-    // Generate the private `abi` member
+    // Generate the private static `abiBlob` member
     const abiField = ts.factory.createPropertyDeclaration(
         undefined,
-        [ts.factory.createModifier(ts.SyntaxKind.PrivateKeyword)],
-        'abi',
+        [ts.factory.createModifier(ts.SyntaxKind.PrivateKeyword), ts.factory.createModifier(ts.SyntaxKind.StaticKeyword)],
+        'abiBlob',
         undefined,
         undefined,
-        ts.factory.createStringLiteral(abiHex)
+        ts.factory.createStringLiteral(String(abiBlob)),
     )
     classMembers.push(abiField)
 
@@ -28,22 +30,54 @@ export async function generateContractClass(namespaceName: string, contractName:
             undefined,
             'args',
             undefined,
-            ts.factory.createTypeReferenceNode('ContractArgs', undefined),
+            ts.factory.createTypeReferenceNode(
+                ts.factory.createIdentifier('Omit'), 
+                [
+                  ts.factory.createTypeReferenceNode(ts.factory.createIdentifier('ContractArgs'), undefined),
+                  ts.factory.createUnionTypeNode([
+                    ts.factory.createLiteralTypeNode(ts.factory.createStringLiteral('abi')),
+                    ts.factory.createLiteralTypeNode(ts.factory.createStringLiteral('account')),
+                  ])
+                ]
+              ),
             undefined
         )
     ]
 
     const constructorBody = ts.factory.createBlock([
-        ts.factory.createExpressionStatement(ts.factory.createCallExpression(ts.factory.createSuper(), undefined, [])),
-        ts.factory.createExpressionStatement(ts.factory.createAssignment(
-            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), 'abi'),
-            ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('ABI'), 'from'), undefined, [ts.factory.createPropertyAccessExpression(ts.factory.createThis(), 'abi')]))),
-        ts.factory.createExpressionStatement(ts.factory.createAssignment(
-            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), 'account'),
-            ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('Name'), 'from'), undefined, [ts.factory.createStringLiteral(contractName)]))),
-        ts.factory.createExpressionStatement(ts.factory.createAssignment(
-            ts.factory.createPropertyAccessExpression(ts.factory.createThis(), 'client'),
-            ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('args'), 'client')))
+        ts.factory.createExpressionStatement(
+            ts.factory.createCallExpression(
+                ts.factory.createSuper(),
+                undefined,
+                [
+                    ts.factory.createObjectLiteralExpression([
+                        ts.factory.createPropertyAssignment(
+                            'client',
+                            ts.factory.createPropertyAccessExpression(
+                                ts.factory.createIdentifier('args'),
+                                'client'
+                            )
+                        ),
+                        ts.factory.createPropertyAssignment(
+                            'abi',
+                            ts.factory.createCallExpression(
+                                ts.factory.createIdentifier('blobStringToAbi'),
+                                undefined,
+                                [ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(namespaceName), 'abiBlob')]
+                            )
+                        ),
+                        ts.factory.createPropertyAssignment(
+                            'account',
+                            ts.factory.createCallExpression(
+                                ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('Name'), 'from'),
+                                undefined,
+                                [ts.factory.createStringLiteral(contractName)]
+                            )
+                        ),
+                    ], true)
+                ]
+            )
+        ),
     ], true)
 
     const constructorMember = ts.factory.createConstructorDeclaration(
@@ -60,3 +94,5 @@ export async function generateContractClass(namespaceName: string, contractName:
 
     return { classDeclaration }
 }
+
+

@@ -1,10 +1,13 @@
 import {
+    ABI,
     API,
+    Blob,
     Checksum160,
     Checksum256,
     Float64,
     isInstanceOf,
     Name,
+    Serializer,
     UInt128,
     UInt64,
 } from '@wharfkit/antelope'
@@ -73,4 +76,15 @@ export function wrapIndexValue(value): API.v1.TableIndexType | undefined {
     }
 
     return Name.from(value)
+}
+
+export function abiToBlob(abi: ABI): Blob {
+    const serializedABI = Serializer.encode({object: abi, type: ABI})
+    return new Blob(serializedABI.array)    
+}
+
+
+export function blobStringToAbi(blobString: string): ABI {
+    const blob = Blob.from(blobString)
+    return ABI.from(blob)
 }

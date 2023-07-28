@@ -1,4 +1,4 @@
-import {ABI} from '@greymass/eosio'
+import {ABI} from '@wharfkit/antelope'
 import assert from 'assert'
 import * as ts from 'typescript'
 

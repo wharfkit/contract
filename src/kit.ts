@@ -1,4 +1,4 @@
-import {ABI, ABIDef, APIClient, Name, NameType} from '@greymass/eosio'
+import {ABI, ABIDef, APIClient, Name, NameType} from '@wharfkit/antelope'
 import {ABICache} from '@wharfkit/abicache'
 import type {ABICacheInterface} from '@wharfkit/abicache'
 import {Contract} from './contract'

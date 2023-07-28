@@ -9,7 +9,7 @@ import {
     NameType,
     PermissionLevel,
     PermissionLevelType,
-} from '@greymass/eosio'
+} from '@wharfkit/antelope'
 import {PlaceholderAuth} from 'eosio-signing-request'
 
 import {Table} from './contract/table'

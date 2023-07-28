@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableCursor} from '$lib'
 
-import {Asset, Int64, Name, Serializer, Struct, TimePoint} from '@greymass/eosio'
+import {Asset, Int64, Name, Serializer, Struct, TimePoint} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
 import {EosioGlobalState} from '$test/data/structs/eosio'
 

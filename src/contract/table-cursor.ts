@@ -1,4 +1,4 @@
-import {ABI, ABIDef, API, APIClient, Serializer} from '@greymass/eosio'
+import {ABI, ABIDef, API, APIClient, Serializer} from '@wharfkit/antelope'
 import {wrapIndexValue} from '../utils'
 
 /** Mashup of valid types for an APIClient call to v1.chain.get_table_rows */

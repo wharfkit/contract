@@ -20,7 +20,7 @@ import {
     UInt8,
     Variant,
     VarUInt,
-} from '@greymass/eosio'
+} from '@wharfkit/antelope'
 
 @Struct.type('key_weight')
 export class KeyWeight extends Struct {

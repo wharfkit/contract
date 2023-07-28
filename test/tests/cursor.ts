@@ -2,7 +2,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, TableCursor} from '$lib'
 
-import {Name, Serializer, UInt64} from '@greymass/eosio'
+import {Name, Serializer, UInt64} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
 import {TrendingRow} from '$test/data/structs/decentium'
 import {DelegatedBandwidth, NameBid} from '$test/data/structs/eosio'

@@ -1,4 +1,4 @@
-import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@greymass/eosio'
+import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@wharfkit/antelope'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
 

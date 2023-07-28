@@ -3,7 +3,7 @@ import * as ts from 'typescript'
 import {Contract, Table} from '../index'
 import {generateClassDeclaration} from './helpers'
 import {capitalize} from '../utils'
-import {APIClient} from '@greymass/eosio'
+import {APIClient} from '@wharfkit/antelope'
 
 export async function generateTableClass(contractName, namespaceName, table, abi) {
     const tableName = table.name

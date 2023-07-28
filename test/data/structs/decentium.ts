@@ -12,7 +12,7 @@ import {
     UInt64,
     UInt8,
     Variant,
-} from '@greymass/eosio'
+} from '@wharfkit/antelope'
 
 @TypeAlias('blog_flags')
 class BlogFlags extends UInt8 {}

@@ -2,7 +2,7 @@ import {assert} from 'chai'
 import {makeClient, mockPrivateKey, mockSession} from '@wharfkit/mock-data'
 
 import ContractKit, {Contract, ContractArgs, Table} from '$lib'
-import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@greymass/eosio'
+import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@wharfkit/antelope'
 import {PlaceholderAuth} from 'eosio-signing-request'
 import {ProducerInfo} from '$test/data/structs/eosio'
 

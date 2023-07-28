@@ -1,4 +1,4 @@
-import {ABI, ABIDef, API, APIClient, Serializer} from '@wharfkit/antelope'
+import {ABI, ABIDef, API, APIClient, Name, Serializer} from '@wharfkit/antelope'
 import {wrapIndexValue} from '../utils'
 
 /** Mashup of valid types for an APIClient call to v1.chain.get_table_rows */
@@ -62,7 +62,7 @@ export class TableCursor<RowType = any> {
         if (args.maxRows) {
             this.maxRows = args.maxRows
         }
-        const table = this.abi.tables.find((t) => t.name === String(this.params.table))
+        const table = this.abi.tables.find((t) => Name.from(t.name).equals(this.params.table))
         if (!table) {
             throw new Error('Table not found')
         }

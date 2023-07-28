@@ -1311,10 +1311,10 @@
     "@typescript-eslint/types" "5.41.0"
     eslint-visitor-keys "^3.3.0"
 
-"@wharfkit/abicache@^1.0.1-beta1":
-  version "1.0.1-beta1"
-  resolved "https://registry.yarnpkg.com/@wharfkit/abicache/-/abicache-1.0.1-beta1.tgz#3cf687c0d6f282eb0d7486b206e18b6314b6f299"
-  integrity sha512-uNFzyn4/bxgmCcZgXRbaHisygChFIQDEknfroe6EmVCJjfnowbBlHPTD0PS2YUBD1yFE7XEeCbAESYjEtT/5xQ==
+"@wharfkit/abicache@^1.0.1-beta2":
+  version "1.0.1-beta2"
+  resolved "https://registry.yarnpkg.com/@wharfkit/abicache/-/abicache-1.0.1-beta2.tgz#e36d87484719a6afb34111de6a198ebaa79dfc99"
+  integrity sha512-vjcUUCQXfamGoUWHAfCvbEEBb5M80LuugxR6tYUk5nYJQ1L8oBZonSDl/q4iUEBD4CfMzUEU/vtVLQonfhEcDw==
   dependencies:
     "@wharfkit/antelope" "^0.7.3"
     eosio-signing-request "^3.0.0-beta1"

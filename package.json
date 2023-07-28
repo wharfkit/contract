@@ -19,7 +19,7 @@
         "wharf-generate": "./scripts/codegen-cli.js"
     },
     "dependencies": {
-        "@wharfkit/abicache": "^1.0.1-beta1",
+        "@wharfkit/abicache": "^1.0.1-beta2",
         "@wharfkit/antelope": "^0.7.3",
         "eosio-signing-request": "^3.0.0-beta1",
         "tslib": "^2.1.0"

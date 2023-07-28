@@ -2,11 +2,12 @@ import fs from 'fs'
 import path from 'path'
 import {codegen} from '../../src/codegen'
 import {Contract} from 'src/contract'
+import { ABI } from '@wharfkit/session'
 
-export async function generateCodegenContract(contract: Contract) {
-    const contractName = String(contract.account)
-
-    const abi = await contract.getAbi()
+export async function generateCodegenContract(contractName: string) {
+    // Read the ABI from a JSON file
+    const abiJson = fs.readFileSync(`test/data/abis/${contractName}.json`, {encoding: 'utf8'})
+    const abi = new ABI(JSON.parse(abiJson))
 
     // Generate the code
     let generatedCode = await codegen(contractName, abi)

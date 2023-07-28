@@ -32,7 +32,7 @@ export async function codegen(contractName, abi) {
     )
     const importContractStatement = generateImportStatement(
         ['Contract', 'ContractArgs', 'blobStringToAbi'],
-        '../src/index-module' //'@wharfkit/contract'
+        '@wharfkit/contract'
     )
     
     const {classDeclaration} = await generateContractClass(namespaceName, contractName, abi)

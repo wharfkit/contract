@@ -1,116 +1,43 @@
-// import * as fs from 'fs'
-// import * as path from 'path'
-// import {assert} from 'chai'
-// import {ABI, APIClient, Session} from '@wharfkit/session'
-// import {makeClient} from '@wharfkit/mock-data'
+import * as fs from 'fs'
+import * as path from 'path'
+import {assert} from 'chai'
+import {ABI, APIClient, Session} from '@wharfkit/session'
+import {makeClient} from '@wharfkit/mock-data'
 
-// import {codegen} from '../../src/codegen' // replace with your actual codegen file
+import {codegen} from '../../src/codegen' // replace with your actual codegen file
+import { Contract } from 'src/contract'
+import { generateCodegenContract, removeCodegenContracts } from '$test/utils/codegen'
 
-// let _RewardsGm
+let _RewardsGm
 
-// suite('codegen', function () {
-//     setup(async () => {
-//         const contractName = 'rewards.gm' // replace with your contract name
+suite('codegen', function () {
+    setup(async () => {
+        const contractName = 'rewards.gm' // replace with your contract name
 
-//         // Read the ABI from a JSON file
-//         const abiJson = fs.readFileSync(`test/data/abis/${contractName}.json`, {encoding: 'utf8'})
-//         const abi = new ABI(JSON.parse(abiJson))
+        const contractPackage = await generateCodegenContract(contractName)
 
-//         // Generate the code
-//         let generatedCode = await codegen(contractName, abi)
+        _RewardsGm = contractPackage._RewardsGm
+    })
 
-//         generatedCode = generatedCode.replace('@wharfkit/contract', '../../src/index')
+    teardown(() => {
+        // Remove the 'test/tmp' directory and its contents after each run
+        removeCodegenContracts()
+    })
 
-//         // Create the tmp directory under the test directory if it does not exist
-//         if (!fs.existsSync('test/tmp')) {
-//             fs.mkdirSync('test/tmp')
-//         }
+    suite('_RewardsGm', function () {
+        let client: APIClient
 
-//         // Write the generated code to a file in the tmp directory
-//         fs.writeFileSync(path.join('test/tmp', `${contractName}.ts`), generatedCode, {
-//             encoding: 'utf8',
-//         })
+        // Setup before each test
+        setup(function () {
+            client = makeClient('https://eos.greymass.com')
+        })
 
-//         const contractPackage = await import(`../tmp/${contractName}`)
+        suite('constructor', function () {
+            test('constructs the Contract instance', async function () {
+                const rewardsContract = new _RewardsGm({client})
 
-//         _RewardsGm = contractPackage._RewardsGm
-//     })
-
-//     teardown(() => {
-//         // Remove the 'test/tmp' directory and its contents after each run
-//         fs.rmSync('test/tmp', {recursive: true, force: true})
-//     })
-
-//     suite('_RewardsGm', function () {
-//         let client: APIClient
-
-//         // Setup before each test
-//         setup(function () {
-//             client = makeClient('https://eos.greymass.com')
-//         })
-
-//         suite('adduser', function () {
-//             test('adduser calls the correct contract action', async function () {
-//                 let calledWith: any
-//                 const session = {
-//                     transact: async (transactParam) => {
-//                         calledWith = transactParam
-//                     },
-//                 }
-
-//                 await _RewardsGm.actions.adduser(
-//                     {
-//                         account: 'teamgreymass',
-//                         weight: 100,
-//                     },
-//                     session as unknown as Session
-//                 )
-
-//                 assert.equal(String(calledWith.action.account), 'rewards.gm')
-//                 assert.equal(String(calledWith.action.name), 'adduser')
-//             })
-//         })
-
-//         suite('where', function () {
-//             test('returns a cursor that lets you filter rows', async function () {
-//                 const rows = await _RewardsGm.tables.users
-//                     .where({account: {from: 'dafuga.gm', to: 'tony.gm'}}, {}, client)
-//                     .all()
-
-//                 assert.equal(rows.length, 6)
-//             })
-//         })
-
-//         suite('find', function () {
-//             test('returns a single row', async function () {
-//                 const row = await _RewardsGm.tables.users.find({account: 'dafuga.gm'}, client)
-
-//                 assert.equal(String(row.account), 'dafuga.gm')
-//             })
-//         })
-
-//         suite('first', function () {
-//             test('returns a cursor that lets you fetch the first n rows', async function () {
-//                 const rows = await _RewardsGm.tables.users.first(10, client).all()
-
-//                 assert.equal(rows.length, 9)
-//             })
-//         })
-
-//         suite('cursor', function () {
-//             test('returns a cursor that allows you to fetch all rows', async function () {
-//                 const rows = await _RewardsGm.tables.users.cursor(client).all()
-
-//                 assert.equal(rows.length, 9)
-//             })
-//         })
-
-//         suite('all', function () {
-//             test('returns all rows', async function () {
-//                 const rows = await _RewardsGm.tables.users.all(client)
-
-//                 assert.equal(rows.length, 9)
-//             })
-//         })
-//     })
-// })
+                assert.instanceOf(rewardsContract, Contract)
+            })
+        })
+    })
+})

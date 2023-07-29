@@ -4,10 +4,10 @@ import {capitalize} from '../utils'
 
 // Generates a namespace name for a contract (eg. _EosioToken for eosio.token)
 export function generateNamespaceName(contractName: string) {
-    return `_${contractName
+    return contractName
         .split('.')
         .map((namePart) => capitalize(namePart))
-        .join('')}`
+        .join('')
 }
 
 export function generateNamespace(

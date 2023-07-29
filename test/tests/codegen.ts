@@ -6,6 +6,7 @@ import {Contract} from 'src/contract'
 
 import * as MockRewardsGm from '$test/data/contracts/mock-rewards'
 import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codegen'
+import {runGenericContractTests} from './contract'
 ;(async function () {
     const GeneratedRewardsGm = await generateCodegenContract('rewards.gm')
     const contracts = {
@@ -29,6 +30,7 @@ import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codeg
 
                 // The `Contract` instance in the namespace
                 const testContract = testNamespace.Contract
+                const testContractInstance = new testContract({client})
 
                 function assertRewardsContract(contract) {
                     assert.instanceOf(contract, Contract)
@@ -75,6 +77,7 @@ import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codeg
                             assert.throws(() => new testContract({account: 'teamgreymass'}))
                         })
                     })
+                    runGenericContractTests(testContractInstance)
                 })
             })
         })

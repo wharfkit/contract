@@ -15,6 +15,7 @@ import {Contract} from 'src/contract'
 
     suite('codegen', function () {
         test('Contracts are identical', function () {
+            // TODO: We need a better way to compare the files too, like w/ imports etc
             assert.equal(
                 JSON.stringify(contracts.MockRewardsGm),
                 JSON.stringify(contracts.GeneratedRewardsGm)

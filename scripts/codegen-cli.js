@@ -4,7 +4,7 @@ const {APIClient} = require('@wharfkit/session')
 const fs = require('fs')
 const {fetch} = require('node-fetch')
 
-const {codegen, Contract} = require('../lib/contract.js')
+const {codegen, ContractKit} = require('../lib/contract.js')
 
 const client = new APIClient({
     url: process.env.ANTELOPE_NODE_URL || 'https://eos.greymass.com',
@@ -23,31 +23,28 @@ async function codegenCli() {
 
     log(`Fetching ABI for ${contractName}...`)
 
-    const contract = Contract.from({name: contractName, client})
+    const contractKit = new ContractKit({
+        client,
+    })
+    const contract = await contractKit.load(contractName)
 
-    const abi = await contract.getAbi()
+    log(`Generating Contract helper for ${contractName}...`)
 
-    if (!abi) {
-        log(`No ABI found for ${contractName}`)
+    const generatedCode = await codegen(contractName, contract.abi)
+
+    log(`Generated Contract helper class for ${contractName}...`)
+
+    // Check if --file is present in the command line arguments
+    const fileFlagIndex = process.argv.indexOf('--file')
+    if (fileFlagIndex !== -1 && process.argv[fileFlagIndex + 1]) {
+        const contractFilePath = process.argv[fileFlagIndex + 1]
+
+        fs.writeFileSync(contractFilePath, generatedCode)
+
+        log(`Generated Contract helper for ${contractName} saved to ${contractFilePath}`)
     } else {
-        log(`Generating Contract helper for ${contractName}...`)
-
-        const generatedCode = await codegen(contractName, abi)
-
-        log(`Generated Contract helper class for ${contractName}...`)
-
-        // Check if --file is present in the command line arguments
-        const fileFlagIndex = process.argv.indexOf('--file')
-        if (fileFlagIndex !== -1 && process.argv[fileFlagIndex + 1]) {
-            const contractFilePath = process.argv[fileFlagIndex + 1]
-
-            fs.writeFileSync(contractFilePath, generatedCode)
-
-            log(`Generated Contract helper for ${contractName} saved to ${contractFilePath}`)
-        } else {
-            log(`Generated Contract helper class:`)
-            log(generatedCode)
-        }
+        log(`Generated Contract helper class:`)
+        log(generatedCode)
     }
 }
 

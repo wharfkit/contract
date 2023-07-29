@@ -12,6 +12,8 @@ import {
     UInt64,
 } from '@wharfkit/antelope'
 
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+
 export function pascalCase(value: string): string {
     return value
         .split(/_| /)

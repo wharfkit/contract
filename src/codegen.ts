@@ -30,7 +30,7 @@ export async function codegen(contractName, abi) {
         '@wharfkit/session'
     )
     const importContractStatement = generateImportStatement(
-        ['Contract as BaseContract', 'ContractArgs', 'blobStringToAbi'],
+        ['Contract as BaseContract', 'ContractArgs', 'PartialBy', 'blobStringToAbi'],
         '@wharfkit/contract'
     )
 

@@ -1,31 +1,36 @@
-import {Contract as BaseContract, blobStringToAbi, ContractArgs} from '@wharfkit/contract'
+import {
+    Contract as BaseContract,
+    ContractArgs,
+    PartialBy,
+    blobStringToAbi,
+} from '@wharfkit/contract'
 import {
     ABI,
     APIClient,
-    Asset,
-    AssetType,
-    Blob,
-    Checksum256,
-    Checksum256Type,
-    Float64,
-    Float64Type,
-    Name,
-    NameType,
     Session,
     Struct,
+    TransactResult,
+    Asset,
+    Checksum256,
+    Float64,
+    Name,
     TimePoint,
     TimePointSec,
-    TimePointType,
-    TransactResult,
     UInt128,
-    UInt128Type,
     UInt16,
-    UInt16Type,
     UInt32,
-    UInt32Type,
     UInt64,
-    UInt64Type,
     UInt8,
+    AssetType,
+    Blob,
+    Checksum256Type,
+    Float64Type,
+    NameType,
+    TimePointType,
+    UInt128Type,
+    UInt16Type,
+    UInt32Type,
+    UInt64Type,
     UInt8Type,
 } from '@wharfkit/session'
 export namespace RewardsGm {
@@ -34,7 +39,7 @@ export namespace RewardsGm {
     )
     export const abi = ABI.from(abiBlob)
     export class Contract extends BaseContract {
-        constructor(args: Omit<ContractArgs, 'abi' | 'account'>) {
+        constructor(args: PartialBy<ContractArgs, 'abi' | 'account'>) {
             super({
                 client: args.client,
                 abi: abi,
@@ -60,7 +65,7 @@ export namespace RewardsGm {
         @Struct.type('config')
         export class Config extends Struct {
             @Struct.field('symbol')
-            declare token_symbol: symbol
+            declare token_symbol: Symbol
             @Struct.field('name')
             declare oracle_account: Name
             @Struct.field('oracle_pair[]')
@@ -69,7 +74,7 @@ export namespace RewardsGm {
         @Struct.type('configure')
         export class Configure extends Struct {
             @Struct.field('symbol')
-            declare token_symbol: symbol
+            declare token_symbol: Symbol
             @Struct.field('name')
             declare oracle_account: Name
             @Struct.field('oracle_pair[]')
@@ -90,7 +95,7 @@ export namespace RewardsGm {
         @Struct.type('price_info')
         export class Price_info extends Struct {
             @Struct.field('string')
-            declare pair: string
+            declare pair: String
             @Struct.field('float64')
             declare price: Float64
             @Struct.field('time_point')

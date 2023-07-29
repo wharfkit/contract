@@ -14,7 +14,7 @@ export async function generateContractClass(namespaceName: string, contractName:
             undefined,
             'args',
             undefined,
-            ts.factory.createTypeReferenceNode(ts.factory.createIdentifier('Omit'), [
+            ts.factory.createTypeReferenceNode(ts.factory.createIdentifier('PartialBy'), [
                 ts.factory.createTypeReferenceNode(
                     ts.factory.createIdentifier('ContractArgs'),
                     undefined

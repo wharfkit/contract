@@ -80,9 +80,8 @@ export function wrapIndexValue(value): API.v1.TableIndexType | undefined {
 
 export function abiToBlob(abi: ABI): Blob {
     const serializedABI = Serializer.encode({object: abi, type: ABI})
-    return new Blob(serializedABI.array)    
+    return new Blob(serializedABI.array)
 }
-
 
 export function blobStringToAbi(blobString: string): ABI {
     const blob = Blob.from(blobString)

@@ -1,5 +1,3 @@
-import {ABI} from '@wharfkit/antelope'
-
 import * as ts from 'typescript'
 
 import {
@@ -34,7 +32,7 @@ export async function codegen(contractName, abi) {
         ['Contract', 'ContractArgs', 'blobStringToAbi'],
         '@wharfkit/contract'
     )
-    
+
     const {classDeclaration} = await generateContractClass(namespaceName, contractName, abi)
 
     // Extract fields from the ABI
@@ -59,12 +57,7 @@ export async function codegen(contractName, abi) {
     ])
 
     const sourceFile = ts.factory.createSourceFile(
-        [
-            importContractStatement,
-            importCoreStatement,
-            classDeclaration,
-            typesDeclaration,
-        ],
+        [importContractStatement, importCoreStatement, classDeclaration, typesDeclaration],
         ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
         ts.NodeFlags.None
     )

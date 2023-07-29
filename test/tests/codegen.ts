@@ -17,10 +17,10 @@ import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codeg
     suite('codegen', function () {
         test('Contracts are identical', function () {
             // TODO: We need a better way to compare the files too, like w/ imports etc
-            // assert.equal(
-            //     JSON.stringify(contracts.MockRewardsGm),
-            //     JSON.stringify(contracts.GeneratedRewardsGm)
-            // )
+            assert.equal(
+                JSON.stringify(contracts.MockRewardsGm),
+                JSON.stringify(contracts.GeneratedRewardsGm)
+            )
         })
         Object.keys(contracts).forEach((contractKey) => {
             suite(`Testing namespace ${contractKey}`, function () {
@@ -33,9 +33,8 @@ import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codeg
                 function assertRewardsContract(contract) {
                     assert.instanceOf(contract, Contract)
                     assert.instanceOf(contract.abi, ABI)
-                    // assert.isTrue(contract.abi.equals(MockRewardsGm.abi))
-                    // assert.instanceOf(contract.account, Name)
-                    // assert.isTrue(contract.account.equals(testNamespace.account))
+                    assert.isTrue(contract.abi.equals(testNamespace.abi))
+                    assert.instanceOf(contract.account, Name)
                     assert.instanceOf(contract.client, APIClient)
                 }
 

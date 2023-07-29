@@ -46,7 +46,7 @@ export async function codegen(contractName, abi) {
         const structMembers: ts.ClassElement[] = []
 
         for (const field of struct.fields) {
-            structMembers.push(generateField(field, true, `${namespaceName}.types`, abi))
+            structMembers.push(generateField(field, true, `${namespaceName}.Types`, abi))
         }
 
         structDeclarations.push(generateStruct(struct.structName, true, structMembers))
@@ -106,7 +106,7 @@ export async function codegen(contractName, abi) {
         abiBlobField,
         abiField,
         classDeclaration,
-        generateNamespace('types', structDeclarations),
+        generateNamespace('Types', structDeclarations),
     ])
 
     const sourceFile = ts.factory.createSourceFile(

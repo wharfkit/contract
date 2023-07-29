@@ -47,7 +47,7 @@ export namespace RewardsGm {
             })
         }
     }
-    export namespace types {
+    export namespace Types {
         @Struct.type('adduser')
         export class Adduser extends Struct {
             @Struct.field('name')
@@ -69,7 +69,7 @@ export namespace RewardsGm {
             @Struct.field('name')
             declare oracle_account: Name
             @Struct.field('oracle_pair[]')
-            declare oracle_pairs: RewardsGm.types.Oracle_pair
+            declare oracle_pairs: RewardsGm.Types.Oracle_pair
         }
         @Struct.type('configure')
         export class Configure extends Struct {
@@ -78,7 +78,7 @@ export namespace RewardsGm {
             @Struct.field('name')
             declare oracle_account: Name
             @Struct.field('oracle_pair[]')
-            declare oracle_pairs: RewardsGm.types.Oracle_pair
+            declare oracle_pairs: RewardsGm.Types.Oracle_pair
         }
         @Struct.type('deluser')
         export class Deluser extends Struct {
@@ -108,7 +108,7 @@ export namespace RewardsGm {
             @Struct.field('asset')
             declare amount: Asset
             @Struct.field('price_info[]')
-            declare ticker: RewardsGm.types.Price_info
+            declare ticker: RewardsGm.Types.Price_info
         }
         @Struct.type('updateuser')
         export class Updateuser extends Struct {

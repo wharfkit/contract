@@ -34,7 +34,7 @@ export async function codegen(contractName, abi) {
         '@wharfkit/contract'
     )
 
-    const {classDeclaration} = await generateContractClass(namespaceName, contractName, abi)
+    const {classDeclaration} = await generateContractClass(namespaceName, contractName)
 
     // Extract fields from the ABI
     const structs = getFieldTypesFromAbi(abi)

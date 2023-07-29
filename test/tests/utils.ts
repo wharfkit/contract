@@ -10,7 +10,7 @@ import {
     pascalCase,
     singularize,
     wrapIndexValue,
-} from '../../src/utils' // replace 'your-file' with the name of your file
+} from '../../src/utils'
 
 suite('Utility functions', function () {
     test('Converts to pascal case', function () {
@@ -53,14 +53,14 @@ suite('Utility functions', function () {
     })
 
     test('Converts Blob string to ABI', function () {
-        const blobString = testBlob.toString() // Assuming toString() gives us the string representation of the blob
+        const blobString = String(testBlob)
         const result = blobStringToAbi(blobString)
         assert(result.equals(testABI))
     })
 
     test('Check round trip conversion from ABI to Blob and back', function () {
         const blob = abiToBlob(testABI)
-        const blobString = blob.toString() // Assuming toString() gives us the string representation of the blob
+        const blobString = String(blob)
         const result = blobStringToAbi(blobString)
         assert(result.equals(testABI))
     })

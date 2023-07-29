@@ -14,6 +14,12 @@ import {Contract} from 'src/contract'
     const client = makeClient('https://eos.greymass.com')
 
     suite('codegen', function () {
+        test('Contracts are identical', function () {
+            assert.equal(
+                JSON.stringify(contracts.MockRewardsGm),
+                JSON.stringify(contracts.GeneratedRewardsGm)
+            )
+        })
         Object.keys(contracts).forEach((contractKey) => {
             suite(`Testing namespace ${contractKey}`, function () {
                 // The `RewardsGm` namespace

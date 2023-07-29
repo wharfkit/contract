@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import {codegen} from '../../src/codegen'
-import {Contract} from 'src/contract'
 import { ABI } from '@wharfkit/session'
 
 export async function generateCodegenContract(contractName: string) {

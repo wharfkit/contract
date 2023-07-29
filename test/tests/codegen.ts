@@ -1,18 +1,15 @@
-import * as fs from 'fs'
-import * as path from 'path'
 import {assert} from 'chai'
-import {ABI, APIClient, Session} from '@wharfkit/session'
+import {APIClient} from '@wharfkit/session'
 import {makeClient} from '@wharfkit/mock-data'
 
-import {codegen} from '../../src/codegen' // replace with your actual codegen file
-import { Contract } from 'src/contract'
-import { generateCodegenContract, removeCodegenContracts } from '$test/utils/codegen'
+import {Contract} from 'src/contract'
+import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codegen'
 
 let _RewardsGm
 
 suite('codegen', function () {
     setup(async () => {
-        const contractName = 'rewards.gm' // replace with your contract name
+        const contractName = 'rewards.gm'
 
         const contractPackage = await generateCodegenContract(contractName)
 
@@ -20,7 +17,6 @@ suite('codegen', function () {
     })
 
     teardown(() => {
-        // Remove the 'test/tmp' directory and its contents after each run
         removeCodegenContracts()
     })
 

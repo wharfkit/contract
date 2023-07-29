@@ -32,7 +32,7 @@ export function capitalize(string) {
 export function singularize(word: string): string {
     if (word.endsWith('ies')) {
         return word.slice(0, -3) + 'y'
-    } else if (word.endsWith('ches') || word.endsWith('sses')) {
+    } else if (word.endsWith('ches') || word.endsWith('ses')) {
         return word.slice(0, -2)
     } else if (word.endsWith('s') && word.length > 1 && word[word.length - 2] !== 's') {
         return word.slice(0, -1)

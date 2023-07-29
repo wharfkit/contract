@@ -2,38 +2,35 @@ import {assert} from 'chai'
 import {APIClient} from '@wharfkit/session'
 import {makeClient} from '@wharfkit/mock-data'
 
-import {Contract} from 'src/contract'
 import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codegen'
+import * as MockRewardsGm from '$test/data/contracts/mock-rewards'
+import {Contract} from 'src/contract'
+;(async function () {
+    const GeneratedRewardsGm = await generateCodegenContract('rewards.gm')
+    const contracts = {
+        MockRewardsGm,
+        GeneratedRewardsGm,
+    }
+    const client = makeClient('https://eos.greymass.com')
 
-let _RewardsGm
+    suite('codegen', function () {
+        Object.keys(contracts).forEach((contractKey) => {
+            suite(`Testing namespace ${contractKey}`, function () {
+                // The `RewardsGm` namespace
+                const testNamespace = contracts[contractKey].RewardsGm
+                // The `Contract` instance in the namespace
+                const testContract = testNamespace.Contract
 
-suite('codegen', function () {
-    setup(async () => {
-        const contractName = 'rewards.gm'
-
-        const contractPackage = await generateCodegenContract(contractName)
-
-        _RewardsGm = contractPackage._RewardsGm
-    })
-
-    teardown(() => {
-        removeCodegenContracts()
-    })
-
-    suite('_RewardsGm', function () {
-        let client: APIClient
-
-        // Setup before each test
-        setup(function () {
-            client = makeClient('https://eos.greymass.com')
-        })
-
-        suite('constructor', function () {
-            test('constructs the Contract instance', async function () {
-                const rewardsContract = new _RewardsGm({client})
-
-                assert.instanceOf(rewardsContract, Contract)
+                suite('Contract', function () {
+                    test('valid instance', function () {
+                        const contract = new testContract({client})
+                        assert.instanceOf(contract, Contract)
+                    })
+                })
             })
         })
+        teardown(() => {
+            removeCodegenContracts()
+        })
     })
-})
+})()

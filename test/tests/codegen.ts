@@ -1,5 +1,4 @@
 import {assert} from 'chai'
-import {APIClient} from '@wharfkit/session'
 import {makeClient} from '@wharfkit/mock-data'
 
 import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codegen'

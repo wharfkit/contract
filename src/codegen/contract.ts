@@ -1,10 +1,8 @@
 import * as ts from 'typescript'
-import {ABI} from '@wharfkit/session'
 
 import {generateClassDeclaration} from './helpers'
-import {abiToBlob} from '../utils'
 
-export async function generateContractClass(namespaceName: string, contractName: string, abi: ABI) {
+export async function generateContractClass(namespaceName: string, contractName: string) {
     // Prepare the member fields of the class
     const classMembers: ts.ClassElement[] = []
 

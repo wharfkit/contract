@@ -60,13 +60,6 @@ const delegateBwData = {
     transfer: false,
 }
 
-// eosio.token::open
-const openData = {
-    owner: 'foo',
-    symbol: '4,EOS',
-    ram_payer: PlaceholderAuth.actor,
-}
-
 // eosio.token::transfer
 const transferData = {
     from: PlaceholderAuth.actor,

@@ -19,6 +19,7 @@ export const EOSIO_CORE_CLASSES = [
 
 export const EOSIO_CORE_TYPES = [
     'AssetType',
+    'Blob',
     'Checksum256Type',
     'Float64Type',
     'NameType',

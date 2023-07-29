@@ -10,6 +10,7 @@ import {
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateContractClass} from './codegen/contract'
+import {abiToBlob} from './utils'
 
 const printer = ts.createPrinter()
 
@@ -29,7 +30,7 @@ export async function codegen(contractName, abi) {
         '@wharfkit/session'
     )
     const importContractStatement = generateImportStatement(
-        ['Contract', 'ContractArgs', 'blobStringToAbi'],
+        ['Contract as BaseContract', 'ContractArgs', 'blobStringToAbi'],
         '@wharfkit/contract'
     )
 
@@ -51,13 +52,65 @@ export async function codegen(contractName, abi) {
         structDeclarations.push(generateStruct(struct.structName, true, structMembers))
     }
 
+    // Encode the ABI as a binary hex string
+    const abiBlob = abiToBlob(abi)
+
+    // Generate `abiBlob` field
+    const abiBlobField = ts.factory.createVariableStatement(
+        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+        ts.factory.createVariableDeclarationList(
+            [
+                ts.factory.createVariableDeclaration(
+                    'abiBlob',
+                    undefined,
+                    undefined,
+                    ts.factory.createCallExpression(
+                        ts.factory.createPropertyAccessExpression(
+                            ts.factory.createIdentifier('Blob'),
+                            ts.factory.createIdentifier('from')
+                        ),
+                        undefined,
+                        [ts.factory.createStringLiteral(String(abiBlob))]
+                    )
+                ),
+            ],
+            ts.NodeFlags.Const
+        )
+    )
+
+    // Generate `abiBlob` field
+    const abiField = ts.factory.createVariableStatement(
+        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+        ts.factory.createVariableDeclarationList(
+            [
+                ts.factory.createVariableDeclaration(
+                    'abi',
+                    undefined,
+                    undefined,
+                    ts.factory.createCallExpression(
+                        ts.factory.createPropertyAccessExpression(
+                            ts.factory.createIdentifier('ABI'),
+                            ts.factory.createIdentifier('from')
+                        ),
+                        undefined,
+                        [ts.factory.createIdentifier('abiBlob')]
+                    )
+                ),
+            ],
+            ts.NodeFlags.Const
+        )
+    )
+
     // Generate types namespace
-    const typesDeclaration = generateNamespace(namespaceName, [
+    const namespaceDeclaration = generateNamespace(namespaceName, [
+        abiBlobField,
+        abiField,
+        classDeclaration,
         generateNamespace('types', structDeclarations),
     ])
 
     const sourceFile = ts.factory.createSourceFile(
-        [importContractStatement, importCoreStatement, classDeclaration, typesDeclaration],
+        [importContractStatement, importCoreStatement, namespaceDeclaration],
         ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
         ts.NodeFlags.None
     )

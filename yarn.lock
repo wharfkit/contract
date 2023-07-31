@@ -1331,18 +1331,18 @@
   dependencies:
     tslib "^2.1.0"
 
-"@wharfkit/mock-data@^1.0.0-beta13":
-  version "1.0.0-beta13"
-  resolved "https://registry.yarnpkg.com/@wharfkit/mock-data/-/mock-data-1.0.0-beta13.tgz#ea603d54ad991aff770201a19f6904d5990061c6"
-  integrity sha512-pPUsQUEZCu6h54ez9XiSWm7KpdZFry31rdvZpLZiK0es++dOFEJOs7Y9IPpkcxhtCLQ6jGeDvLwExB4Pt2o9Lg==
+"@wharfkit/mock-data@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@wharfkit/mock-data/-/mock-data-1.0.0.tgz#f21f5f400021a4688985d779b902533aa9d75d70"
+  integrity sha512-OgzofVL8PQbr8Qh8ld1nKkkp4nJGW033Fdo7YF+2yPOxeieqUGClN+T6Ti4o6BXdY8hCQF4YRTzS8r5hON+UIg==
   dependencies:
     "@wharfkit/antelope" "^0.7.3"
-    "@wharfkit/session" "^1.0.0-beta6"
+    "@wharfkit/session" "^1.0.0-beta9"
     "@wharfkit/wallet-plugin-privatekey" "^0.5.0"
     node-fetch "^2.6.1"
     tslib "^2.1.0"
 
-"@wharfkit/session@^1.0.0-beta6", "@wharfkit/session@^1.0.0-beta9":
+"@wharfkit/session@^1.0.0-beta9":
   version "1.0.0-beta9"
   resolved "https://registry.yarnpkg.com/@wharfkit/session/-/session-1.0.0-beta9.tgz#854c7b019658328169e0893ab98b6b1efabe0edc"
   integrity sha512-ixPX0MrE/5vwxYym2j82lVVsEJSaCAHqgjd05AV/Iv+2o9QlTulN1LaAajCKJXzyT1bMwyI2dP+v7+dgKlVtRA==

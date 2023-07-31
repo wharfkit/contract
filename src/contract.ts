@@ -10,7 +10,7 @@ import {
     PermissionLevel,
     PermissionLevelType,
 } from '@wharfkit/antelope'
-import {PlaceholderAuth} from 'eosio-signing-request'
+import {PlaceholderAuth} from '@wharfkit/signing-request'
 
 import {Table} from './contract/table'
 

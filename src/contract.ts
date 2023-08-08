@@ -10,7 +10,7 @@ import {
     PermissionLevel,
     PermissionLevelType,
 } from '@wharfkit/antelope'
-import {PlaceholderAuth} from 'eosio-signing-request'
+import {PlaceholderAuth} from '@wharfkit/signing-request'
 
 import {Table} from './contract/table'
 
@@ -49,8 +49,17 @@ export class Contract {
      * @param {ContractOptions} options - The options for the contract.
      */
     constructor(args: ContractArgs) {
+        if (!args.abi) {
+            throw new Error('Contract requires an ABI')
+        }
         this.abi = ABI.from(args.abi)
+        if (!args.account) {
+            throw new Error('Contract requires an account name')
+        }
         this.account = Name.from(args.account)
+        if (!args.client) {
+            throw new Error('Contract requires an APIClient')
+        }
         this.client = args.client
     }
 

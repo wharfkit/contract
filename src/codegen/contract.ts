@@ -1,29 +1,10 @@
 import * as ts from 'typescript'
-import {ABI} from '@wharfkit/session'
 
 import {generateClassDeclaration} from './helpers'
-import {abiToBlob} from '../utils'
 
-export async function generateContractClass(namespaceName: string, contractName: string, abi: ABI) {
-    // Encode the ABI as a binary hex string
-    const abiBlob = abiToBlob(abi)
-
+export async function generateContractClass(namespaceName: string, contractName: string) {
     // Prepare the member fields of the class
     const classMembers: ts.ClassElement[] = []
-
-    // Generate the private static `abiBlob` member
-    const abiField = ts.factory.createPropertyDeclaration(
-        undefined,
-        [
-            ts.factory.createModifier(ts.SyntaxKind.PrivateKeyword),
-            ts.factory.createModifier(ts.SyntaxKind.StaticKeyword),
-        ],
-        'abiBlob',
-        undefined,
-        undefined,
-        ts.factory.createStringLiteral(String(abiBlob))
-    )
-    classMembers.push(abiField)
 
     // Generate the `constructor` member
     const constructorParams: ts.ParameterDeclaration[] = [
@@ -33,7 +14,7 @@ export async function generateContractClass(namespaceName: string, contractName:
             undefined,
             'args',
             undefined,
-            ts.factory.createTypeReferenceNode(ts.factory.createIdentifier('Omit'), [
+            ts.factory.createTypeReferenceNode(ts.factory.createIdentifier('PartialBy'), [
                 ts.factory.createTypeReferenceNode(
                     ts.factory.createIdentifier('ContractArgs'),
                     undefined
@@ -62,16 +43,7 @@ export async function generateContractClass(namespaceName: string, contractName:
                             ),
                             ts.factory.createPropertyAssignment(
                                 'abi',
-                                ts.factory.createCallExpression(
-                                    ts.factory.createIdentifier('blobStringToAbi'),
-                                    undefined,
-                                    [
-                                        ts.factory.createPropertyAccessExpression(
-                                            ts.factory.createIdentifier(namespaceName),
-                                            'abiBlob'
-                                        ),
-                                    ]
-                                )
+                                ts.factory.createIdentifier('abi')
                             ),
                             ts.factory.createPropertyAssignment(
                                 'account',
@@ -103,8 +75,8 @@ export async function generateContractClass(namespaceName: string, contractName:
     classMembers.push(constructorMember)
 
     // Construct class declaration
-    const classDeclaration = generateClassDeclaration(namespaceName, classMembers, {
-        parent: 'Contract',
+    const classDeclaration = generateClassDeclaration('Contract', classMembers, {
+        parent: 'BaseContract',
         export: true,
     })
 

@@ -1,7 +1,7 @@
 import {assert} from 'chai'
+import fs from 'fs'
 import {ABI, APIClient, Name} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
-
 import {Contract} from 'src/contract'
 
 import * as MockRewardsGm from '$test/data/contracts/mock-rewards'
@@ -11,19 +11,20 @@ import {runGenericContractTests} from './contract'
     const GeneratedRewardsGm = await generateCodegenContract('rewards.gm')
     const contracts = {
         MockRewardsGm,
-        // GeneratedRewardsGm, // TODO: DISABLED - readd to test codegen
+        GeneratedRewardsGm,
     }
+
+    const files = {
+        mock: fs.readFileSync('test/data/contracts/mock-rewards.ts').toString('utf-8'),
+        generated: GeneratedRewardsGm.text,
+    }
+
     const client = makeClient('https://eos.greymass.com')
 
     suite('codegen', function () {
-        // TODO: DISABLED - reimplement
-        // test('Contracts are identical', function () {
-        //     // TODO: We need a better way to compare the files too, like w/ imports etc
-        //     assert.equal(
-        //         JSON.stringify(contracts.MockRewardsGm),
-        //         JSON.stringify(contracts.GeneratedRewardsGm)
-        //     )
-        // })
+        test('Contracts are identical', function () {
+            assert.equal(files.mock, files.generated)
+        })
         Object.keys(contracts).forEach((contractKey) => {
             suite(`Testing namespace ${contractKey}`, function () {
                 // The `RewardsGm` namespace

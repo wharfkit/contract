@@ -1,4 +1,5 @@
 import {
+    ActionOptions,
     Contract as BaseContract,
     ContractArgs,
     PartialBy,
@@ -6,6 +7,7 @@ import {
 } from '@wharfkit/contract'
 import {
     ABI,
+    Action,
     APIClient,
     Session,
     Struct,
@@ -45,6 +47,53 @@ export namespace RewardsGm {
                 abi: abi,
                 account: Name.from('rewards.gm'),
             })
+        }
+        action<T extends ActionNames>(
+            name: T
+        ): (data: ActionNameParams[T], options?: ActionOptions) => Action {
+            return (data, options) => super.action(name)(data, options)
+        }
+    }
+    export type ActionNames =
+        | 'adduser'
+        | 'claim'
+        | 'configure'
+        | 'deluser'
+        | 'receipt'
+        | 'updateuser'
+    export interface ActionNameParams {
+        adduser: ActionParams.Adduser
+        claim: ActionParams.Claim
+        configure: ActionParams.Configure
+        deluser: ActionParams.Deluser
+        receipt: ActionParams.Receipt
+        updateuser: ActionParams.Updateuser
+    }
+    export namespace ActionParams {
+        export interface Adduser {
+            account: NameType
+            weight: UInt16Type
+        }
+        export interface Claim {
+            account: NameType
+            amount: AssetType
+        }
+        export interface Configure {
+            token_symbol: Symbol
+            oracle_account: NameType
+            oracle_pairs: Types.Oracle_pair[]
+        }
+        export interface Deluser {
+            account: NameType
+        }
+        export interface Receipt {
+            account: NameType
+            amount: AssetType
+            ticker: Types.Price_info[]
+        }
+        export interface Updateuser {
+            account: NameType
+            weight: UInt16Type
         }
     }
     export namespace Types {

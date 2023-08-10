@@ -14,21 +14,23 @@ import {PlaceholderAuth} from '@wharfkit/signing-request'
 
 import {Table} from './contract/table'
 
-export type ActionDataType = BytesType | ABISerializableObject | Record<string, any>
-
 export interface ContractArgs {
     abi: ABIDef
     account: NameType
     client: APIClient
 }
 
-export interface ActionArgs {
-    name: NameType
-    data: ActionDataType
+export interface ActionOptions {
     authorization?: PermissionLevelType[]
 }
 
-export interface ActionOptions {
+export type ActionData = BytesType | ABISerializableObject | Record<string, any>
+
+export type ActionConstructor = (data: ActionData, options?: ActionOptions) => Action
+
+export interface ActionsArgs {
+    name: NameType
+    data: ActionData
     authorization?: PermissionLevelType[]
 }
 
@@ -92,30 +94,31 @@ export class Contract {
         return this.actionNames.includes(String(name))
     }
 
-    public action(name: NameType, data: ActionDataType, options?: ActionOptions): Action {
+    public action(name): ActionConstructor {
         if (!this.hasAction(name)) {
             throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
         }
 
-        let authorization = [PlaceholderAuth]
-        if (options && options.authorization) {
-            authorization = options.authorization.map((auth) => PermissionLevel.from(auth))
+        return (data: ActionData, options?: ActionOptions) => {
+            let authorization = [PlaceholderAuth]
+            if (options && options.authorization) {
+                authorization = options.authorization.map((auth) => PermissionLevel.from(auth))
+            }
+            return Action.from(
+                {
+                    account: this.account,
+                    name,
+                    authorization,
+                    data,
+                },
+                this.abi
+            )
         }
-
-        return Action.from(
-            {
-                account: this.account,
-                name,
-                authorization,
-                data,
-            },
-            this.abi
-        )
     }
 
-    public actions(actions: ActionArgs[], options?: ActionOptions): Action[] {
+    public actions(actions: ActionsArgs[], options?: ActionOptions): Action[] {
         return actions.map((action) =>
-            this.action(action.name, action.data, {
+            this.action(action.name)(action.data, {
                 authorization: action.authorization || options?.authorization,
             })
         )

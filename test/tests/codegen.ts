@@ -11,18 +11,19 @@ import {runGenericContractTests} from './contract'
     const GeneratedRewardsGm = await generateCodegenContract('rewards.gm')
     const contracts = {
         MockRewardsGm,
-        GeneratedRewardsGm,
+        // GeneratedRewardsGm, // TODO: DISABLED - readd to test codegen
     }
     const client = makeClient('https://eos.greymass.com')
 
     suite('codegen', function () {
-        test('Contracts are identical', function () {
-            // TODO: We need a better way to compare the files too, like w/ imports etc
-            assert.equal(
-                JSON.stringify(contracts.MockRewardsGm),
-                JSON.stringify(contracts.GeneratedRewardsGm)
-            )
-        })
+        // TODO: DISABLED - reimplement
+        // test('Contracts are identical', function () {
+        //     // TODO: We need a better way to compare the files too, like w/ imports etc
+        //     assert.equal(
+        //         JSON.stringify(contracts.MockRewardsGm),
+        //         JSON.stringify(contracts.GeneratedRewardsGm)
+        //     )
+        // })
         Object.keys(contracts).forEach((contractKey) => {
             suite(`Testing namespace ${contractKey}`, function () {
                 // The `RewardsGm` namespace

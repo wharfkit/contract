@@ -1,7 +1,7 @@
-import {assert} from 'chai'
-import fs from 'fs'
 import {ABI, APIClient, Name} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
+import {assert} from 'chai'
+import fs from 'fs'
 import {Contract} from 'src/contract'
 
 import * as MockRewardsGm from '$test/data/contracts/mock-rewards'
@@ -11,7 +11,7 @@ import {runGenericContractTests} from './contract'
     const GeneratedRewardsGm = await generateCodegenContract('rewards.gm')
     const contracts = {
         MockRewardsGm,
-        GeneratedRewardsGm,
+        GeneratedRewardsGm: GeneratedRewardsGm.import,
     }
 
     const files = {

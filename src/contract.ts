@@ -94,31 +94,29 @@ export class Contract {
         return this.actionNames.includes(String(name))
     }
 
-    public action(name): ActionConstructor {
+    public action(name, data: ActionDataType, options?: ActionOptions): Action {
         if (!this.hasAction(name)) {
             throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
         }
 
-        return (data: ActionDataType, options?: ActionOptions) => {
-            let authorization = [PlaceholderAuth]
-            if (options && options.authorization) {
-                authorization = options.authorization.map((auth) => PermissionLevel.from(auth))
-            }
-            return Action.from(
-                {
-                    account: this.account,
-                    name,
-                    authorization,
-                    data,
-                },
-                this.abi
-            )
+        let authorization = [PlaceholderAuth]
+        if (options && options.authorization) {
+            authorization = options.authorization.map((auth) => PermissionLevel.from(auth))
         }
+        return Action.from(
+            {
+                account: this.account,
+                name,
+                authorization,
+                data,
+            },
+            this.abi
+        )
     }
 
     public actions(actions: ActionsArgs[], options?: ActionOptions): Action[] {
         return actions.map((action) =>
-            this.action(action.name)(action.data, {
+            this.action(action.name, action.data, {
                 authorization: action.authorization || options?.authorization,
             })
         )

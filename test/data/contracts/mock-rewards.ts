@@ -1,39 +1,17 @@
-import {
-    ActionOptions,
-    Contract as BaseContract,
-    ContractArgs,
-    PartialBy,
-    blobStringToAbi,
-} from '@wharfkit/contract'
+import {ActionOptions, Contract as BaseContract, ContractArgs, PartialBy} from '@wharfkit/contract'
 import {
     ABI,
     Action,
-    APIClient,
-    Session,
-    Struct,
-    TransactResult,
     Asset,
-    Checksum256,
-    Float64,
-    Name,
-    TimePoint,
-    TimePointSec,
-    UInt128,
-    UInt16,
-    UInt32,
-    UInt64,
-    UInt8,
     AssetType,
     Blob,
-    Checksum256Type,
-    Float64Type,
+    Float64,
+    Name,
     NameType,
-    TimePointType,
-    UInt128Type,
+    Struct,
+    TimePoint,
+    UInt16,
     UInt16Type,
-    UInt32Type,
-    UInt64Type,
-    UInt8Type,
 } from '@wharfkit/session'
 export namespace RewardsGm {
     export const abiBlob = Blob.from(
@@ -48,19 +26,17 @@ export namespace RewardsGm {
                 account: Name.from('rewards.gm'),
             })
         }
-        action<T extends ActionNames>(
-            name: T
-        ): (data: ActionNameParams[T], options?: ActionOptions) => Action {
-            return (data, options) => super.action(name)(data, options)
+        action<T extends 'adduser' | 'claim' | 'configure' | 'deluser' | 'receipt' | 'updateuser'>(
+            name: T,
+            data: ActionNameParams[T],
+            options?: ActionOptions
+        ): Action {
+            return super.action(name, data, options)
+        }
+        table<T extends 'config' | 'users'>(name: T) {
+            return super.table(name, TableMap[name])
         }
     }
-    export type ActionNames =
-        | 'adduser'
-        | 'claim'
-        | 'configure'
-        | 'deluser'
-        | 'receipt'
-        | 'updateuser'
     export interface ActionNameParams {
         adduser: ActionParams.Adduser
         claim: ActionParams.Claim
@@ -76,20 +52,24 @@ export namespace RewardsGm {
         }
         export interface Claim {
             account: NameType
-            amount: AssetType
+            amount?: AssetType
         }
         export interface Configure {
             token_symbol: Symbol
             oracle_account: NameType
-            oracle_pairs: Types.Oracle_pair[]
+            oracle_pairs: Types.OraclePair[]
         }
         export interface Deluser {
             account: NameType
         }
+        export interface OraclePair {
+            name: NameType
+            precision: UInt16Type
+        }
         export interface Receipt {
             account: NameType
             amount: AssetType
-            ticker: Types.Price_info[]
+            ticker: Types.PriceInfo[]
         }
         export interface Updateuser {
             account: NameType
@@ -99,81 +79,63 @@ export namespace RewardsGm {
     export namespace Types {
         @Struct.type('adduser')
         export class Adduser extends Struct {
-            @Struct.field('name')
-            declare account: Name
-            @Struct.field('uint16')
-            declare weight: UInt16
+            @Struct.field(Name) account!: Name
+            @Struct.field(UInt16) weight!: UInt16
         }
         @Struct.type('claim')
         export class Claim extends Struct {
-            @Struct.field('name')
-            declare account: Name
-            @Struct.field('asset?')
-            declare amount: Asset
+            @Struct.field(Name) account!: Name
+            @Struct.field(Asset, {optional: true}) amount?: Asset
+        }
+        @Struct.type('oracle_pair')
+        export class OraclePair extends Struct {
+            @Struct.field(Name) name!: Name
+            @Struct.field(UInt16) precision!: UInt16
         }
         @Struct.type('config')
         export class Config extends Struct {
-            @Struct.field('symbol')
-            declare token_symbol: Symbol
-            @Struct.field('name')
-            declare oracle_account: Name
-            @Struct.field('oracle_pair[]')
-            declare oracle_pairs: RewardsGm.Types.Oracle_pair
+            @Struct.field(Asset.Symbol) token_symbol!: Asset.Symbol
+            @Struct.field(Name) oracle_account!: Name
+            @Struct.field(OraclePair, {array: true}) oracle_pairs!: OraclePair[]
         }
         @Struct.type('configure')
         export class Configure extends Struct {
-            @Struct.field('symbol')
-            declare token_symbol: Symbol
-            @Struct.field('name')
-            declare oracle_account: Name
-            @Struct.field('oracle_pair[]')
-            declare oracle_pairs: RewardsGm.Types.Oracle_pair
+            @Struct.field(Asset.Symbol) token_symbol!: Asset.Symbol
+            @Struct.field(Name) oracle_account!: Name
+            @Struct.field(OraclePair, {array: true}) oracle_pairs!: OraclePair[]
         }
         @Struct.type('deluser')
         export class Deluser extends Struct {
-            @Struct.field('name')
-            declare account: Name
-        }
-        @Struct.type('oracle_pair')
-        export class Oracle_pair extends Struct {
-            @Struct.field('name')
-            declare name: Name
-            @Struct.field('uint16')
-            declare precision: UInt16
+            @Struct.field(Name) account!: Name
         }
         @Struct.type('price_info')
-        export class Price_info extends Struct {
-            @Struct.field('string')
-            declare pair: String
-            @Struct.field('float64')
-            declare price: Float64
-            @Struct.field('time_point')
-            declare timestamp: TimePoint
+        export class PriceInfo extends Struct {
+            @Struct.field('string') pair!: string
+            @Struct.field(Float64) price!: Float64
+            @Struct.field(TimePoint) timestamp!: TimePoint
         }
         @Struct.type('receipt')
         export class Receipt extends Struct {
-            @Struct.field('name')
-            declare account: Name
-            @Struct.field('asset')
-            declare amount: Asset
-            @Struct.field('price_info[]')
-            declare ticker: RewardsGm.Types.Price_info
+            @Struct.field(Name) account!: Name
+            @Struct.field(Asset) amount!: Asset
+            @Struct.field(PriceInfo, {array: true}) ticker!: PriceInfo[]
         }
         @Struct.type('updateuser')
         export class Updateuser extends Struct {
-            @Struct.field('name')
-            declare account: Name
-            @Struct.field('uint16')
-            declare weight: UInt16
+            @Struct.field(Name) account!: Name
+            @Struct.field(UInt16) weight!: UInt16
         }
         @Struct.type('user_row')
-        export class User_row extends Struct {
-            @Struct.field('name')
-            declare account: Name
-            @Struct.field('uint16')
-            declare weight: UInt16
-            @Struct.field('asset')
-            declare balance: Asset
+        export class UserRow extends Struct {
+            @Struct.field(Name) account!: Name
+            @Struct.field(UInt16) weight!: UInt16
+            @Struct.field(Asset) balance!: Asset
         }
     }
+    const TableMap = {
+        config: Types.Config,
+        users: Types.UserRow,
+    }
 }
+
+export default RewardsGm

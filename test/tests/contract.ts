@@ -128,19 +128,19 @@ export function runGenericContractTests(contract: Contract) {
         test('load action using Name', function () {
             const actionName = Name.from(contract.actionNames[0])
             const params = getMockParams(contract)
-            const action = contract.action(actionName)(params)
+            const action = contract.action(actionName, params)
             assert.instanceOf(action, Action)
             assert.isTrue(action.name.equals(actionName))
         })
         test('load action using string', function () {
             const actionName = contract.actionNames[0]
             const params = getMockParams(contract)
-            const action = contract.action(actionName)(params)
+            const action = contract.action(actionName, params)
             assert.instanceOf(action, Action)
             assert.isTrue(action.name.equals(actionName))
         })
         test('throws on invalid name', function () {
-            assert.throws(() => contract.action('foo')({}))
+            assert.throws(() => contract.action('foo', {}))
         })
     })
 }
@@ -304,7 +304,7 @@ export function runGenericContractTests(contract: Contract) {
                 suite('action', function () {
                     suite('load', function () {
                         test('using Name', function () {
-                            const action = tokenContract.action(Name.from('transfer'))(transferData)
+                            const action = tokenContract.action(Name.from('transfer'), transferData)
                             assert.instanceOf(action, Action)
                             assert.isTrue(action.account.equals('eosio.token'))
                             assert.isTrue(action.name.equals('transfer'))
@@ -322,20 +322,20 @@ export function runGenericContractTests(contract: Contract) {
                             assert.isTrue(action.data.equals(encoded))
                         })
                         test('using string', function () {
-                            const action = tokenContract.action('transfer')(transferData)
+                            const action = tokenContract.action('transfer', transferData)
                             assert.instanceOf(action, Action)
                             assert.isTrue(action.account.equals('eosio.token'))
                             assert.isTrue(action.name.equals('transfer'))
                         })
                         test('defaults to placeholders', function () {
-                            const action = tokenContract.action('transfer')(transferData)
+                            const action = tokenContract.action('transfer', transferData)
                             assert.isTrue(action.authorization[0].equals(PlaceholderAuth))
                         })
                     })
                     suite('throws', function () {
                         test('with incomplete action data', async function () {
                             assert.throws(() =>
-                                tokenContract.action('transfer')({
+                                tokenContract.action('transfer', {
                                     from: 'foo',
                                     to: 'bar',
                                     quantity: '1.0000 EOS',
@@ -344,19 +344,19 @@ export function runGenericContractTests(contract: Contract) {
                         })
                         test('with invalid action data', async function () {
                             assert.throws(() =>
-                                tokenContract.action('transfer')({
+                                tokenContract.action('transfer', {
                                     ...transferData,
                                     to: Asset.from('1.0000 EOS'),
                                 })
                             )
                         })
                         test('with invalid name', async function () {
-                            assert.throws(() => tokenContract.action('foo')(transferData))
+                            assert.throws(() => tokenContract.action('foo', transferData))
                         })
                     })
                     suite('overrides', function () {
                         test('authorization', async function () {
-                            const action = tokenContract.action('transfer')(transferData, {
+                            const action = tokenContract.action('transfer', transferData, {
                                 authorization: [
                                     {
                                         actor: 'foo',
@@ -405,4 +405,4 @@ export function runGenericContractTests(contract: Contract) {
             })
         })
     })
-})()
+})

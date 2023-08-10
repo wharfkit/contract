@@ -1,8 +1,8 @@
 import {assert} from 'chai'
 import {makeClient, mockPrivateKey, mockSession} from '@wharfkit/mock-data'
 
-import ContractKit, {ActionData, Contract, ContractArgs, Table} from '$lib'
-import {ABI, Action, Asset, Name, NameType, PrivateKey, Serializer} from '@wharfkit/antelope'
+import ContractKit, {ActionDataType, Contract, ContractArgs, Table} from '$lib'
+import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 import {ProducerInfo} from '$test/data/structs/eosio'
 
@@ -69,7 +69,7 @@ const transferData = {
 }
 
 // Mocks data for the first action defined in the contract for testing purposes
-function getMockParams(contract: Contract): ActionData {
+function getMockParams(contract: Contract): ActionDataType {
     switch (String(contract.account)) {
         case 'eosio': {
             return {

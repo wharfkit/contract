@@ -24,13 +24,13 @@ export interface ActionOptions {
     authorization?: PermissionLevelType[]
 }
 
-export type ActionData = BytesType | ABISerializableObject | Record<string, any>
+export type ActionDataType = BytesType | ABISerializableObject | Record<string, any>
 
-export type ActionConstructor = (data: ActionData, options?: ActionOptions) => Action
+export type ActionConstructor = (data: ActionDataType, options?: ActionOptions) => Action
 
 export interface ActionsArgs {
     name: NameType
-    data: ActionData
+    data: ActionDataType
     authorization?: PermissionLevelType[]
 }
 
@@ -99,7 +99,7 @@ export class Contract {
             throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
         }
 
-        return (data: ActionData, options?: ActionOptions) => {
+        return (data: ActionDataType, options?: ActionOptions) => {
             let authorization = [PlaceholderAuth]
             if (options && options.authorization) {
                 authorization = options.authorization.map((auth) => PermissionLevel.from(auth))

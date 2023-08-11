@@ -31,7 +31,7 @@ export async function codegen(contractName, abi) {
         '@wharfkit/session'
     )
     const importContractStatement = generateImportStatement(
-        ['Contract as BaseContract', 'ContractArgs', 'PartialBy', 'blobStringToAbi'],
+        ['ActionOptions', 'Contract as BaseContract', 'ContractArgs', 'PartialBy'],
         '@wharfkit/contract'
     )
 
@@ -117,5 +117,5 @@ export async function codegen(contractName, abi) {
     )
 
     const options = await prettier.resolveConfig(process.cwd())
-    return await prettier.format(printer.printFile(sourceFile), options)
+    return prettier.format(printer.printFile(sourceFile), options)
 }

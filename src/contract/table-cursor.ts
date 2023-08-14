@@ -24,7 +24,7 @@ const defaultParams = {
     limit: 1000,
 }
 
-export class TableCursor<RowType = any> {
+export abstract class TableCursor<RowType = any> {
     /** The ABI for the contract this table belongs to */
     readonly abi: ABI
     /** The type of the table, as defined in the ABI */
@@ -35,13 +35,13 @@ export class TableCursor<RowType = any> {
     readonly client: APIClient
 
     /** For iterating on the cursor, the next key to query against lower_bounds */
-    private next_key: API.v1.TableIndexType | string | undefined
+    protected next_key: API.v1.TableIndexType | string | undefined
     /** Whether or not the cursor believes it has reached the end of its results */
-    private endReached = false
+    protected endReached = false
     /** The number of rows the cursor has retrieved */
-    private rowsCount = 0
+    protected rowsCount = 0
     /** The maximum number of rows the cursor should retrieve */
-    private maxRows: number = Number.MAX_SAFE_INTEGER
+    protected maxRows: number = Number.MAX_SAFE_INTEGER
 
     /**
      * Create a new TableCursor instance.

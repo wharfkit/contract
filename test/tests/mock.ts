@@ -13,7 +13,7 @@ import {makeClient} from '@wharfkit/mock-data'
 
 import RewardsGm from '$test/data/contracts/mock-rewards'
 import {PlaceholderName, PlaceholderPermission} from '@wharfkit/signing-request'
-import {Table, TableCursor} from 'src/index-module'
+import {Table, TableRowCursor} from 'src/index-module'
 
 const client = makeClient('https://eos.greymass.com')
 const contract = new RewardsGm.Contract({client})
@@ -78,7 +78,7 @@ suite('functionality', function () {
                 assert.instanceOf(config, RewardsGm.Types.Config)
 
                 const cursor = await table.first(1)
-                assert.instanceOf(cursor, TableCursor)
+                assert.instanceOf(cursor, TableRowCursor)
                 const result = await cursor.next()
                 assert.instanceOf(result[0], RewardsGm.Types.Config)
 

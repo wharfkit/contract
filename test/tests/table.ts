@@ -1,6 +1,6 @@
 import {assert} from 'chai'
 
-import ContractKit, {Contract, Table, TableCursor} from '$lib'
+import ContractKit, {Contract, Table, TableRowCursor} from '$lib'
 
 import {Asset, Int64, Name, Serializer, Struct, TimePoint} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
@@ -11,6 +11,7 @@ const mockClient = makeClient('https://eos.greymass.com')
 suite('Table', () => {
     let kit: ContractKit
     let eosio: Contract
+    let msig: Contract
     let decentiumorg: Contract
 
     let nameBidTable
@@ -23,6 +24,7 @@ suite('Table', () => {
         })
 
         eosio = await kit.load('eosio')
+        msig = await kit.load('eosio.msig')
         nameBidTable = eosio.table('namebids')
         producersTable = eosio.table('producers')
 
@@ -80,7 +82,7 @@ suite('Table', () => {
     suite('cursor', () => {
         test('should return a cursor', () => {
             const cursor = nameBidTable.query()
-            assert.instanceOf(cursor, TableCursor)
+            assert.instanceOf(cursor, TableRowCursor)
         })
         test('rowType', async () => {
             @Struct.type('name_bid')
@@ -105,41 +107,41 @@ suite('Table', () => {
         })
         suite('all', () => {
             test('should return every single row in a table', async () => {
-                const tableCursor = decentiumTrendingTable.query()
-                assert.equal((await tableCursor.all()).length, 239)
+                const tableRowCursor = decentiumTrendingTable.query()
+                assert.equal((await tableRowCursor.all()).length, 239)
             })
         })
         suite('next', () => {
             test('should allow you to fetch as many rows as possible with one request', async () => {
-                const tableCursor = decentiumTrendingTable.query()
-                assert.equal((await tableCursor.next()).length, 239)
+                const tableRowCursor = decentiumTrendingTable.query()
+                assert.equal((await tableRowCursor.next()).length, 239)
             })
 
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = nameBidTable.query()
-                assert.equal((await tableCursor.next()).length, 1000)
-                assert.equal((await tableCursor.next()).length, 1000)
-                assert.equal((await tableCursor.next()).length, 1000)
+                const tableRowCursor = nameBidTable.query()
+                assert.equal((await tableRowCursor.next()).length, 1000)
+                assert.equal((await tableRowCursor.next()).length, 1000)
+                assert.equal((await tableRowCursor.next()).length, 1000)
             })
         })
         suite('reset', () => {
             test('should allow you to reset the cursor', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5, to: 6})
+                const tableRowCursor = decentiumTrendingTable.query({from: 5, to: 6})
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next()).map((row) => row.id),
                     [5, 6]
                 )
 
                 assert.deepEqual(
-                    (await tableCursor.next()).map((row) => row.id),
+                    (await tableRowCursor.next()).map((row) => row.id),
                     []
                 )
 
-                tableCursor.reset()
+                tableRowCursor.reset()
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next()).map((row) => row.id),
                     [5, 6]
                 )
             })
@@ -149,14 +151,14 @@ suite('Table', () => {
     suite('query', () => {
         suite('all', () => {
             test('should fetch table rows correctly when filtering is used', async () => {
-                const tableCursor = decentiumTrendingTable.query({
+                const tableRowCursor = decentiumTrendingTable.query({
                     from: 101511,
                     to: 105056,
                     index: 'score',
                 })
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.all()).map((row) => row.score),
+                    Serializer.objectify(await tableRowCursor.all()).map((row) => row.score),
                     [101511, 102465, 102507, 103688, 103734, 105056]
                 )
             })
@@ -185,9 +187,9 @@ suite('Table', () => {
 
         suite('next', () => {
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5})
-                assert.equal((await tableCursor.next()).length, 235)
-                assert.equal((await tableCursor.next()).length, 0)
+                const tableRowCursor = decentiumTrendingTable.query({from: 5})
+                assert.equal((await tableRowCursor.next()).length, 235)
+                assert.equal((await tableRowCursor.next()).length, 0)
             })
 
             test('should return typed rows', async () => {
@@ -203,53 +205,53 @@ suite('Table', () => {
             })
 
             test('should fetch correct number of table rows when number is specified in `next` call', async () => {
-                const tableCursor = decentiumTrendingTable.query({from: 5, to: 10})
+                const tableRowCursor = decentiumTrendingTable.query({from: 5, to: 10})
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next(2)).map((row) => row.id),
                     [5, 6]
                 )
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next(2)).map((row) => row.id),
                     [7, 8]
                 )
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next(2)).map((row) => row.id),
                     [9, 10]
                 )
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next(2)).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next(2)).map((row) => row.id),
                     []
                 )
             })
 
             test('should fetch correct number of table rows when rowsPerAPIRequest is used', async () => {
-                const tableCursor = decentiumTrendingTable.query({
+                const tableRowCursor = decentiumTrendingTable.query({
                     from: 5,
                     to: 10,
                     rowsPerAPIRequest: 2,
                 })
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next()).map((row) => row.id),
                     [5, 6]
                 )
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next()).map((row) => row.id),
                     [7, 8]
                 )
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next()).map((row) => row.id),
                     [9, 10]
                 )
 
                 assert.deepEqual(
-                    Serializer.objectify(await tableCursor.next()).map((row) => row.id),
+                    Serializer.objectify(await tableRowCursor.next()).map((row) => row.id),
                     []
                 )
             })
@@ -335,33 +337,33 @@ suite('Table', () => {
 
     suite('first', () => {
         test('should establish cursor with first parameters', () => {
-            const tableCursor = decentiumTrendingTable.query({maxRows: 10})
-            assert.equal(tableCursor.maxRows, 10)
+            const tableRowCursor = decentiumTrendingTable.query({maxRows: 10})
+            assert.equal(tableRowCursor.maxRows, 10)
         })
         suite('scope', function () {
             test('should default to no scope', async () => {
                 const table = eosio.table('delband')
-                const tableCursor = table.query({maxRows: 10})
-                const rows = await tableCursor.all()
+                const tableRowCursor = table.query({maxRows: 10})
+                const rows = await tableRowCursor.all()
                 assert.lengthOf(rows, 2)
             })
             test('should accept a scope', async () => {
                 const table = eosio.table('delband')
-                const tableCursor = table.query({maxRows: 10, scope: 'teamgreymass'})
-                const rows = await tableCursor.all()
+                const tableRowCursor = table.query({maxRows: 10, scope: 'teamgreymass'})
+                const rows = await tableRowCursor.all()
                 assert.lengthOf(rows, 3)
             })
         })
         suite('next', () => {
             test('should fetch a specific number of table rows correctly', async () => {
-                const tableCursor = decentiumTrendingTable.query({maxRows: 10})
-                const rows = await tableCursor.next()
+                const tableRowCursor = decentiumTrendingTable.query({maxRows: 10})
+                const rows = await tableRowCursor.next()
                 assert.lengthOf(rows, 10)
                 assert.deepEqual(
                     Serializer.objectify(rows).map((row) => row.id),
                     [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
                 )
-                const rows2 = await tableCursor.next()
+                const rows2 = await tableRowCursor.next()
                 assert.lengthOf(rows2, 0)
                 assert.deepEqual(
                     Serializer.objectify(rows2).map((row) => row.id),
@@ -369,14 +371,14 @@ suite('Table', () => {
                 )
             })
             test('should allow you to fetch more rows after first request', async () => {
-                const tableCursor = nameBidTable.query({maxRows: 100000})
-                const firstBatch = await tableCursor.next()
-                const secondBatch = await tableCursor.next()
+                const tableRowCursor = nameBidTable.query({maxRows: 100000})
+                const firstBatch = await tableRowCursor.next()
+                const secondBatch = await tableRowCursor.next()
                 assert.isFalse(firstBatch[0].newname.equals(secondBatch[0].newname))
             })
             test('should return typed data', async () => {
-                const tableCursor = nameBidTable.query({maxRows: 100000})
-                const batch = await tableCursor.next()
+                const tableRowCursor = nameBidTable.query({maxRows: 100000})
+                const batch = await tableRowCursor.next()
                 assert.instanceOf(batch[0].high_bidder, Name)
             })
         })
@@ -388,13 +390,13 @@ suite('Table', () => {
                 assert.equal(allRequestedRows.length, 10000)
             })
             test('should stop if requesting more than exists', async () => {
-                const tableCursor = decentiumTrendingTable.query({maxRows: 10000})
-                const firstBatch = await tableCursor.all()
+                const tableRowCursor = decentiumTrendingTable.query({maxRows: 10000})
+                const firstBatch = await tableRowCursor.all()
                 assert.equal(firstBatch.length, 239)
             })
             test('should return typed data', async () => {
-                const tableCursor = decentiumTrendingTable.query({maxRows: 10000})
-                const batch = await tableCursor.all()
+                const tableRowCursor = decentiumTrendingTable.query({maxRows: 10000})
+                const batch = await tableRowCursor.all()
                 assert.instanceOf(batch[0].ref.category, Name)
             })
         })
@@ -408,6 +410,13 @@ suite('Table', () => {
         test('should return typed data', async () => {
             const tableRows = await nameBidTable.all()
             assert.instanceOf(tableRows[0].high_bidder, Name)
+        })
+    })
+
+    suite('scopes', () => {
+        test('should return scopes', async () => {
+            const scopes = await msig.table('proposal').scopes()
+            console.log(scopes)
         })
     })
 })

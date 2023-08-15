@@ -1,14 +1,5 @@
 import {assert} from 'chai'
-import {
-    Action,
-    Asset,
-    Bytes,
-    Name,
-    PermissionLevel,
-    Serializer,
-    Struct,
-    UInt16,
-} from '@wharfkit/antelope'
+import {Action, Asset, Bytes, Name, PermissionLevel, Serializer, Struct} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
 
 import RewardsGm from '$test/data/contracts/mock-rewards'

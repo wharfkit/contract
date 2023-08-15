@@ -1,8 +1,8 @@
 import {assert} from 'chai'
 
-import ContractKit, {Contract, Table, TableRowCursor} from '$lib'
+import ContractKit, {Contract, Table, TableRowCursor, TableScopeCursor} from '$lib'
 
-import {Asset, Int64, Name, Serializer, Struct, TimePoint} from '@wharfkit/antelope'
+import {Asset, Int64, Name, Serializer, Struct, TimePoint, UInt32} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
 import {EosioGlobalState} from '$test/data/structs/eosio'
 
@@ -17,6 +17,7 @@ suite('Table', () => {
     let nameBidTable
     let decentiumTrendingTable
     let producersTable
+    let proposalTable: Table
 
     setup(async function () {
         kit = new ContractKit({
@@ -25,6 +26,7 @@ suite('Table', () => {
 
         eosio = await kit.load('eosio')
         msig = await kit.load('eosio.msig')
+        proposalTable = msig.table('proposal')
         nameBidTable = eosio.table('namebids')
         producersTable = eosio.table('producers')
 
@@ -414,9 +416,90 @@ suite('Table', () => {
     })
 
     suite('scopes', () => {
-        test('should return scopes', async () => {
+        test('should return a scope cursor', async () => {
             const scopes = await msig.table('proposal').scopes()
-            console.log(scopes)
+            assert.instanceOf(scopes, TableScopeCursor)
+        })
+
+        suite('all', () => {
+            test('should fetch all table scopes', async () => {
+                const tableScopeCursor = proposalTable.scopes()
+                const rows = await tableScopeCursor.all()
+                assert.lengthOf(rows, 1633)
+            })
+            test('should fetch all table scopes with filtering', async () => {
+                const tableScopeCursor = proposalTable.scopes({
+                    from: 'teamgreymass',
+                    to: 'telosdompet1',
+                })
+                const rows = await tableScopeCursor.all()
+                assert.lengthOf(rows, 4)
+                assert.deepEqual(
+                    Serializer.objectify(rows).map((row) => row.scope),
+                    ['teamgreymass', 'teegway2day1', 'tella15.ftw', 'telosdompet1']
+                )
+            })
+            test('should return typed rows', async () => {
+                const tableScopeCursor = proposalTable.scopes({
+                    from: 'teamgreymass',
+                    to: 'telosdompet1',
+                })
+                const rows = await tableScopeCursor.all()
+                assert.instanceOf(rows[0].code, Name)
+                assert.instanceOf(rows[0].scope, Name)
+                assert.instanceOf(rows[0].table, Name)
+                assert.instanceOf(rows[0].payer, Name)
+                assert.instanceOf(rows[0].count, UInt32)
+            })
+        })
+
+        suite('next', () => {
+            test('should allow you to fetch more scopes after first request', async () => {
+                const tableScopeCursor = proposalTable.scopes()
+                const rows1 = await tableScopeCursor.next(10)
+                assert.equal(rows1.length, 10)
+                assert.isTrue(
+                    rows1[0].scope.equals('1111111zzzzz'),
+                    `Expected ${rows1[0].scope} to equal 1111111zzzzz`
+                )
+                const rows2 = await tableScopeCursor.next(10)
+                assert.equal(rows2.length, 10)
+                assert.isTrue(
+                    rows2[0].scope.equals('1charcha.ftw'),
+                    `Expected ${rows2[0].scope} to equal 1charcha.ftw`
+                )
+            })
+
+            test('should return typed rows', async () => {
+                const tableScopeCursor = proposalTable.scopes()
+                const rows = await tableScopeCursor.next(10)
+                assert.instanceOf(rows[0].code, Name)
+                assert.instanceOf(rows[0].scope, Name)
+                assert.instanceOf(rows[0].table, Name)
+                assert.instanceOf(rows[0].payer, Name)
+                assert.instanceOf(rows[0].count, UInt32)
+            })
+
+            test('should fetch correct number of scope rows when rowsPerAPIRequest is used', async () => {
+                const tableScopeCursor = proposalTable.scopes({
+                    rowsPerAPIRequest: 2,
+                })
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableScopeCursor.next()).map((row) => row.scope),
+                    ['1111111zzzzz', '113332.pcash']
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableScopeCursor.next()).map((row) => row.scope),
+                    ['11rippche24y', '121moe.ftw']
+                )
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableScopeCursor.next()).map((row) => row.scope),
+                    ['12235213.ftw', '123ahmet.ftw']
+                )
+            })
         })
     })
 })

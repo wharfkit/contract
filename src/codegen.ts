@@ -4,18 +4,18 @@ import * as prettier from 'prettier'
 import {
     EOSIO_CORE_CLASSES,
     EOSIO_CORE_TYPES,
-    generateField,
     generateImportStatement,
-    generateStruct,
-    getFieldTypesFromAbi,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateContractClass} from './codegen/contract'
 import {abiToBlob} from './utils'
+import { generateStructClasses } from './codegen/structs'
 
 const printer = ts.createPrinter()
 
 export async function codegen(contractName, abi) {
+    try {
+
     const namespaceName = generateNamespaceName(contractName)
 
     const importCoreStatement = generateImportStatement(
@@ -37,21 +37,8 @@ export async function codegen(contractName, abi) {
 
     const {classDeclaration} = await generateContractClass(namespaceName, contractName)
 
-    // Extract fields from the ABI
-    const structs = getFieldTypesFromAbi(abi)
-
-    const structDeclarations: ts.ClassDeclaration[] = []
-
-    // Iterate through structs and create struct with fields
-    for (const struct of structs) {
-        const structMembers: ts.ClassElement[] = []
-
-        for (const field of struct.fields) {
-            structMembers.push(generateField(field, true, `${namespaceName}.Types`, abi))
-        }
-
-        structDeclarations.push(generateStruct(struct.structName, true, structMembers))
-    }
+    // Iterate through structs and create struct classes with fields
+    const structDeclarations = generateStructClasses(abi)
 
     // Encode the ABI as a binary hex string
     const abiBlob = abiToBlob(abi)
@@ -118,4 +105,8 @@ export async function codegen(contractName, abi) {
 
     const options = await prettier.resolveConfig(process.cwd())
     return prettier.format(printer.printFile(sourceFile), options)
+
+    } catch (e) {
+        console.error(`An error occurred while generating the contract code: ${e}`)
+    }
 }

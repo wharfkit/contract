@@ -1,17 +1,32 @@
-import {ActionOptions, Contract as BaseContract, ContractArgs, PartialBy} from '@wharfkit/contract'
+import {ActionOptions, Contract as BaseContract, ContractArgs, PartialBy} from '../../src/index'
 import {
     ABI,
-    Action,
+    APIClient,
+    Session,
+    Struct,
+    TransactResult,
     Asset,
-    AssetType,
-    Blob,
+    Checksum256,
     Float64,
     Name,
-    NameType,
-    Struct,
     TimePoint,
+    TimePointSec,
+    UInt128,
     UInt16,
+    UInt32,
+    UInt64,
+    UInt8,
+    AssetType,
+    Blob,
+    Checksum256Type,
+    Float64Type,
+    NameType,
+    TimePointType,
+    UInt128Type,
     UInt16Type,
+    UInt32Type,
+    UInt64Type,
+    UInt8Type,
 } from '@wharfkit/session'
 export namespace RewardsGm {
     export const abiBlob = Blob.from(
@@ -25,55 +40,6 @@ export namespace RewardsGm {
                 abi: abi,
                 account: Name.from('rewards.gm'),
             })
-        }
-        action<T extends 'adduser' | 'claim' | 'configure' | 'deluser' | 'receipt' | 'updateuser'>(
-            name: T,
-            data: ActionNameParams[T],
-            options?: ActionOptions
-        ): Action {
-            return super.action(name, data, options)
-        }
-        table<T extends 'config' | 'users'>(name: T) {
-            return super.table(name, TableMap[name])
-        }
-    }
-    export interface ActionNameParams {
-        adduser: ActionParams.Adduser
-        claim: ActionParams.Claim
-        configure: ActionParams.Configure
-        deluser: ActionParams.Deluser
-        receipt: ActionParams.Receipt
-        updateuser: ActionParams.Updateuser
-    }
-    export namespace ActionParams {
-        export interface Adduser {
-            account: NameType
-            weight: UInt16Type
-        }
-        export interface Claim {
-            account: NameType
-            amount?: AssetType
-        }
-        export interface Configure {
-            token_symbol: Symbol
-            oracle_account: NameType
-            oracle_pairs: Types.OraclePair[]
-        }
-        export interface Deluser {
-            account: NameType
-        }
-        export interface OraclePair {
-            name: NameType
-            precision: UInt16Type
-        }
-        export interface Receipt {
-            account: NameType
-            amount: AssetType
-            ticker: Types.PriceInfo[]
-        }
-        export interface Updateuser {
-            account: NameType
-            weight: UInt16Type
         }
     }
     export namespace Types {
@@ -156,10 +122,4 @@ export namespace RewardsGm {
             balance!: Asset
         }
     }
-    const TableMap = {
-        config: Types.Config,
-        users: Types.UserRow,
-    }
 }
-
-export default RewardsGm

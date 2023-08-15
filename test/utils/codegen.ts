@@ -30,5 +30,5 @@ export async function generateCodegenContract(contractName: string) {
 }
 
 export function removeCodegenContracts() {
-    fs.rmSync('test/tmp', {recursive: true, force: true})
+    // fs.rmSync('test/tmp', {recursive: true, force: true})
 }

@@ -14,21 +14,23 @@ import {PlaceholderAuth} from '@wharfkit/signing-request'
 
 import {Table} from './contract/table'
 
-export type ActionDataType = BytesType | ABISerializableObject | Record<string, any>
-
 export interface ContractArgs {
     abi: ABIDef
     account: NameType
     client: APIClient
 }
 
-export interface ActionArgs {
-    name: NameType
-    data: ActionDataType
+export interface ActionOptions {
     authorization?: PermissionLevelType[]
 }
 
-export interface ActionOptions {
+export type ActionDataType = BytesType | ABISerializableObject | Record<string, any>
+
+export type ActionConstructor = (data: ActionDataType, options?: ActionOptions) => Action
+
+export interface ActionsArgs {
+    name: NameType
+    data: ActionDataType
     authorization?: PermissionLevelType[]
 }
 
@@ -92,7 +94,7 @@ export class Contract {
         return this.actionNames.includes(String(name))
     }
 
-    public action(name: NameType, data: ActionDataType, options?: ActionOptions): Action {
+    public action(name, data: ActionDataType, options?: ActionOptions): Action {
         if (!this.hasAction(name)) {
             throw new Error(`Contract (${this.account}) does not have an action named (${name})`)
         }
@@ -101,7 +103,6 @@ export class Contract {
         if (options && options.authorization) {
             authorization = options.authorization.map((auth) => PermissionLevel.from(auth))
         }
-
         return Action.from(
             {
                 account: this.account,
@@ -113,7 +114,7 @@ export class Contract {
         )
     }
 
-    public actions(actions: ActionArgs[], options?: ActionOptions): Action[] {
+    public actions(actions: ActionsArgs[], options?: ActionOptions): Action[] {
         return actions.map((action) =>
             this.action(action.name, action.data, {
                 authorization: action.authorization || options?.authorization,

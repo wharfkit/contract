@@ -1,6 +1,8 @@
 import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@wharfkit/antelope'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
+import {TableRowCursor} from './row-cursor'
+import {TableScopeCursor} from './scope-cursor'
 
 export interface QueryParams {
     index?: string
@@ -128,7 +130,7 @@ export class Table<RowType = any> {
             tableRowsParams.index_position = fieldToIndexMapping[params.index].index_position
         }
 
-        return new TableCursor<RowType>({
+        return new TableRowCursor<RowType>({
             abi: this.abi,
             client: this.client,
             maxRows: params.maxRows,
@@ -217,5 +219,24 @@ export class Table<RowType = any> {
         }
 
         return fieldToIndex
+    }
+
+    scopes(params: QueryParams = {}): TableScopeCursor {
+        const tableRowsParams: any = {
+            // Table query
+            code: this.account,
+            table: this.name,
+            // Filtering
+            lower_bound: wrapIndexValue(params.from),
+            upper_bound: wrapIndexValue(params.to),
+            limit: params.rowsPerAPIRequest || this.defaultRowLimit,
+        }
+
+        return new TableScopeCursor({
+            abi: this.abi,
+            client: this.client,
+            maxRows: params.maxRows,
+            params: tableRowsParams,
+        })
     }
 }

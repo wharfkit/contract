@@ -1,7 +1,7 @@
 import {assert} from 'chai'
 import {makeClient, mockPrivateKey, mockSession} from '@wharfkit/mock-data'
 
-import ContractKit, {Contract, ContractArgs, Table} from '$lib'
+import ContractKit, {ActionDataType, Contract, ContractArgs, Table} from '$lib'
 import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 import {ProducerInfo} from '$test/data/structs/eosio'
@@ -68,6 +68,32 @@ const transferData = {
     memo: 'initial balance',
 }
 
+// Mocks data for the first action defined in the contract for testing purposes
+function getMockParams(contract: Contract): ActionDataType {
+    switch (String(contract.account)) {
+        case 'eosio': {
+            return {
+                feature_digest: '331f0fae3454c34ed2c5e84aeaf6143ce8e0b0678a6d57c25349363a4d590f41',
+            }
+        }
+        case 'eosio.token': {
+            return {
+                owner: 'foo',
+                symbol: '4,EOS',
+            }
+        }
+        case 'rewards.gm': {
+            return {
+                account: 'foo',
+                weight: 1,
+            }
+        }
+        default: {
+            throw new Error(`getMockParams not implemented for ${contract.account}`)
+        }
+    }
+}
+
 export function runGenericContractTests(contract: Contract) {
     suite('tableNames', function () {
         test('contains tables', function () {
@@ -98,24 +124,25 @@ export function runGenericContractTests(contract: Contract) {
             assert.isTrue(contract.actionNames.length > 0)
         })
     })
-    // TODO: Needs dynamic action data generation for tests to call `.action`
-    // suite('action', function () {
-    //     test('load action using Name', function () {
-    //         const tableName = Name.from(contract.actionNames[0])
-    //         const table = contract.action(tableName, {})
-    //         assert.instanceOf(table, Table)
-    //         assert.isTrue(table.name.equals(tableName))
-    //     })
-    //     test('load action using string', function () {
-    //         const tableName = contract.actionNames[0]
-    //         const table = contract.action(tableName, {})
-    //         assert.instanceOf(table, Table)
-    //         assert.isTrue(table.name.equals(tableName))
-    //     })
-    //     test('throws on invalid name', function () {
-    //         assert.throws(() => contract.action('foo', {}))
-    //     })
-    // })
+    suite('action', function () {
+        test('load action using Name', function () {
+            const actionName = Name.from(contract.actionNames[0])
+            const params = getMockParams(contract)
+            const action = contract.action(actionName, params)
+            assert.instanceOf(action, Action)
+            assert.isTrue(action.name.equals(actionName))
+        })
+        test('load action using string', function () {
+            const actionName = contract.actionNames[0]
+            const params = getMockParams(contract)
+            const action = contract.action(actionName, params)
+            assert.instanceOf(action, Action)
+            assert.isTrue(action.name.equals(actionName))
+        })
+        test('throws on invalid name', function () {
+            assert.throws(() => contract.action('foo', {}))
+        })
+    })
 }
 
 ;(async function () {
@@ -172,7 +199,11 @@ export function runGenericContractTests(contract: Contract) {
                                 },
                                 {
                                     name: 'buyrambytes',
-                                    data: buyRamBytesData,
+                                    data: {
+                                        payer: PlaceholderAuth.actor,
+                                        receiver: 'foo',
+                                        bytes: 8192,
+                                    },
                                 },
                                 {
                                     name: 'delegatebw',
@@ -267,6 +298,9 @@ export function runGenericContractTests(contract: Contract) {
                 })
             })
             suite('token contract', function () {
+                suite('generic tests', async () => {
+                    runGenericContractTests(tokenContract)
+                })
                 suite('action', function () {
                     suite('load', function () {
                         test('using Name', function () {
@@ -371,4 +405,4 @@ export function runGenericContractTests(contract: Contract) {
             })
         })
     })
-})()
+})

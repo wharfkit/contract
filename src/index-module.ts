@@ -1,5 +1,6 @@
 export * from './contract'
 export * from './contract/table'
-export * from './contract/table-cursor'
+export * from './contract/row-cursor'
+export * from './contract/scope-cursor'
 export * from './kit'
 export * from './utils'

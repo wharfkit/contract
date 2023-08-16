@@ -9,9 +9,9 @@ export async function generateCodegenContract(contractName: string) {
     const abi = new ABI(JSON.parse(abiJson))
 
     // Generate the code
-    let generatedCode = await codegen(contractName, abi)
+    const generatedCode = await codegen(contractName, abi)
 
-    generatedCode = generatedCode.replace('@wharfkit/contract', '../../src/index')
+    const testGeneratedCode = generatedCode.replace('@wharfkit/contract', '../../src/index')
 
     // Create the tmp directory under the test directory if it does not exist
     if (!fs.existsSync('test/tmp')) {
@@ -19,11 +19,14 @@ export async function generateCodegenContract(contractName: string) {
     }
 
     // Write the generated code to a file in the tmp directory
-    fs.writeFileSync(path.join('test/tmp', `${contractName}.ts`), generatedCode, {
+    fs.writeFileSync(path.join('test/tmp', `${contractName}.ts`), testGeneratedCode, {
         encoding: 'utf8',
     })
 
-    return await import(`../tmp/${contractName}`)
+    return {
+        import: await import(`../tmp/${contractName}`),
+        text: generatedCode,
+    }
 }
 
 export function removeCodegenContracts() {

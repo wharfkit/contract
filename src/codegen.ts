@@ -1,4 +1,5 @@
 import * as ts from 'typescript'
+import * as prettier from 'prettier'
 
 import {
     EOSIO_CORE_CLASSES,
@@ -115,5 +116,6 @@ export async function codegen(contractName, abi) {
         ts.NodeFlags.None
     )
 
-    return printer.printFile(sourceFile)
+    const options = await prettier.resolveConfig(process.cwd())
+    return await prettier.format(printer.printFile(sourceFile), options)
 }

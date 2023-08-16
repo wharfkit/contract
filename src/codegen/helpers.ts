@@ -19,7 +19,6 @@ export const EOSIO_CORE_CLASSES = [
 
 export const EOSIO_CORE_TYPES = [
     'AssetType',
-    'Blob',
     'Checksum256Type',
     'Float64Type',
     'NameType',
@@ -30,6 +29,33 @@ export const EOSIO_CORE_TYPES = [
     'UInt64Type',
     'UInt8Type',
 ]
+
+export function getCoreImports(abi: ABI.Def) {
+    const coreImports: string[] = []
+    for (const struct of abi.structs) {
+        for (const field of struct.fields) {
+            const coreClass = findCoreClass(field.type)
+
+            if (coreClass) {
+                coreImports.push(coreClass)
+            }
+
+            const isAction = abi.actions.find((action) => action.type === struct.name)
+
+            if (!isAction) {
+                continue
+            }
+
+            const coreType = findCoreType(field.type)
+
+            if (coreType) {
+                coreImports.push(coreType)
+            }
+        }
+    }
+
+    return coreImports.filter((value, index, self) => self.indexOf(value) === index)
+}
 
 export function generateClassDeclaration(
     name: string,

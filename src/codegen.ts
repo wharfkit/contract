@@ -5,6 +5,7 @@ import {
     EOSIO_CORE_CLASSES,
     EOSIO_CORE_TYPES,
     generateImportStatement,
+    getCoreImports,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateContractClass} from './codegen/contract'
@@ -15,96 +16,104 @@ const printer = ts.createPrinter()
 
 export async function codegen(contractName, abi) {
     try {
+        const namespaceName = generateNamespaceName(contractName)
 
-    const namespaceName = generateNamespaceName(contractName)
+        console.log({ imports: getCoreImports(abi)})
 
-    const importCoreStatement = generateImportStatement(
-        [
+        const importContractStatement = generateImportStatement(
+            ['ActionOptions', 'Contract as BaseContract', 'ContractArgs', 'PartialBy'],
+            '@wharfkit/contract'
+        )
+
+        const sessionImports = [
             'ABI',
-            'APIClient',
-            'Session',
+            'Action',
+            'Blob',
             'Struct',
-            'TransactResult',
-            ...EOSIO_CORE_CLASSES,
-            ...EOSIO_CORE_TYPES,
-        ],
-        '@wharfkit/session'
-    )
-    const importContractStatement = generateImportStatement(
-        ['ActionOptions', 'Contract as BaseContract', 'ContractArgs', 'PartialBy'],
-        '@wharfkit/contract'
-    )
+            ...getCoreImports(abi),
+        ]
 
-    const {classDeclaration} = await generateContractClass(namespaceName, contractName)
+        console.log({sessionImports})
 
-    // Iterate through structs and create struct classes with fields
-    const structDeclarations = generateStructClasses(abi)
+        sessionImports.sort()
 
-    // Encode the ABI as a binary hex string
-    const abiBlob = abiToBlob(abi)
+        console.log({sessionImports})
 
-    // Generate `abiBlob` field
-    const abiBlobField = ts.factory.createVariableStatement(
-        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-        ts.factory.createVariableDeclarationList(
-            [
-                ts.factory.createVariableDeclaration(
-                    'abiBlob',
-                    undefined,
-                    undefined,
-                    ts.factory.createCallExpression(
-                        ts.factory.createPropertyAccessExpression(
-                            ts.factory.createIdentifier('Blob'),
-                            ts.factory.createIdentifier('from')
-                        ),
-                        undefined,
-                        [ts.factory.createStringLiteral(String(abiBlob))]
-                    )
-                ),
-            ],
-            ts.NodeFlags.Const
+        const importCoreStatement = generateImportStatement(
+            sessionImports,
+            '@wharfkit/session'
         )
-    )
 
-    // Generate `abiBlob` field
-    const abiField = ts.factory.createVariableStatement(
-        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-        ts.factory.createVariableDeclarationList(
-            [
-                ts.factory.createVariableDeclaration(
-                    'abi',
-                    undefined,
-                    undefined,
-                    ts.factory.createCallExpression(
-                        ts.factory.createPropertyAccessExpression(
-                            ts.factory.createIdentifier('ABI'),
-                            ts.factory.createIdentifier('from')
-                        ),
+        const {classDeclaration} = await generateContractClass(namespaceName, contractName)
+
+        // Iterate through structs and create struct classes with fields
+        const structDeclarations = generateStructClasses(abi)
+
+        // Encode the ABI as a binary hex string
+        const abiBlob = abiToBlob(abi)
+
+        // Generate `abiBlob` field
+        const abiBlobField = ts.factory.createVariableStatement(
+            [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            ts.factory.createVariableDeclarationList(
+                [
+                    ts.factory.createVariableDeclaration(
+                        'abiBlob',
                         undefined,
-                        [ts.factory.createIdentifier('abiBlob')]
-                    )
-                ),
-            ],
-            ts.NodeFlags.Const
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(
+                                ts.factory.createIdentifier('Blob'),
+                                ts.factory.createIdentifier('from')
+                            ),
+                            undefined,
+                            [ts.factory.createStringLiteral(String(abiBlob))]
+                        )
+                    ),
+                ],
+                ts.NodeFlags.Const
+            )
         )
-    )
 
-    // Generate types namespace
-    const namespaceDeclaration = generateNamespace(namespaceName, [
-        abiBlobField,
-        abiField,
-        classDeclaration,
-        generateNamespace('Types', structDeclarations),
-    ])
+        // Generate `abiBlob` field
+        const abiField = ts.factory.createVariableStatement(
+            [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            ts.factory.createVariableDeclarationList(
+                [
+                    ts.factory.createVariableDeclaration(
+                        'abi',
+                        undefined,
+                        undefined,
+                        ts.factory.createCallExpression(
+                            ts.factory.createPropertyAccessExpression(
+                                ts.factory.createIdentifier('ABI'),
+                                ts.factory.createIdentifier('from')
+                            ),
+                            undefined,
+                            [ts.factory.createIdentifier('abiBlob')]
+                        )
+                    ),
+                ],
+                ts.NodeFlags.Const
+            )
+        )
 
-    const sourceFile = ts.factory.createSourceFile(
-        [importContractStatement, importCoreStatement, namespaceDeclaration],
-        ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
-        ts.NodeFlags.None
-    )
+        // Generate types namespace
+        const namespaceDeclaration = generateNamespace(namespaceName, [
+            abiBlobField,
+            abiField,
+            classDeclaration,
+            generateNamespace('Types', structDeclarations),
+        ])
 
-    const options = await prettier.resolveConfig(process.cwd())
-    return prettier.format(printer.printFile(sourceFile), options)
+        const sourceFile = ts.factory.createSourceFile(
+            [importContractStatement, importCoreStatement, namespaceDeclaration],
+            ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
+            ts.NodeFlags.None
+        )
+
+        const options = await prettier.resolveConfig(process.cwd())
+        return prettier.format(printer.printFile(sourceFile), options)
 
     } catch (e) {
         console.error(`An error occurred while generating the contract code: ${e}`)

@@ -44,7 +44,7 @@ export async function codegen(contractName, abi) {
             '@wharfkit/session'
         )
 
-        const {classDeclaration} = await generateContractClass(namespaceName, contractName)
+        const {classDeclaration} = await generateContractClass(contractName, abi)
 
         // Iterate through structs and create struct classes with fields
         const structDeclarations = generateStructClasses(abi)

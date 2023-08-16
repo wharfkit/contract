@@ -26,6 +26,13 @@ export namespace RewardsGm {
                 account: Name.from('rewards.gm'),
             })
         }
+        action<T extends 'adduser' | 'claim' | 'configure' | 'deluser' | 'receipt' | 'updateuser'>(
+            name: T,
+            data: ActionNameParams<T>,
+            options?: ActionOptions
+        ): Action {
+            return super.action(name, data, options)
+        }
     }
     export namespace Types {
         @Struct.type('adduser')

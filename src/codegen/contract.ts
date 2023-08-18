@@ -94,7 +94,6 @@ function generateConstructorFunction(contractName): ts.ExpressionStatement {
 }
 
 function generateActionFunction(abi: ABI.Def): ts.MethodDeclaration {
-    console.log({abi})
     const typeParameter = ts.factory.createTypeParameterDeclaration(
         "T",
         ts.factory.createUnionTypeNode(

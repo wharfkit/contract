@@ -5,20 +5,20 @@ import {
     EOSIO_CORE_CLASSES,
     EOSIO_CORE_TYPES,
     generateImportStatement,
+    generateInterface,
     getCoreImports,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateContractClass} from './codegen/contract'
 import {abiToBlob} from './utils'
 import { generateStructClasses } from './codegen/structs'
+import { generateActionNamesInterface, generateActionsNamespace } from './codegen/interfaces'
 
 const printer = ts.createPrinter()
 
 export async function codegen(contractName, abi) {
     try {
         const namespaceName = generateNamespaceName(contractName)
-
-        console.log({ imports: getCoreImports(abi)})
 
         const importContractStatement = generateImportStatement(
             ['ActionOptions', 'Contract as BaseContract', 'ContractArgs', 'PartialBy'],
@@ -33,16 +33,16 @@ export async function codegen(contractName, abi) {
             ...getCoreImports(abi),
         ]
 
-        console.log({sessionImports})
-
         sessionImports.sort()
-
-        console.log({sessionImports})
 
         const importCoreStatement = generateImportStatement(
             sessionImports,
             '@wharfkit/session'
-        )
+        ) 
+
+        const actionNamesInterface = generateActionNamesInterface(abi)
+
+        const actionsNamespace = generateActionsNamespace(abi)
 
         const {classDeclaration} = await generateContractClass(contractName, abi)
 
@@ -102,6 +102,8 @@ export async function codegen(contractName, abi) {
         const namespaceDeclaration = generateNamespace(namespaceName, [
             abiBlobField,
             abiField,
+            // actionNamesInterface,
+            actionsNamespace,
             classDeclaration,
             generateNamespace('Types', structDeclarations),
         ])

@@ -143,7 +143,7 @@ export function findCoreType(type: string): string | undefined {
 }
 
 export function findInternalType(type: string, namespace: string | null, abi: ABI.Def): string {
-    let typeString = removeDecorators(type)
+    let { type: typeString } = extractDecorator(type)
 
     const relevantAbitype = findAbiType(typeString, abi)
 
@@ -189,31 +189,44 @@ function findVariantType(typeString: string, namespace: string | null, abi: ABI.
 }
 
 function findAbiType(typeString: string, abi: ABI.Def): string | undefined {
-    return abi.types.find(
-        (abiType) => abiType.new_type_name.toLowerCase() === typeString.toLowerCase()
-    )?.type
+    // console.log('findAbiType', {typeString, abi})
+    const abiType = abi.structs.find(
+        (abiType) => {
+            // console.log({abiType, typeString})
+            return abiType.name.toLowerCase() === typeString.toLowerCase()
+        }
+    )?.name
+
+    console.log({formattedAbiType: abiType && `Types.${generateStructClassName(abiType)}` })
+
+    if (abiType) {
+        return `Types.${generateStructClassName(abiType)}`
+    }
 }
 
 export function findExternalType(type: string, abi: ABI.Def): string {
-    let typeString = removeDecorators(type)
+    let { type: typeString, decorator } = extractDecorator(type)
 
     const relevantAbitype = findAbiType(typeString, abi)
+
+    console.log({typeString, relevantAbitype})
 
     if (relevantAbitype) {
         typeString = relevantAbitype
     }
 
-    return findCoreType(typeString) || capitalize(typeString)
+    return `${findCoreType(typeString) || capitalize(typeString)}${decorator === '[]' ?  '[]' : ''}`
 }
 
 const decorators = ['?', '[]']
-export function removeDecorators(type: string) {
+export function extractDecorator(type: string) : { type: string, decorator?: string } {
     for (const decorator of decorators) {
         if (type.includes(decorator)) {
             type = type.replace(decorator, '')
-            break
+            
+            return { type, decorator }
         }
     }
 
-    return type
+    return { type }
 }

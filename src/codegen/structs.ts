@@ -1,6 +1,6 @@
 import { ABI } from "@wharfkit/session"
 import ts from "typescript"
-import { findInternalType, generateStructClassName, removeDecorators } from "./helpers"
+import { findInternalType, generateStructClassName, extractDecorator } from "./helpers"
 
 interface FieldType {
     name: string
@@ -13,7 +13,7 @@ interface StructData {
 }
 
 export function generateStructClasses(abi) {
-    const structs = getFieldTypesFromAbi(abi)
+    const structs = getActionFieldFromAbi(abi)
     const orderedStructs = orderStructs(structs)
 
     const structMembers: ts.ClassDeclaration[] = []
@@ -25,7 +25,7 @@ export function generateStructClasses(abi) {
     return structMembers
 }
 
-export function getFieldTypesFromAbi(abi: any): StructData[] {
+export function getActionFieldFromAbi(abi: any): StructData[] {
     const structTypes: {structName: string; fields: FieldType[]}[] = []
 
     if (abi && abi.structs) {
@@ -162,7 +162,7 @@ function orderStructs(structs) {
 
     for (const struct of structs) {
         for (const field of struct.fields) {
-            const fieldType = removeDecorators(field.type)
+            const { type: fieldType } = extractDecorator(field.type)
 
             if (structNames.includes(fieldType.toLowerCase())) {
                 const dependencyStruct = structs.find((struct) => struct.structName === fieldType.toLowerCase())

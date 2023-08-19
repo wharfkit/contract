@@ -45,9 +45,13 @@ export async function generateContractClass(contractName: string, abi: ABI.Def) 
     
     classMembers.push(constructorMember)
 
-    const actionMethod = generateActionFunction(abi)
+    const actionMethod = generateActionMethod(abi)
 
     classMembers.push(actionMethod)
+
+    const tableMethod = generateTableMethod(abi)
+
+    classMembers.push(tableMethod)
 
 
     // Construct class declaration
@@ -93,7 +97,7 @@ function generateConstructorFunction(contractName): ts.ExpressionStatement {
     )
 }
 
-function generateActionFunction(abi: ABI.Def): ts.MethodDeclaration {
+function generateActionMethod(abi: ABI.Def): ts.MethodDeclaration {
     const typeParameter = ts.factory.createTypeParameterDeclaration(
         "T",
         ts.factory.createUnionTypeNode(
@@ -120,7 +124,7 @@ function generateActionFunction(abi: ABI.Def): ts.MethodDeclaration {
         undefined,
         "data",
         undefined,
-        ts.factory.createTypeReferenceNode("ActionNameParams", [ts.factory.createTypeReferenceNode("T")]),
+        ts.factory.createTypeReferenceNode("ActionNameParams[T]"),
         undefined
     );
 
@@ -135,7 +139,7 @@ function generateActionFunction(abi: ABI.Def): ts.MethodDeclaration {
     );
 
     // 4. Generate the function body.
-    const functionBody = ts.factory.createBlock([
+    const methodBody = ts.factory.createBlock([
         ts.factory.createReturnStatement(
             ts.factory.createCallExpression(
                 ts.factory.createPropertyAccessExpression(
@@ -157,6 +161,55 @@ function generateActionFunction(abi: ABI.Def): ts.MethodDeclaration {
         [typeParameter],
         [nameParameter, dataParameter, optionsParameter],
         ts.factory.createTypeReferenceNode("Action"),
-        functionBody
+        methodBody
     );
 }
+
+function generateTableMethod(abi: ABI.Def): ts.MethodDeclaration {
+    const typeParameter = ts.factory.createTypeParameterDeclaration(
+        "T",
+        ts.factory.createUnionTypeNode(
+            abi.tables.map(table =>
+                ts.factory.createLiteralTypeNode(ts.factory.createStringLiteral(String(table.name)))
+            )
+        )
+    );
+
+    // 3. Create the function parameters.
+    const nameParameter = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        "name",
+        undefined,
+        ts.factory.createTypeReferenceNode("T"),
+        undefined
+    );
+
+    // 4. Generate the function body.
+    const methodBody = ts.factory.createBlock([
+        ts.factory.createReturnStatement(
+            ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                    ts.factory.createSuper(),
+                    ts.factory.createIdentifier("table")
+                ),
+                undefined,
+                [ts.factory.createIdentifier("name"), ts.factory.createIdentifier("TableMap[name]")]
+            )
+        )
+    ], true);
+
+    return ts.factory.createMethodDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        'table',
+        undefined,
+        [typeParameter],
+        [nameParameter],
+        undefined,
+        methodBody
+    );
+}
+

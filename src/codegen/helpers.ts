@@ -142,7 +142,7 @@ export function findCoreType(type: string): string | undefined {
     }
 }
 
-export function findInternalType(type: string, namespace: string | null, abi: ABI.Def): string {
+export function findInternalType(type: string, typeNamespace: string | null, abi: ABI.Def): string {
     let { type: typeString } = extractDecorator(type)
 
     const relevantAbitype = findAbiType(typeString, abi)
@@ -151,13 +151,13 @@ export function findInternalType(type: string, namespace: string | null, abi: AB
         typeString = relevantAbitype
     }
 
-    const variantType = findVariantType(typeString, namespace, abi)
+    const variantType = findVariantType(typeString, typeNamespace, abi)
 
     if (variantType) {
         typeString = variantType
     }
 
-    return formatInternalType(typeString, namespace, abi)
+    return formatInternalType(typeString, typeNamespace, abi)
 }
 
 function formatInternalType(typeString: string, namespace: string | null, abi: ABI.Def): string {
@@ -188,28 +188,20 @@ function findVariantType(typeString: string, namespace: string | null, abi: ABI.
         .join(' | ')
 }
 
-function findAbiType(typeString: string, abi: ABI.Def): string | undefined {
-    // console.log('findAbiType', {typeString, abi})
+export function findAbiType(typeString: string, abi: ABI.Def, typeNamespace = ''): string | undefined {
     const abiType = abi.structs.find(
-        (abiType) => {
-            // console.log({abiType, typeString})
-            return abiType.name.toLowerCase() === typeString.toLowerCase()
-        }
+        (abiType) => abiType.name === typeString
     )?.name
 
-    console.log({formattedAbiType: abiType && `Types.${generateStructClassName(abiType)}` })
-
     if (abiType) {
-        return `Types.${generateStructClassName(abiType)}`
+        return `${typeNamespace}${generateStructClassName(abiType)}`
     }
 }
 
-export function findExternalType(type: string, abi: ABI.Def): string {
+export function findExternalType(type: string, abi: ABI.Def, typeNamespace?: string): string {
     let { type: typeString, decorator } = extractDecorator(type)
 
-    const relevantAbitype = findAbiType(typeString, abi)
-
-    console.log({typeString, relevantAbitype})
+    const relevantAbitype = findAbiType(typeString, abi, typeNamespace)
 
     if (relevantAbitype) {
         typeString = relevantAbitype

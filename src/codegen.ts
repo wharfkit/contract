@@ -2,17 +2,15 @@ import * as ts from 'typescript'
 import * as prettier from 'prettier'
 
 import {
-    EOSIO_CORE_CLASSES,
-    EOSIO_CORE_TYPES,
     generateImportStatement,
-    generateInterface,
     getCoreImports,
 } from './codegen/helpers'
 import {generateNamespace, generateNamespaceName} from './codegen/namespace'
 import {generateContractClass} from './codegen/contract'
 import {abiToBlob} from './utils'
-import { generateStructClasses } from './codegen/structs'
-import { generateActionNamesInterface, generateActionsNamespace } from './codegen/interfaces'
+import {generateStructClasses} from './codegen/structs'
+import {generateActionNamesInterface, generateActionsNamespace} from './codegen/interfaces'
+import {generateTableMap} from './codegen/maps'
 
 const printer = ts.createPrinter()
 
@@ -38,13 +36,13 @@ export async function codegen(contractName, abi) {
         const importCoreStatement = generateImportStatement(
             sessionImports,
             '@wharfkit/session'
-        ) 
+        )
+
+        const {classDeclaration} = await generateContractClass(contractName, abi)
 
         const actionNamesInterface = generateActionNamesInterface(abi)
 
         const actionsNamespace = generateActionsNamespace(abi)
-
-        const {classDeclaration} = await generateContractClass(contractName, abi)
 
         // Iterate through structs and create struct classes with fields
         const structDeclarations = generateStructClasses(abi)
@@ -98,18 +96,28 @@ export async function codegen(contractName, abi) {
             )
         )
 
+        const tableMap = generateTableMap(abi)
+
+        const exportStatement = ts.factory.createExportAssignment(
+            undefined,
+            undefined,
+            false, 
+            ts.factory.createIdentifier(namespaceName)
+        );
+
         // Generate types namespace
         const namespaceDeclaration = generateNamespace(namespaceName, [
             abiBlobField,
             abiField,
-            // actionNamesInterface,
-            actionsNamespace,
             classDeclaration,
+            actionNamesInterface,
+            actionsNamespace,
             generateNamespace('Types', structDeclarations),
+            tableMap,
         ])
 
         const sourceFile = ts.factory.createSourceFile(
-            [importContractStatement, importCoreStatement, namespaceDeclaration],
+            [importContractStatement, importCoreStatement, namespaceDeclaration, exportStatement],
             ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
             ts.NodeFlags.None
         )
@@ -119,5 +127,6 @@ export async function codegen(contractName, abi) {
 
     } catch (e) {
         console.error(`An error occurred while generating the contract code: ${e}`)
+        throw e
     }
 }

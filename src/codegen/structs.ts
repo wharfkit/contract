@@ -1,5 +1,6 @@
 import { ABI } from "@wharfkit/session"
 import ts from "typescript"
+import { capitalize } from "../utils"
 import { findInternalType, generateStructClassName, extractDecorator } from "./helpers"
 
 interface FieldType {
@@ -34,7 +35,7 @@ export function getActionFieldFromAbi(abi: any): StructData[] {
 
             for (const field of struct.fields) {
                 fields.push({
-                    name: field.name.charAt(0).toUpperCase() + field.name.slice(1),
+                    name: capitalize(field.name),
                     type: field.type,
                 })
             }

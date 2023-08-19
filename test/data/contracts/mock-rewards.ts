@@ -62,10 +62,6 @@ export namespace RewardsGm {
         export interface Deluser {
             account: NameType
         }
-        export interface OraclePair {
-            name: NameType
-            precision: UInt16Type
-        }
         export interface Receipt {
             account: NameType
             amount: AssetType
@@ -161,5 +157,4 @@ export namespace RewardsGm {
         users: Types.UserRow,
     }
 }
-
 export default RewardsGm

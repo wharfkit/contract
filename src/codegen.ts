@@ -1,16 +1,12 @@
-import * as ts from 'typescript'
 import * as prettier from 'prettier'
-
-import {
-    generateImportStatement,
-    getCoreImports,
-} from './codegen/helpers'
-import {generateNamespace, generateNamespaceName} from './codegen/namespace'
+import * as ts from 'typescript'
 import {generateContractClass} from './codegen/contract'
-import {abiToBlob} from './utils'
-import {generateStructClasses} from './codegen/structs'
+import {generateImportStatement, getCoreImports} from './codegen/helpers'
 import {generateActionNamesInterface, generateActionsNamespace} from './codegen/interfaces'
 import {generateTableMap} from './codegen/maps'
+import {generateNamespace, generateNamespaceName} from './codegen/namespace'
+import {generateStructClasses} from './codegen/structs'
+import {abiToBlob} from './utils'
 
 const printer = ts.createPrinter()
 
@@ -23,20 +19,11 @@ export async function codegen(contractName, abi) {
             '@wharfkit/contract'
         )
 
-        const sessionImports = [
-            'ABI',
-            'Action',
-            'Blob',
-            'Struct',
-            ...getCoreImports(abi),
-        ]
+        const sessionImports = ['ABI', 'Action', 'Blob', 'Struct', ...getCoreImports(abi)]
 
         sessionImports.sort()
 
-        const importCoreStatement = generateImportStatement(
-            sessionImports,
-            '@wharfkit/session'
-        )
+        const importCoreStatement = generateImportStatement(sessionImports, '@wharfkit/session')
 
         const {classDeclaration} = await generateContractClass(contractName, abi)
 
@@ -101,9 +88,9 @@ export async function codegen(contractName, abi) {
         const exportStatement = ts.factory.createExportAssignment(
             undefined,
             undefined,
-            false, 
+            false,
             ts.factory.createIdentifier(namespaceName)
-        );
+        )
 
         // Generate types namespace
         const namespaceDeclaration = generateNamespace(namespaceName, [
@@ -124,8 +111,8 @@ export async function codegen(contractName, abi) {
 
         const options = await prettier.resolveConfig(process.cwd())
         return prettier.format(printer.printFile(sourceFile), options)
-
     } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(`An error occurred while generating the contract code: ${e}`)
         throw e
     }

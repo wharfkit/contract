@@ -1,10 +1,10 @@
-import {assert} from 'chai'
 import {makeClient, mockPrivateKey, mockSession} from '@wharfkit/mock-data'
+import {assert} from 'chai'
 
 import ContractKit, {ActionDataType, Contract, ContractArgs, Table} from '$lib'
+import {ProducerInfo} from '$test/data/structs/eosio'
 import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
-import {ProducerInfo} from '$test/data/structs/eosio'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 

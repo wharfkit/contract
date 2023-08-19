@@ -2,10 +2,10 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, TableRowCursor} from '$lib'
 
-import {Name, Serializer, UInt64} from '@wharfkit/antelope'
-import {makeClient} from '@wharfkit/mock-data'
 import {TrendingRow} from '$test/data/structs/decentium'
 import {DelegatedBandwidth, NameBid} from '$test/data/structs/eosio'
+import {Name, Serializer, UInt64} from '@wharfkit/antelope'
+import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
 

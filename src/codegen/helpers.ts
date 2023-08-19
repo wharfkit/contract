@@ -143,7 +143,7 @@ export function findCoreType(type: string): string | undefined {
 }
 
 export function findInternalType(type: string, typeNamespace: string | null, abi: ABI.Def): string {
-    let { type: typeString } = extractDecorator(type)
+    let {type: typeString} = extractDecorator(type)
 
     const relevantAbitype = findAbiType(typeString, abi)
 
@@ -164,17 +164,24 @@ function formatInternalType(typeString: string, namespace: string | null, abi: A
     const structNames = abi.structs.map((struct) => struct.name.toLowerCase())
 
     if (structNames.includes(typeString.toLowerCase())) {
-        return `${!!namespace ? `${namespace}.` : ''}${generateStructClassName(typeString)}`
+        return `${namespace ? `${namespace}.` : ''}${generateStructClassName(typeString)}`
     } else {
         return findCoreClass(typeString) || capitalize(typeString)
     }
 }
 
 export function generateStructClassName(name) {
-    return name.split('_').map((word) => capitalize(word)).join('')
+    return name
+        .split('_')
+        .map((word) => capitalize(word))
+        .join('')
 }
 
-function findVariantType(typeString: string, namespace: string | null, abi: ABI.Def): string | undefined {
+function findVariantType(
+    typeString: string,
+    namespace: string | null,
+    abi: ABI.Def
+): string | undefined {
     const abiVariant = abi.variants.find(
         (variant) => variant.name.toLowerCase() === typeString.toLowerCase()
     )
@@ -188,10 +195,12 @@ function findVariantType(typeString: string, namespace: string | null, abi: ABI.
         .join(' | ')
 }
 
-export function findAbiType(typeString: string, abi: ABI.Def, typeNamespace = ''): string | undefined {
-    const abiType = abi.structs.find(
-        (abiType) => abiType.name === typeString
-    )?.name
+export function findAbiType(
+    typeString: string,
+    abi: ABI.Def,
+    typeNamespace = ''
+): string | undefined {
+    const abiType = abi.structs.find((abiType) => abiType.name === typeString)?.name
 
     if (abiType) {
         return `${typeNamespace}${generateStructClassName(abiType)}`
@@ -199,7 +208,8 @@ export function findAbiType(typeString: string, abi: ABI.Def, typeNamespace = ''
 }
 
 export function findExternalType(type: string, abi: ABI.Def, typeNamespace?: string): string {
-    let { type: typeString, decorator } = extractDecorator(type)
+    let {type: typeString} = extractDecorator(type)
+    const {decorator} = extractDecorator(type)
 
     const relevantAbitype = findAbiType(typeString, abi, typeNamespace)
 
@@ -207,18 +217,18 @@ export function findExternalType(type: string, abi: ABI.Def, typeNamespace?: str
         typeString = relevantAbitype
     }
 
-    return `${findCoreType(typeString) || capitalize(typeString)}${decorator === '[]' ?  '[]' : ''}`
+    return `${findCoreType(typeString) || capitalize(typeString)}${decorator === '[]' ? '[]' : ''}`
 }
 
 const decorators = ['?', '[]']
-export function extractDecorator(type: string) : { type: string, decorator?: string } {
+export function extractDecorator(type: string): {type: string; decorator?: string} {
     for (const decorator of decorators) {
         if (type.includes(decorator)) {
             type = type.replace(decorator, '')
-            
-            return { type, decorator }
+
+            return {type, decorator}
         }
     }
 
-    return { type }
+    return {type}
 }

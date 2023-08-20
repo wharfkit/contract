@@ -2,9 +2,9 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, Table, TableRowCursor, TableScopeCursor} from '$lib'
 
+import {EosioGlobalState} from '$test/data/structs/eosio'
 import {Asset, Int64, Name, Serializer, Struct, TimePoint, UInt32} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
-import {EosioGlobalState} from '$test/data/structs/eosio'
 
 const mockClient = makeClient('https://eos.greymass.com')
 

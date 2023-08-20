@@ -62,10 +62,6 @@ export namespace RewardsGm {
         export interface Deluser {
             account: NameType
         }
-        export interface OraclePair {
-            name: NameType
-            precision: UInt16Type
-        }
         export interface Receipt {
             account: NameType
             amount: AssetType
@@ -79,57 +75,81 @@ export namespace RewardsGm {
     export namespace Types {
         @Struct.type('adduser')
         export class Adduser extends Struct {
-            @Struct.field(Name) account!: Name
-            @Struct.field(UInt16) weight!: UInt16
+            @Struct.field(Name)
+            account!: Name
+            @Struct.field(UInt16)
+            weight!: UInt16
         }
         @Struct.type('claim')
         export class Claim extends Struct {
-            @Struct.field(Name) account!: Name
-            @Struct.field(Asset, {optional: true}) amount?: Asset
+            @Struct.field(Name)
+            account!: Name
+            @Struct.field(Asset, {optional: true})
+            amount?: Asset
         }
         @Struct.type('oracle_pair')
         export class OraclePair extends Struct {
-            @Struct.field(Name) name!: Name
-            @Struct.field(UInt16) precision!: UInt16
+            @Struct.field(Name)
+            name!: Name
+            @Struct.field(UInt16)
+            precision!: UInt16
         }
         @Struct.type('config')
         export class Config extends Struct {
-            @Struct.field(Asset.Symbol) token_symbol!: Asset.Symbol
-            @Struct.field(Name) oracle_account!: Name
-            @Struct.field(OraclePair, {array: true}) oracle_pairs!: OraclePair[]
+            @Struct.field(Asset.Symbol)
+            token_symbol!: Asset.Symbol
+            @Struct.field(Name)
+            oracle_account!: Name
+            @Struct.field(OraclePair, {array: true})
+            oracle_pairs!: OraclePair[]
         }
         @Struct.type('configure')
         export class Configure extends Struct {
-            @Struct.field(Asset.Symbol) token_symbol!: Asset.Symbol
-            @Struct.field(Name) oracle_account!: Name
-            @Struct.field(OraclePair, {array: true}) oracle_pairs!: OraclePair[]
+            @Struct.field(Asset.Symbol)
+            token_symbol!: Asset.Symbol
+            @Struct.field(Name)
+            oracle_account!: Name
+            @Struct.field(OraclePair, {array: true})
+            oracle_pairs!: OraclePair[]
         }
         @Struct.type('deluser')
         export class Deluser extends Struct {
-            @Struct.field(Name) account!: Name
+            @Struct.field(Name)
+            account!: Name
         }
         @Struct.type('price_info')
         export class PriceInfo extends Struct {
-            @Struct.field('string') pair!: string
-            @Struct.field(Float64) price!: Float64
-            @Struct.field(TimePoint) timestamp!: TimePoint
+            @Struct.field('string')
+            pair!: string
+            @Struct.field(Float64)
+            price!: Float64
+            @Struct.field(TimePoint)
+            timestamp!: TimePoint
         }
         @Struct.type('receipt')
         export class Receipt extends Struct {
-            @Struct.field(Name) account!: Name
-            @Struct.field(Asset) amount!: Asset
-            @Struct.field(PriceInfo, {array: true}) ticker!: PriceInfo[]
+            @Struct.field(Name)
+            account!: Name
+            @Struct.field(Asset)
+            amount!: Asset
+            @Struct.field(PriceInfo, {array: true})
+            ticker!: PriceInfo[]
         }
         @Struct.type('updateuser')
         export class Updateuser extends Struct {
-            @Struct.field(Name) account!: Name
-            @Struct.field(UInt16) weight!: UInt16
+            @Struct.field(Name)
+            account!: Name
+            @Struct.field(UInt16)
+            weight!: UInt16
         }
         @Struct.type('user_row')
         export class UserRow extends Struct {
-            @Struct.field(Name) account!: Name
-            @Struct.field(UInt16) weight!: UInt16
-            @Struct.field(Asset) balance!: Asset
+            @Struct.field(Name)
+            account!: Name
+            @Struct.field(UInt16)
+            weight!: UInt16
+            @Struct.field(Asset)
+            balance!: Asset
         }
     }
     const TableMap = {
@@ -137,5 +157,4 @@ export namespace RewardsGm {
         users: Types.UserRow,
     }
 }
-
 export default RewardsGm

@@ -1,6 +1,6 @@
-import {ABI, ABIDef, APIClient, Name, NameType} from '@wharfkit/antelope'
-import {ABICache} from '@wharfkit/abicache'
 import type {ABICacheInterface} from '@wharfkit/abicache'
+import {ABICache} from '@wharfkit/abicache'
+import {ABI, ABIDef, APIClient, Name, NameType} from '@wharfkit/antelope'
 import {Contract} from './contract'
 
 export interface ContractKitArgs {

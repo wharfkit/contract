@@ -1,9 +1,9 @@
 import {assert} from 'chai'
 
 import {Contract, ContractKit, ContractKitArgs} from '$lib'
-import {makeClient} from '@wharfkit/mock-data'
-import {ABI, Name} from '@wharfkit/antelope'
 import {ABICache} from '@wharfkit/abicache'
+import {ABI, Name} from '@wharfkit/antelope'
+import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 const mockContractKitArgs: ContractKitArgs = {

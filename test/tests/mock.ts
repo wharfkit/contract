@@ -1,6 +1,6 @@
-import {assert} from 'chai'
 import {Action, Asset, Bytes, Name, PermissionLevel, Serializer, Struct} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
+import {assert} from 'chai'
 
 import RewardsGm from '$test/data/contracts/mock-rewards'
 import {PlaceholderName, PlaceholderPermission} from '@wharfkit/signing-request'

@@ -1,7 +1,7 @@
+import {ABI} from '@wharfkit/session'
 import fs from 'fs'
 import path from 'path'
 import {codegen} from '../../src/codegen'
-import {ABI} from '@wharfkit/session'
 
 export async function generateCodegenContract(contractName: string) {
     // Read the ABI from a JSON file

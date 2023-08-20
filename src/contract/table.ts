@@ -1,8 +1,8 @@
 import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@wharfkit/antelope'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
-import {TableCursor} from './table-cursor'
 import {TableRowCursor} from './row-cursor'
 import {TableScopeCursor} from './scope-cursor'
+import {TableCursor} from './table-cursor'
 
 export interface QueryParams {
     index?: string

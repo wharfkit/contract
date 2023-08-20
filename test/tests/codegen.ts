@@ -23,7 +23,7 @@ import {runGenericContractTests} from './contract'
 
     suite('codegen', function () {
         test('Contracts are identical', function () {
-            assert.equal(files.mock, files.generated)
+            assert.equal(files.generated, files.mock)
         })
         Object.keys(contracts).forEach((contractKey) => {
             suite(`Testing namespace ${contractKey}`, function () {

@@ -55,7 +55,7 @@ export namespace RewardsGm {
             amount?: AssetType
         }
         export interface Configure {
-            token_symbol: Symbol
+            token_symbol: Asset.SymbolType
             oracle_account: NameType
             oracle_pairs: Types.OraclePair[]
         }

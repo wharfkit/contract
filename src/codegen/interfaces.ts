@@ -29,16 +29,17 @@ export function generateActionNamesInterface(abi: ABI.Def): ts.InterfaceDeclarat
 
 export function generateActionInterface(actionStruct, abi): ts.InterfaceDeclaration {
     const members = actionStruct.fields.map((field) => {
+        const typeReferenceNode = ts.factory.createTypeReferenceNode(
+            findParamTypeString(field.type, 'Types.', abi)
+        )
+
         return ts.factory.createPropertySignature(
             undefined,
             field.name.toLowerCase(),
             field.type.includes('?')
                 ? ts.factory.createToken(ts.SyntaxKind.QuestionToken)
                 : undefined,
-            ts.factory.createTypeReferenceNode(
-                findExternalType(field.type, abi, 'Types.'),
-                undefined
-            )
+            typeReferenceNode
         )
     })
 
@@ -67,4 +68,18 @@ export function generateActionsNamespace(abi: ABI.Def): ts.ModuleDeclaration {
         ts.factory.createModuleBlock(interfaces),
         ts.NodeFlags.Namespace
     )
+}
+
+function findParamTypeString(typeString: string, namespace: string | null, abi: ABI.Def): string {
+    const fieldType = findExternalType(typeString, abi, namespace ? namespace : undefined)
+
+    if (['String', 'Boolean', 'Number'].includes(fieldType)) {
+        return fieldType.toLowerCase()
+    }
+
+    if (fieldType === 'Symbol') {
+        return 'Asset.SymbolType'
+    }
+
+    return fieldType
 }

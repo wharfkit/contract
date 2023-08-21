@@ -43,13 +43,17 @@ export async function generateContractClass(contractName: string, abi: ABI.Def) 
 
     classMembers.push(constructorMember)
 
-    const actionMethod = generateActionMethod(abi)
+    if (abi.actions.length) {
+        const actionMethod = generateActionMethod(abi)
 
-    classMembers.push(actionMethod)
+        classMembers.push(actionMethod)
+    }
 
-    const tableMethod = generateTableMethod(abi)
+    if (abi.tables.length) {
+        const tableMethod = generateTableMethod(abi)
 
-    classMembers.push(tableMethod)
+        classMembers.push(tableMethod)
+    }
 
     // Construct class declaration
     const classDeclaration = generateClassDeclaration('Contract', classMembers, {

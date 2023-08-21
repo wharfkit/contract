@@ -200,12 +200,16 @@ function findFieldStructTypeString(
 ): string {
     const fieldType = findInternalType(typeString, namespace, abi)
 
-    if (['String', 'Boolean', 'Number'].includes(fieldType)) {
-        return fieldType.toLowerCase()
-    }
-
     if (fieldType === 'Symbol') {
         return 'Asset.Symbol'
+    }
+
+    if (fieldType === 'Bool') {
+        return 'boolean'
+    }
+
+    if (['String', 'Boolean', 'Number'].includes(fieldType)) {
+        return fieldType.toLowerCase()
     }
 
     return fieldType

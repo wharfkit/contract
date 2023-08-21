@@ -73,12 +73,16 @@ export function generateActionsNamespace(abi: ABI.Def): ts.ModuleDeclaration {
 function findParamTypeString(typeString: string, namespace: string | null, abi: ABI.Def): string {
     const fieldType = findExternalType(typeString, abi, namespace ? namespace : undefined)
 
-    if (['String', 'Boolean', 'Number'].includes(fieldType)) {
-        return fieldType.toLowerCase()
-    }
-
     if (fieldType === 'Symbol') {
         return 'Asset.SymbolType'
+    }
+
+    if (fieldType === 'Bool') {
+        return 'boolean'
+    }
+
+    if (['String', 'Boolean', 'Number'].includes(fieldType)) {
+        return fieldType.toLowerCase()
     }
 
     return fieldType

@@ -1,4 +1,4 @@
-import {ABI} from '@wharfkit/session'
+import {ABI} from '@wharfkit/antelope'
 import ts from 'typescript'
 import {capitalize} from '../utils'
 import {findExternalType} from './helpers'

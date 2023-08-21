@@ -1,4 +1,4 @@
-import {ABI} from '@wharfkit/session'
+import {ABI} from '@wharfkit/antelope'
 import * as ts from 'typescript'
 
 import {generateClassDeclaration} from './helpers'

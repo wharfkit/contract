@@ -1,21 +1,15 @@
+import * as Antelope from '@wharfkit/antelope'
 import {ABI} from '@wharfkit/antelope'
 import * as ts from 'typescript'
 
 import {capitalize} from '../utils'
 
-export const EOSIO_CORE_CLASSES = [
-    'Asset',
-    'Checksum256',
-    'Float64',
-    'Name',
-    'TimePoint',
-    'TimePointSec',
-    'UInt128',
-    'UInt16',
-    'UInt32',
-    'UInt64',
-    'UInt8',
-]
+const EOSIO_CORE_CLASSES: string[] = []
+Object.keys(Antelope).map((key) => {
+    if (Antelope[key].abiName) {
+        EOSIO_CORE_CLASSES.push(key)
+    }
+})
 
 export const EOSIO_CORE_TYPES = [
     'AssetType',

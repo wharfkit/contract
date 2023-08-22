@@ -115,7 +115,11 @@ suite('Contract', async function () {
                 })
                 suite('table', function () {
                     test('should accept rowType', async function () {
-                        const table = systemContract.table<ProducerInfo>('producers', ProducerInfo)
+                        const table = systemContract.table<ProducerInfo>(
+                            'producers',
+                            undefined,
+                            ProducerInfo
+                        )
                         assert.instanceOf(table, Table)
                         const producer = await table.get('lioninjungle')
                         assert.instanceOf(producer, ProducerInfo)

@@ -79,6 +79,17 @@ suite('Table', () => {
             })
             assert.instanceOf(table, Table)
         })
+        test('defaultScope', () => {
+            const table = new Table({
+                abi: decentiumorg.abi,
+                account: decentiumorg.account,
+                client: mockClient,
+                name: Name.from('trending'),
+                defaultScope: 'foo',
+            })
+            assert.instanceOf(table, Table)
+            assert.equal(table.defaultScope, 'foo')
+        })
     })
 
     suite('cursor', () => {
@@ -350,10 +361,19 @@ suite('Table', () => {
         })
 
         test('should just get first row without params', async function () {
-            const table = eosio.table<EosioGlobalState>('global', EosioGlobalState)
+            const table = eosio.table<EosioGlobalState>('global', undefined, EosioGlobalState)
             const row = await table.get()
             assert.instanceOf(row, EosioGlobalState)
             assert.instanceOf(row.pervote_bucket, Int64)
+        })
+
+        test('should use scope from table call', async function () {
+            const contractKit = new ContractKit({
+                client: makeClient('https://jungle4.greymass.com'),
+            })
+            const contract = await contractKit.load('eosio.token')
+            const result = await contract.table('accounts', 'wharfkittest').get()
+            assert.instanceOf(result.balance, Asset)
         })
     })
 

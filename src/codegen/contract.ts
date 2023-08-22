@@ -193,6 +193,16 @@ function generateTableMethod(abi: ABI.Def): ts.MethodDeclaration {
         undefined
     )
 
+    const scopeParameter = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        'scope',
+        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+        ts.factory.createTypeReferenceNode('NameType'),
+        undefined
+    )
+
     // 4. Generate the function body.
     const methodBody = ts.factory.createBlock(
         [
@@ -205,6 +215,7 @@ function generateTableMethod(abi: ABI.Def): ts.MethodDeclaration {
                     undefined,
                     [
                         ts.factory.createIdentifier('name'),
+                        ts.factory.createIdentifier('scope'),
                         ts.factory.createIdentifier('TableMap[name]'),
                     ]
                 )
@@ -220,7 +231,7 @@ function generateTableMethod(abi: ABI.Def): ts.MethodDeclaration {
         'table',
         undefined,
         [typeParameter],
-        [nameParameter],
+        [nameParameter, scopeParameter],
         undefined,
         methodBody
     )

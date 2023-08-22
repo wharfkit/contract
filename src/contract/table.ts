@@ -29,6 +29,7 @@ interface TableParams<TableRow = any> {
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
     defaultRowLimit?: number
+    defaultScope?: NameType
 }
 
 export interface GetTableRowsOptions {
@@ -52,6 +53,7 @@ export class Table<RowType = any> {
 
     private fieldToIndex?: any
 
+    public defaultScope?: NameType
     public defaultRowLimit = 1000
 
     /**
@@ -77,6 +79,7 @@ export class Table<RowType = any> {
             throw new Error(`Table ${this.name} not found in ABI`)
         }
         this.tableABI = tableABI
+        this.defaultScope = args.defaultScope
     }
 
     /**
@@ -110,7 +113,10 @@ export class Table<RowType = any> {
             // Table query
             table: this.name,
             code: this.account,
-            scope: params.scope !== undefined ? String(params.scope) : this.account,
+            scope:
+                params.scope !== undefined
+                    ? String(params.scope)
+                    : this.defaultScope || this.account,
             // Response typing
             type: this.rowType,
             // Filtering
@@ -151,7 +157,10 @@ export class Table<RowType = any> {
         const tableRowsParams = {
             table: this.name,
             code: this.account,
-            scope: params.scope !== undefined ? String(params.scope) : this.account,
+            scope:
+                params.scope !== undefined
+                    ? String(params.scope)
+                    : this.defaultScope || this.account,
             type: this.rowType!,
             limit: 1,
             lower_bound: wrapIndexValue(value),

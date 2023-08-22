@@ -33,8 +33,8 @@ export namespace RewardsGm {
         ): Action {
             return super.action(name, data, options)
         }
-        table<T extends 'config' | 'users'>(name: T) {
-            return super.table(name, TableMap[name])
+        table<T extends 'config' | 'users'>(name: T, scope?: NameType) {
+            return super.table(name, scope, TableMap[name])
         }
     }
     export interface ActionNameParams {

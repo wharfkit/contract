@@ -141,8 +141,8 @@ export namespace Eosio {
                 | 'userres'
                 | 'voters'
                 | 'limitauthchg'
-        >(name: T) {
-            return super.table(name, TableMap[name])
+        >(name: T, scope?: NameType) {
+            return super.table(name, scope, TableMap[name])
         }
     }
     export interface ActionNameParams {

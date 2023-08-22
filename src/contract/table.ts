@@ -6,7 +6,7 @@ import {TableCursor} from './table-cursor'
 
 export interface QueryParams {
     index?: string
-    scope?: NameType
+    scope?: NameType | number
     key_type?: keyof API.v1.TableIndexTypes
     json?: boolean
     from?: API.v1.TableIndexType | string | number
@@ -110,7 +110,7 @@ export class Table<RowType = any> {
             // Table query
             table: this.name,
             code: this.account,
-            scope: params.scope || this.account,
+            scope: String(params.scope) || this.account,
             // Response typing
             type: this.rowType,
             // Filtering
@@ -151,7 +151,7 @@ export class Table<RowType = any> {
         const tableRowsParams = {
             table: this.name,
             code: this.account,
-            scope: params.scope || this.account,
+            scope: String(params.scope) || this.account,
             type: this.rowType!,
             limit: 1,
             lower_bound: wrapIndexValue(value),

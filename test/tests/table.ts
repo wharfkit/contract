@@ -258,6 +258,26 @@ suite('Table', () => {
                 )
             })
         })
+
+        suite('scopes', function () {
+            test('should work with numeric scopes', async function () {
+                const testKit = new ContractKit({
+                    client: makeClient('https://wax.greymass.com'),
+                })
+
+                const contract = await testKit.load('alcordexmain')
+
+                const rowsBuyIntScope = await contract.table('buyorder').query({scope: 0}).all()
+                const rowsSellIntScope = await contract.table('sellorder').query({scope: 0}).all()
+                assert.equal(rowsBuyIntScope.length, 144)
+                assert.equal(rowsSellIntScope.length, 348)
+
+                const rowsBuyTxtScope = await contract.table('buyorder').query({scope: '0'}).all()
+                const rowsSellTxtScope = await contract.table('sellorder').query({scope: '0'}).all()
+                assert.equal(rowsBuyTxtScope.length, 144)
+                assert.equal(rowsSellTxtScope.length, 348)
+            })
+        })
     })
 
     suite('get', () => {

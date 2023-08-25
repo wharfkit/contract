@@ -4,14 +4,14 @@ import * as ts from 'typescript'
 
 import {capitalize} from '../utils'
 
-const EOSIO_CORE_CLASSES: string[] = []
+const ANTELOPE_CLASSES: string[] = []
 Object.keys(Antelope).map((key) => {
     if (Antelope[key].abiName) {
-        EOSIO_CORE_CLASSES.push(key)
+        ANTELOPE_CLASSES.push(key)
     }
 })
 
-export const EOSIO_CORE_TYPES = [
+export const ANTELOPE_TYPES = [
     'AssetType',
     'BlobType',
     'BlockIdType',
@@ -141,7 +141,7 @@ export function generateInterface(
 }
 
 export function findCoreClass(type: string): string | undefined {
-    for (const coreType of EOSIO_CORE_CLASSES) {
+    for (const coreType of ANTELOPE_CLASSES) {
         if (type.split('_').join('') === coreType.toLowerCase()) {
             return coreType
         }

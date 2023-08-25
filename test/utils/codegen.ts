@@ -5,7 +5,9 @@ import {codegen} from '../../src/codegen'
 
 export async function generateCodegenContract(contractName: string) {
     // Read the ABI from a JSON file
+    console.log({contractName, path: `test/data/abis/${contractName}.json` })
     const abiJson = fs.readFileSync(`test/data/abis/${contractName}.json`, {encoding: 'utf8'})
+    console.log({abiJson})
     const abi = new ABI(JSON.parse(abiJson))
 
     // Generate the code

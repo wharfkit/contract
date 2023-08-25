@@ -29,6 +29,7 @@ export function generateActionNamesInterface(abi: ABI.Def): ts.InterfaceDeclarat
 
 export function generateActionInterface(actionStruct, abi): ts.InterfaceDeclaration {
     const members = actionStruct.fields.map((field) => {
+        console.log({field})
         const typeReferenceNode = ts.factory.createTypeReferenceNode(
             findParamTypeString(field.type, 'Types.', abi)
         )
@@ -84,6 +85,8 @@ function findParamTypeString(typeString: string, namespace: string | null, abi: 
     if (['String', 'Boolean', 'Number'].includes(fieldType)) {
         return fieldType.toLowerCase()
     }
+
+    console.log({fieldType})
 
     return fieldType
 }

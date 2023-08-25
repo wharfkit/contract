@@ -142,7 +142,7 @@ export function generateInterface(
 
 export function findCoreClass(type: string): string | undefined {
     for (const coreType of ANTELOPE_CLASSES) {
-        if (type.split('_').join('') === coreType.toLowerCase()) {
+        if (type.split('_').join('').replace('$', '') === coreType.toLowerCase()) {
             return coreType
         }
     }

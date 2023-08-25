@@ -12,6 +12,16 @@ export function getMockParams(contract: Contract): ActionDataType {
                 feature_digest: '331f0fae3454c34ed2c5e84aeaf6143ce8e0b0678a6d57c25349363a4d590f41',
             }
         }
+        case 'eosio.msig': {
+            return {
+                proposer: 'foo',
+                proposal_name: 'bar',
+                level: {
+                    actor: 'foo',
+                    permission: 'active',
+                },
+            }  
+        }    
         case 'eosio.token': {
             return {
                 owner: 'foo',
@@ -23,7 +33,7 @@ export function getMockParams(contract: Contract): ActionDataType {
                 account: 'foo',
                 weight: 1,
             }
-        }
+        } 
         default: {
             throw new Error(`getMockParams not implemented for ${contract.account}`)
         }
@@ -34,6 +44,7 @@ export function runGenericContractTests(contract: Contract) {
     // suite: tableNames
     // contains tables
     assert.isArray(contract.tableNames)
+    console.log({ name: String(contract.account), tables: contract.tableNames })
     assert.isTrue(contract.tableNames.length > 0)
 
     // suite: table

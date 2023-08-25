@@ -142,7 +142,9 @@ export function generateInterface(
 
 export function findCoreClass(type: string): string | undefined {
     for (const coreType of ANTELOPE_CLASSES) {
-        if (type.split('_').join('').replace('$', '') === coreType.toLowerCase()) {
+        const parsedType = parseType(type).split('_').join('')
+        if (parsedType === coreType.toLowerCase() || 
+            parsedType.replace(/[0-9]/g, '') === coreType.toLowerCase()) {
             return coreType
         }
     }
@@ -158,6 +160,8 @@ export function findCoreType(type: string): string | undefined {
 
 export function findInternalType(type: string, typeNamespace: string | null, abi: ABI.Def): string {
     let {type: typeString} = extractDecorator(type)
+
+    typeString = parseType(typeString)
 
     const relevantAbitype = findAbiType(typeString, abi)
 
@@ -225,6 +229,8 @@ export function findExternalType(type: string, abi: ABI.Def, typeNamespace?: str
     let {type: typeString} = extractDecorator(type)
     const {decorator} = extractDecorator(type)
 
+    typeString = parseType(typeString)
+
     const relevantAbitype = findAbiType(typeString, abi, typeNamespace)
 
     if (relevantAbitype) {
@@ -245,4 +251,8 @@ export function extractDecorator(type: string): {type: string; decorator?: strin
     }
 
     return {type}
+}
+
+function parseType(type: string): string {
+    return type.replace('$', '')
 }

@@ -10,7 +10,7 @@ import RewardsGm from '$test/data/contracts/mock-rewards.gm'
 import EosioMsig from '$test/data/contracts/mock-eosio.msig'
 
 import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codegen'
-import {runGenericContractTests} from './generic'
+import {runGenericContractTests} from './helpers/generic'
 
 const client = makeClient('https://eos.greymass.com')
 

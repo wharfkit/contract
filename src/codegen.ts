@@ -19,7 +19,8 @@ export async function codegen(contractName, abi) {
             '@wharfkit/contract'
         )
 
-        const antelopeImports = ['ABI', 'Action', 'Blob', 'Struct', ...getCoreImports(abi)]
+        const allAntelopeImports = ['ABI', 'Action', 'Blob', 'Struct', 'Name', ...getCoreImports(abi)]
+        const antelopeImports = allAntelopeImports.filter((item, index) => allAntelopeImports.indexOf(item) === index)
 
         antelopeImports.sort()
 

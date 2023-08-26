@@ -5,7 +5,7 @@ import ContractKit, {Contract, ContractArgs, Table} from '$lib'
 import {ProducerInfo} from '$test/data/structs/eosio'
 import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
-import {runGenericContractTests} from './generic'
+import {runGenericContractTests} from './helpers/generic'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 

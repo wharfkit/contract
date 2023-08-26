@@ -12,6 +12,16 @@ export function getMockParams(contract: Contract): ActionDataType {
                 feature_digest: '331f0fae3454c34ed2c5e84aeaf6143ce8e0b0678a6d57c25349363a4d590f41',
             }
         }
+        case 'eosio.msig': {
+            return {
+                proposer: 'foo',
+                proposal_name: 'bar',
+                level: {
+                    actor: 'foo',
+                    permission: 'active',
+                },
+            }
+        }
         case 'eosio.token': {
             return {
                 owner: 'foo',

@@ -4,13 +4,13 @@ import {assert} from 'chai'
 import fs from 'fs'
 import {Contract} from 'src/contract'
 
-// import Eosio from '$test/data/contracts/mock-eosio'
+import Eosio from '$test/data/contracts/mock-eosio'
+import EosioMsig from '$test/data/contracts/mock-eosio.msig'
 import EosioToken from '$test/data/contracts/mock-eosio.token'
 import RewardsGm from '$test/data/contracts/mock-rewards.gm'
-// import EosioMsig from '$test/data/contracts/mock-eosio.msig'
 
 import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codegen'
-import {runGenericContractTests} from './generic'
+import {runGenericContractTests} from './helpers/generic'
 
 const client = makeClient('https://eos.greymass.com')
 
@@ -22,14 +22,14 @@ interface Code {
 suite('codegen', async function () {
     // Contract instances
     const contracts = {
-        // eosio: {
-        //     mock: Eosio,
-        //     generated: null,
-        // },
-        // 'eosio.msig': {
-        //     mock: EosioMsig,
-        //     generated: null,
-        // },
+        eosio: {
+            mock: Eosio,
+            generated: null,
+        },
+        'eosio.msig': {
+            mock: EosioMsig,
+            generated: null,
+        },
         'eosio.token': {
             mock: EosioToken,
             generated: null,

@@ -1348,8 +1348,8 @@ export namespace Eosio {
         }
         @Struct.type('setparams')
         export class Setparams extends Struct {
-            @Struct.field(Types.BlockchainParametersV1)
-            params!: Types.BlockchainParametersV1
+            @Struct.field(BlockchainParametersV1)
+            params!: BlockchainParametersV1
         }
         @Struct.type('setpriv')
         export class Setpriv extends Struct {

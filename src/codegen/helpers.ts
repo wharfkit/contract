@@ -163,16 +163,23 @@ export function findInternalType(type: string, typeNamespace: string | null, abi
 
     typeString = parseType(typeString)
 
-    const relevantAbitype = findAbiType(typeString, abi)
+    const aliasType = findAliasType(typeString, abi)
 
-    if (relevantAbitype) {
-        typeString = relevantAbitype
+    if (aliasType) {
+        console.log({aliasType})
+        typeString = aliasType
     }
 
     const variantType = findVariantType(typeString, typeNamespace, abi)
 
     if (variantType) {
         typeString = variantType
+    }
+
+    const relevantAbitype = findAbiType(typeString, abi)
+
+    if (relevantAbitype) {
+        typeString = relevantAbitype
     }
 
     return formatInternalType(typeString, typeNamespace, abi)
@@ -195,6 +202,12 @@ export function generateStructClassName(name) {
         .join('')
 }
 
+function findAliasType(typeString: string, abi: ABI.Def): string | undefined {
+    const alias = abi.types.find((type) => type.new_type_name === typeString)
+
+    return alias?.type
+}
+
 function findVariantType(
     typeString: string,
     namespace: string | null,
@@ -204,9 +217,17 @@ function findVariantType(
         (variant) => variant.name.toLowerCase() === typeString.toLowerCase()
     )
 
+    if (typeString === 'variant_block_signing_authority_v0') {
+        console.log({ variants: abi.variants, typeString, abiVariant})
+    }
+
     if (!abiVariant) {
         return
     }
+
+    console.log({ variants: abi.variants, typeString, abiVariant, returned: abiVariant.types
+        .map((variant) => formatInternalType(variant, namespace, abi))
+        .join(' | ') })
 
     return abiVariant.types
         .map((variant) => formatInternalType(variant, namespace, abi))

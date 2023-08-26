@@ -11,9 +11,8 @@ Object.keys(Antelope).map((key) => {
     }
 })
 
-export const ANTELOPE_CLASS_MAPPINGS
- = {
-    block_timestamp_type: 'BlockTimestamp'
+export const ANTELOPE_CLASS_MAPPINGS = {
+    block_timestamp_type: 'BlockTimestamp',
 }
 
 export function getCoreImports(abi: ABI.Def) {
@@ -119,8 +118,12 @@ export function findCoreClass(type: string): string | undefined {
 
     const parsedType = parseType(type).split('_').join('')
 
-    return ANTELOPE_CLASSES.find((antelopeClass) => parsedType === antelopeClass.toLowerCase()) ||
-        ANTELOPE_CLASSES.find((antelopeClass) => parsedType.replace(/[0-9]/g, '') === antelopeClass.toLowerCase())
+    return (
+        ANTELOPE_CLASSES.find((antelopeClass) => parsedType === antelopeClass.toLowerCase()) ||
+        ANTELOPE_CLASSES.find(
+            (antelopeClass) => parsedType.replace(/[0-9]/g, '') === antelopeClass.toLowerCase()
+        )
+    )
 }
 
 export function findCoreType(type: string): string | undefined {
@@ -184,11 +187,7 @@ function findVariantType(
     return abiVariant.types.join(' | ')
 }
 
-export function findAbiType(
-    type: string,
-    abi: ABI.Def,
-    typeNamespace = ''
-): string | undefined {
+export function findAbiType(type: string, abi: ABI.Def, typeNamespace = ''): string | undefined {
     let typeString = type
 
     const aliasType = findAliasType(typeString, abi)
@@ -217,7 +216,7 @@ export function findExternalType(type: string, abi: ABI.Def, typeNamespace?: str
     typeString = parseType(typeString)
 
     const relevantAbitype = findAbiType(typeString, abi, typeNamespace)
-    
+
     if (relevantAbitype) {
         typeString = relevantAbitype
     }

@@ -5,9 +5,9 @@ import fs from 'fs'
 import {Contract} from 'src/contract'
 
 import Eosio from '$test/data/contracts/mock-eosio'
+import EosioMsig from '$test/data/contracts/mock-eosio.msig'
 import EosioToken from '$test/data/contracts/mock-eosio.token'
 import RewardsGm from '$test/data/contracts/mock-rewards.gm'
-import EosioMsig from '$test/data/contracts/mock-eosio.msig'
 
 import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codegen'
 import {runGenericContractTests} from './helpers/generic'

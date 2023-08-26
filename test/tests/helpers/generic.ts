@@ -20,8 +20,8 @@ export function getMockParams(contract: Contract): ActionDataType {
                     actor: 'foo',
                     permission: 'active',
                 },
-            }  
-        }    
+            }
+        }
         case 'eosio.token': {
             return {
                 owner: 'foo',
@@ -33,7 +33,7 @@ export function getMockParams(contract: Contract): ActionDataType {
                 account: 'foo',
                 weight: 1,
             }
-        } 
+        }
         default: {
             throw new Error(`getMockParams not implemented for ${contract.account}`)
         }
@@ -44,7 +44,6 @@ export function runGenericContractTests(contract: Contract) {
     // suite: tableNames
     // contains tables
     assert.isArray(contract.tableNames)
-    console.log({ name: String(contract.account), tables: contract.tableNames })
     assert.isTrue(contract.tableNames.length > 0)
 
     // suite: table

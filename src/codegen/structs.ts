@@ -159,7 +159,6 @@ function orderStructs(structs) {
     const orderedStructs: StructData[] = []
 
     for (const struct of structs) {
-        
         orderedStructs.push(...findDependencies(struct, structs))
         orderedStructs.push(struct)
     }
@@ -196,7 +195,7 @@ function findFieldStructType(
     namespace: string | null,
     abi: ABI.Def
 ): ts.Identifier | ts.StringLiteral {
-    let fieldTypeString = findFieldStructTypeString(typeString, namespace, abi)
+    const fieldTypeString = findFieldStructTypeString(typeString, namespace, abi)
 
     if (['string', 'boolean', 'number'].includes(fieldTypeString)) {
         return ts.factory.createStringLiteral(fieldTypeString)

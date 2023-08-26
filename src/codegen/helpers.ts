@@ -11,38 +11,10 @@ Object.keys(Antelope).map((key) => {
     }
 })
 
-export const ANTELOPE_TYPES = [
-    'AssetType',
-    'BlobType',
-    'BlockIdType',
-    'BytesType',
-    'ChecksumType',
-    'Checksum160Type',
-    'Checksum256Type',
-    'Checksum512Type',
-    'FloatType',
-    'Float32Type',
-    'Float64Type',
-    'Float128Type',
-    'IntType',
-    'Int8Type',
-    'Int16Type',
-    'Int32Type',
-    'Int64Type',
-    'Int128Type',
-    'NameType',
-    'PermissionLevelType',
-    'PublicKeyType',
-    'SignatureType',
-    'TimePointType',
-    'UInt128Type',
-    'UInt16Type',
-    'UInt32Type',
-    'UInt64Type',
-    'UInt8Type',
-    'VarIntType',
-    'VarUIntType',
-]
+export const ANTELOPE_CLASS_MAPPINGS
+ = {
+    block_timestamp_type: 'BlockTimestamp'
+}
 
 export function getCoreImports(abi: ABI.Def) {
     const coreImports: string[] = []
@@ -141,6 +113,9 @@ export function generateInterface(
 }
 
 export function findCoreClass(type: string): string | undefined {
+    if (ANTELOPE_CLASS_MAPPINGS[type]) {
+        return ANTELOPE_CLASS_MAPPINGS[type]
+    }
     for (const coreType of ANTELOPE_CLASSES) {
         const parsedType = parseType(type).split('_').join('')
         if (parsedType === coreType.toLowerCase() || 
@@ -166,7 +141,6 @@ export function findInternalType(type: string, typeNamespace: string | null, abi
     const aliasType = findAliasType(typeString, abi)
 
     if (aliasType) {
-        console.log({aliasType})
         typeString = aliasType
     }
 
@@ -217,17 +191,9 @@ function findVariantType(
         (variant) => variant.name.toLowerCase() === typeString.toLowerCase()
     )
 
-    if (typeString === 'variant_block_signing_authority_v0') {
-        console.log({ variants: abi.variants, typeString, abiVariant})
-    }
-
     if (!abiVariant) {
         return
     }
-
-    console.log({ variants: abi.variants, typeString, abiVariant, returned: abiVariant.types
-        .map((variant) => formatInternalType(variant, namespace, abi))
-        .join(' | ') })
 
     return abiVariant.types
         .map((variant) => formatInternalType(variant, namespace, abi))

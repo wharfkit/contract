@@ -1,4 +1,4 @@
-import {ABI} from '@wharfkit/antelope'
+import {ABI} from '@wharfkit/session'
 import ts from 'typescript'
 import {capitalize} from '../utils'
 import {extractDecorator, findInternalType, generateStructClassName} from './helpers'
@@ -157,20 +157,10 @@ export function generateField(
 
 function orderStructs(structs) {
     const orderedStructs: StructData[] = []
-    const structNames = structs.map((struct) => struct.structName)
 
     for (const struct of structs) {
-        for (const field of struct.fields) {
-            const {type: fieldType} = extractDecorator(field.type)
-
-            if (structNames.includes(fieldType.toLowerCase())) {
-                const dependencyStruct = structs.find(
-                    (struct) => struct.structName === fieldType.toLowerCase()
-                )
-                orderedStructs.push(dependencyStruct)
-            }
-        }
-
+        
+        orderedStructs.push(...findDependencies(struct, structs))
         orderedStructs.push(struct)
     }
 
@@ -179,12 +169,34 @@ function orderStructs(structs) {
     })
 }
 
+function findDependencies(struct: StructData, allStructs: StructData[]): StructData[] {
+    const dependencies: StructData[] = []
+
+    const structNames = allStructs.map((struct) => struct.structName)
+
+    for (const field of struct.fields) {
+        const {type: fieldType} = extractDecorator(field.type)
+
+        if (structNames.includes(fieldType.toLowerCase())) {
+            const dependencyStruct = allStructs.find(
+                (struct) => struct.structName === fieldType.toLowerCase()
+            )
+            if (dependencyStruct) {
+                dependencies.push(...findDependencies(dependencyStruct, allStructs))
+                dependencies.push(dependencyStruct)
+            }
+        }
+    }
+
+    return dependencies
+}
+
 function findFieldStructType(
     typeString: string,
     namespace: string | null,
     abi: ABI.Def
 ): ts.Identifier | ts.StringLiteral {
-    const fieldTypeString = findFieldStructTypeString(typeString, namespace, abi)
+    let fieldTypeString = findFieldStructTypeString(typeString, namespace, abi)
 
     if (['string', 'boolean', 'number'].includes(fieldTypeString)) {
         return ts.factory.createStringLiteral(fieldTypeString)
@@ -200,16 +212,16 @@ function findFieldStructTypeString(
 ): string {
     const fieldType = findInternalType(typeString, namespace, abi)
 
-    if (fieldType === 'Symbol') {
-        return 'Asset.Symbol'
+    if (['String', 'Number'].includes(fieldType)) {
+        return fieldType.toLowerCase()
     }
 
     if (fieldType === 'Bool') {
         return 'boolean'
     }
 
-    if (['String', 'Boolean', 'Number'].includes(fieldType)) {
-        return fieldType.toLowerCase()
+    if (fieldType === 'Symbol') {
+        return 'Asset.Symbol'
     }
 
     return fieldType

@@ -1,4 +1,4 @@
-import {ABI} from '@wharfkit/session'
+import {ABI} from '@wharfkit/antelope'
 import ts from 'typescript'
 import {capitalize} from '../utils'
 import {findExternalType} from './helpers'
@@ -29,16 +29,17 @@ export function generateActionNamesInterface(abi: ABI.Def): ts.InterfaceDeclarat
 
 export function generateActionInterface(actionStruct, abi): ts.InterfaceDeclaration {
     const members = actionStruct.fields.map((field) => {
+        const typeReferenceNode = ts.factory.createTypeReferenceNode(
+            findParamTypeString(field.type, 'Types.', abi)
+        )
+
         return ts.factory.createPropertySignature(
             undefined,
             field.name.toLowerCase(),
             field.type.includes('?')
                 ? ts.factory.createToken(ts.SyntaxKind.QuestionToken)
                 : undefined,
-            ts.factory.createTypeReferenceNode(
-                findExternalType(field.type, abi, 'Types.'),
-                undefined
-            )
+            typeReferenceNode
         )
     })
 
@@ -67,4 +68,22 @@ export function generateActionsNamespace(abi: ABI.Def): ts.ModuleDeclaration {
         ts.factory.createModuleBlock(interfaces),
         ts.NodeFlags.Namespace
     )
+}
+
+function findParamTypeString(typeString: string, namespace: string | null, abi: ABI.Def): string {
+    const fieldType = findExternalType(typeString, abi, namespace ? namespace : undefined)
+
+    if (fieldType === 'Symbol') {
+        return 'Asset.SymbolType'
+    }
+
+    if (fieldType === 'Bool') {
+        return 'boolean'
+    }
+
+    if (['String', 'Boolean', 'Number'].includes(fieldType)) {
+        return fieldType.toLowerCase()
+    }
+
+    return fieldType
 }

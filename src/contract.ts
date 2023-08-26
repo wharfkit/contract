@@ -73,7 +73,7 @@ export class Contract {
         return this.tableNames.includes(String(name))
     }
 
-    public table<RowType = any>(name: NameType, rowType?): Table<RowType> {
+    public table<RowType = any>(name: NameType, scope?: NameType, rowType?): Table<RowType> {
         if (!this.hasTable(name)) {
             throw new Error(`Contract (${this.account}) does not have a table named (${name})`)
         }

@@ -1,4 +1,4 @@
-import {ABI} from '@wharfkit/session'
+import {ABI} from '@wharfkit/antelope'
 import * as ts from 'typescript'
 
 import {generateClassDeclaration} from './helpers'
@@ -43,13 +43,17 @@ export async function generateContractClass(contractName: string, abi: ABI.Def) 
 
     classMembers.push(constructorMember)
 
-    const actionMethod = generateActionMethod(abi)
+    if (abi.actions.length) {
+        const actionMethod = generateActionMethod(abi)
 
-    classMembers.push(actionMethod)
+        classMembers.push(actionMethod)
+    }
 
-    const tableMethod = generateTableMethod(abi)
+    if (abi.tables.length) {
+        const tableMethod = generateTableMethod(abi)
 
-    classMembers.push(tableMethod)
+        classMembers.push(tableMethod)
+    }
 
     // Construct class declaration
     const classDeclaration = generateClassDeclaration('Contract', classMembers, {
@@ -189,6 +193,16 @@ function generateTableMethod(abi: ABI.Def): ts.MethodDeclaration {
         undefined
     )
 
+    const scopeParameter = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        'scope',
+        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+        ts.factory.createTypeReferenceNode('NameType'),
+        undefined
+    )
+
     // 4. Generate the function body.
     const methodBody = ts.factory.createBlock(
         [
@@ -201,6 +215,7 @@ function generateTableMethod(abi: ABI.Def): ts.MethodDeclaration {
                     undefined,
                     [
                         ts.factory.createIdentifier('name'),
+                        ts.factory.createIdentifier('scope'),
                         ts.factory.createIdentifier('TableMap[name]'),
                     ]
                 )
@@ -216,7 +231,7 @@ function generateTableMethod(abi: ABI.Def): ts.MethodDeclaration {
         'table',
         undefined,
         [typeParameter],
-        [nameParameter],
+        [nameParameter, scopeParameter],
         undefined,
         methodBody
     )

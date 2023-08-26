@@ -1,10 +1,11 @@
 import {makeClient, mockPrivateKey, mockSession} from '@wharfkit/mock-data'
 import {assert} from 'chai'
 
-import ContractKit, {ActionDataType, Contract, ContractArgs, Table} from '$lib'
+import ContractKit, {Contract, ContractArgs, Table} from '$lib'
 import {ProducerInfo} from '$test/data/structs/eosio'
 import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
+import {runGenericContractTests} from './helpers/generic'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 
@@ -68,89 +69,22 @@ const transferData = {
     memo: 'initial balance',
 }
 
-// Mocks data for the first action defined in the contract for testing purposes
-function getMockParams(contract: Contract): ActionDataType {
-    switch (String(contract.account)) {
-        case 'eosio': {
-            return {
-                feature_digest: '331f0fae3454c34ed2c5e84aeaf6143ce8e0b0678a6d57c25349363a4d590f41',
-            }
-        }
-        case 'eosio.token': {
-            return {
-                owner: 'foo',
-                symbol: '4,EOS',
-            }
-        }
-        case 'rewards.gm': {
-            return {
-                account: 'foo',
-                weight: 1,
-            }
-        }
-        default: {
-            throw new Error(`getMockParams not implemented for ${contract.account}`)
-        }
-    }
-}
+const mockKit = new ContractKit({
+    client: mockClient,
+})
 
-export function runGenericContractTests(contract: Contract) {
-    suite('tableNames', function () {
-        test('contains tables', function () {
-            assert.isArray(contract.tableNames)
-            assert.isTrue(contract.tableNames.length > 0)
-        })
-    })
-    suite('table', function () {
-        test('load table using Name', function () {
-            const tableName = Name.from(contract.tableNames[0])
-            const table = contract.table(tableName)
-            assert.instanceOf(table, Table)
-            assert.isTrue(table.name.equals(tableName))
-        })
-        test('load table using string', function () {
-            const tableName = contract.tableNames[0]
-            const table = contract.table(tableName)
-            assert.instanceOf(table, Table)
-            assert.isTrue(table.name.equals(tableName))
-        })
-        test('throws on invalid name', function () {
-            assert.throws(() => contract.table('foo'))
-        })
-    })
-    suite('actionNames', function () {
-        test('contains actions', function () {
-            assert.isArray(contract.actionNames)
-            assert.isTrue(contract.actionNames.length > 0)
-        })
-    })
-    suite('action', function () {
-        test('load action using Name', function () {
-            const actionName = Name.from(contract.actionNames[0])
-            const params = getMockParams(contract)
-            const action = contract.action(actionName, params)
-            assert.instanceOf(action, Action)
-            assert.isTrue(action.name.equals(actionName))
-        })
-        test('load action using string', function () {
-            const actionName = contract.actionNames[0]
-            const params = getMockParams(contract)
-            const action = contract.action(actionName, params)
-            assert.instanceOf(action, Action)
-            assert.isTrue(action.name.equals(actionName))
-        })
-        test('throws on invalid name', function () {
-            assert.throws(() => contract.action('foo', {}))
-        })
-    })
-}
+suite('Contract', async function () {
+    let systemContract: Contract
+    let tokenContract: Contract
 
-;(async function () {
-    const mockKit = new ContractKit({
-        client: mockClient,
+    setup(async function () {
+        if (!systemContract) {
+            systemContract = await mockKit.load('eosio')
+        }
+        if (!tokenContract) {
+            tokenContract = await mockKit.load('eosio.token')
+        }
     })
-    const systemContract = await mockKit.load('eosio')
-    const tokenContract = await mockKit.load('eosio.token')
 
     suite('Contract', () => {
         suite('construct', function () {
@@ -181,7 +115,11 @@ export function runGenericContractTests(contract: Contract) {
                 })
                 suite('table', function () {
                     test('should accept rowType', async function () {
-                        const table = systemContract.table<ProducerInfo>('producers', ProducerInfo)
+                        const table = systemContract.table<ProducerInfo>(
+                            'producers',
+                            undefined,
+                            ProducerInfo
+                        )
                         assert.instanceOf(table, Table)
                         const producer = await table.get('lioninjungle')
                         assert.instanceOf(producer, ProducerInfo)

@@ -157,26 +157,37 @@ export function generateField(
 
 function orderStructs(structs) {
     const orderedStructs: StructData[] = []
-    const structNames = structs.map((struct) => struct.structName)
 
     for (const struct of structs) {
-        for (const field of struct.fields) {
-            const {type: fieldType} = extractDecorator(field.type)
-
-            if (structNames.includes(fieldType.toLowerCase())) {
-                const dependencyStruct = structs.find(
-                    (struct) => struct.structName === fieldType.toLowerCase()
-                )
-                orderedStructs.push(dependencyStruct)
-            }
-        }
-
+        orderedStructs.push(...findDependencies(struct, structs))
         orderedStructs.push(struct)
     }
 
     return orderedStructs.filter((struct, index, self) => {
         return index === self.findIndex((s) => s.structName === struct.structName)
     })
+}
+
+function findDependencies(struct: StructData, allStructs: StructData[]): StructData[] {
+    const dependencies: StructData[] = []
+
+    const structNames = allStructs.map((struct) => struct.structName)
+
+    for (const field of struct.fields) {
+        const {type: fieldType} = extractDecorator(field.type)
+
+        if (structNames.includes(fieldType.toLowerCase())) {
+            const dependencyStruct = allStructs.find(
+                (struct) => struct.structName === fieldType.toLowerCase()
+            )
+            if (dependencyStruct) {
+                dependencies.push(...findDependencies(dependencyStruct, allStructs))
+                dependencies.push(dependencyStruct)
+            }
+        }
+    }
+
+    return dependencies
 }
 
 function findFieldStructType(
@@ -200,8 +211,12 @@ function findFieldStructTypeString(
 ): string {
     const fieldType = findInternalType(typeString, namespace, abi)
 
-    if (['String', 'Boolean', 'Number'].includes(fieldType)) {
+    if (['String', 'Number'].includes(fieldType)) {
         return fieldType.toLowerCase()
+    }
+
+    if (fieldType === 'Bool') {
+        return 'boolean'
     }
 
     if (fieldType === 'Symbol') {

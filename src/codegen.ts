@@ -19,11 +19,21 @@ export async function codegen(contractName, abi) {
             '@wharfkit/contract'
         )
 
-        const sessionImports = ['ABI', 'Action', 'Blob', 'Struct', ...getCoreImports(abi)]
+        const allAntelopeImports = [
+            'ABI',
+            'Action',
+            'Blob',
+            'Struct',
+            'Name',
+            ...getCoreImports(abi),
+        ]
+        const antelopeImports = allAntelopeImports.filter(
+            (item, index) => allAntelopeImports.indexOf(item) === index
+        )
 
-        sessionImports.sort()
+        antelopeImports.sort()
 
-        const importCoreStatement = generateImportStatement(sessionImports, '@wharfkit/session')
+        const importCoreStatement = generateImportStatement(antelopeImports, '@wharfkit/antelope')
 
         const {classDeclaration} = await generateContractClass(contractName, abi)
 

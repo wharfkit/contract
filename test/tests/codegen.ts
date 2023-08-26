@@ -4,87 +4,126 @@ import {assert} from 'chai'
 import fs from 'fs'
 import {Contract} from 'src/contract'
 
-import * as MockRewardsGm from '$test/data/contracts/mock-rewards'
+import Eosio from '$test/data/contracts/mock-eosio'
+import EosioMsig from '$test/data/contracts/mock-eosio.msig'
+import EosioToken from '$test/data/contracts/mock-eosio.token'
+import RewardsGm from '$test/data/contracts/mock-rewards.gm'
+
 import {generateCodegenContract, removeCodegenContracts} from '$test/utils/codegen'
-import {runGenericContractTests} from './contract'
-;(async function () {
-    const GeneratedRewardsGm = await generateCodegenContract('rewards.gm')
+import {runGenericContractTests} from './helpers/generic'
+
+const client = makeClient('https://eos.greymass.com')
+
+interface Code {
+    mock: string
+    generated: string
+}
+
+suite('codegen', async function () {
+    // Contract instances
     const contracts = {
-        MockRewardsGm,
-        GeneratedRewardsGm: GeneratedRewardsGm.import,
+        eosio: {
+            mock: Eosio,
+            generated: null,
+        },
+        'eosio.msig': {
+            mock: EosioMsig,
+            generated: null,
+        },
+        'eosio.token': {
+            mock: EosioToken,
+            generated: null,
+        },
+        'rewards.gm': {
+            mock: RewardsGm,
+            generated: null,
+        },
     }
 
-    const files = {
-        mock: fs.readFileSync('test/data/contracts/mock-rewards.ts').toString('utf-8'),
-        generated: GeneratedRewardsGm.text,
-    }
+    // Source code
+    const sources: Code[] = []
 
-    const client = makeClient('https://eos.greymass.com')
+    setup(async function () {
+        if (!sources.length) {
+            // loop through files
+            for (const testCase of Object.keys(contracts)) {
+                const generated = await generateCodegenContract(testCase)
+                const mock = fs
+                    .readFileSync(`test/data/contracts/mock-${testCase}.ts`)
+                    .toString('utf-8')
+                // Push source file in for comparison
+                sources.push({
+                    mock,
+                    generated: generated.text,
+                })
+                // Push contract class for testing
+                contracts[testCase] = generated.import
+            }
+        }
+    })
 
-    suite('codegen', function () {
+    suite('Generated vs Static', function () {
         test('Contracts are identical', function () {
-            assert.equal(files.generated, files.mock)
+            for (const source of sources) {
+                assert.equal(source.generated, source.mock)
+            }
         })
-        Object.keys(contracts).forEach((contractKey) => {
-            suite(`Testing namespace ${contractKey}`, function () {
-                // The `RewardsGm` namespace
-                const testNamespace = contracts[contractKey].RewardsGm
+        for (const contractKey of Object.keys(contracts)) {
+            for (const testType of Object.keys(contracts[contractKey])) {
+                test(`Testing contract ${contractKey} (${testType})`, function () {
+                    const testNamespace = contracts[contractKey].default
+                    const testContract = testNamespace.Contract
+                    const testContractInstance = new testContract({client})
 
-                // The `Contract` instance in the namespace
-                const testContract = testNamespace.Contract
-                const testContractInstance = new testContract({client})
+                    // Run generic contract tests
+                    runGenericContractTests(testContractInstance)
 
-                function assertRewardsContract(contract) {
-                    assert.instanceOf(contract, Contract)
-                    assert.instanceOf(contract.abi, ABI)
-                    assert.isTrue(contract.abi.equals(testNamespace.abi))
-                    assert.instanceOf(contract.account, Name)
-                    assert.instanceOf(contract.client, APIClient)
-                }
+                    function assertRewardsContract(contract) {
+                        assert.instanceOf(contract, Contract)
+                        assert.instanceOf(contract.abi, ABI)
+                        assert.isTrue(contract.abi.equals(testNamespace.abi))
+                        assert.instanceOf(contract.account, Name)
+                        assert.instanceOf(contract.client, APIClient)
+                    }
 
-                suite('Contract', function () {
-                    suite('constructor', function () {
-                        test('default', function () {
-                            const contract = new testContract({client})
-                            assertRewardsContract(contract)
-                        })
-                        test('accepted variants', function () {
-                            const c1 = new testContract({client})
-                            assertRewardsContract(c1)
-                            const c2 = new testContract({client, abi: testNamespace.abi})
-                            assertRewardsContract(c2)
-                            const c3 = new testContract({client, account: 'teamgreymass'})
-                            assertRewardsContract(c3)
-                            const c4 = new testContract({
-                                client,
-                                account: Name.from('teamgreymass'),
-                            })
-                            assertRewardsContract(c4)
-                            const c5 = new testContract({
-                                client,
+                    assertRewardsContract(testContractInstance)
+
+                    const c1 = new testContract({client})
+                    assertRewardsContract(c1)
+
+                    const c2 = new testContract({client, abi: testNamespace.abi})
+                    assertRewardsContract(c2)
+
+                    const c3 = new testContract({client, account: 'teamgreymass'})
+                    assertRewardsContract(c3)
+
+                    const c4 = new testContract({
+                        client,
+                        account: Name.from('teamgreymass'),
+                    })
+                    assertRewardsContract(c4)
+
+                    const c5 = new testContract({
+                        client,
+                        abi: testNamespace.abi,
+                        account: 'teamgreymass',
+                    })
+                    assertRewardsContract(c5)
+
+                    assert.throws(() => new testContract({abi: testNamespace.abi}))
+                    assert.throws(
+                        () =>
+                            new testContract({
                                 abi: testNamespace.abi,
                                 account: 'teamgreymass',
                             })
-                            assertRewardsContract(c5)
-                        })
-                        test('invalid variants', function () {
-                            assert.throws(() => new testContract({abi: testNamespace.abi}))
-                            assert.throws(
-                                () =>
-                                    new testContract({
-                                        abi: testNamespace.abi,
-                                        account: 'teamgreymass',
-                                    })
-                            )
-                            assert.throws(() => new testContract({account: 'teamgreymass'}))
-                        })
-                    })
-                    runGenericContractTests(testContractInstance)
+                    )
+                    assert.throws(() => new testContract({account: 'teamgreymass'}))
                 })
-            })
-        })
-        teardown(() => {
-            removeCodegenContracts()
-        })
+            }
+        }
     })
-})()
+    teardown(() => {
+        removeCodegenContracts()
+    })
+})

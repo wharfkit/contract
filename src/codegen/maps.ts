@@ -1,4 +1,4 @@
-import {ABI} from '@wharfkit/session'
+import {ABI} from '@wharfkit/antelope'
 import * as ts from 'typescript'
 import {findAbiType} from './helpers'
 
@@ -6,7 +6,7 @@ export function generateTableMap(abi: ABI.Def): ts.VariableStatement {
     // Map over tables to create the object properties
     const tableProperties = abi.tables.map((table) =>
         ts.factory.createPropertyAssignment(
-            String(table.name),
+            JSON.stringify(table.name),
             ts.factory.createIdentifier(findAbiType(table.type, abi, 'Types.') || table.type)
         )
     )

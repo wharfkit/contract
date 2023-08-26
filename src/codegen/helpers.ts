@@ -116,13 +116,11 @@ export function findCoreClass(type: string): string | undefined {
     if (ANTELOPE_CLASS_MAPPINGS[type]) {
         return ANTELOPE_CLASS_MAPPINGS[type]
     }
-    for (const coreType of ANTELOPE_CLASSES) {
-        const parsedType = parseType(type).split('_').join('')
-        if (parsedType === coreType.toLowerCase() || 
-            parsedType.replace(/[0-9]/g, '') === coreType.toLowerCase()) {
-            return coreType
-        }
-    }
+
+    const parsedType = parseType(type).split('_').join('')
+
+    return ANTELOPE_CLASSES.find((antelopeClass) => parsedType === antelopeClass.toLowerCase()) ||
+        ANTELOPE_CLASSES.find((antelopeClass) => parsedType.replace(/[0-9]/g, '') === antelopeClass.toLowerCase())
 }
 
 export function findCoreType(type: string): string | undefined {
@@ -138,18 +136,6 @@ export function findInternalType(type: string, typeNamespace: string | null, abi
 
     typeString = parseType(typeString)
 
-    const aliasType = findAliasType(typeString, abi)
-
-    if (aliasType) {
-        typeString = aliasType
-    }
-
-    const variantType = findVariantType(typeString, typeNamespace, abi)
-
-    if (variantType) {
-        typeString = variantType
-    }
-
     const relevantAbitype = findAbiType(typeString, abi)
 
     if (relevantAbitype) {
@@ -163,7 +149,7 @@ function formatInternalType(typeString: string, namespace: string | null, abi: A
     const structNames = abi.structs.map((struct) => struct.name.toLowerCase())
 
     if (structNames.includes(typeString.toLowerCase())) {
-        return `${namespace ? `${namespace}.` : ''}${generateStructClassName(typeString)}`
+        return `${namespace ? `${namespace}` : ''}${generateStructClassName(typeString)}`
     } else {
         return findCoreClass(typeString) || capitalize(typeString)
     }
@@ -195,16 +181,28 @@ function findVariantType(
         return
     }
 
-    return abiVariant.types
-        .map((variant) => formatInternalType(variant, namespace, abi))
-        .join(' | ')
+    return abiVariant.types.join(' | ')
 }
 
 export function findAbiType(
-    typeString: string,
+    type: string,
     abi: ABI.Def,
     typeNamespace = ''
 ): string | undefined {
+    let typeString = type
+
+    const aliasType = findAliasType(typeString, abi)
+
+    if (aliasType) {
+        typeString = aliasType
+    }
+
+    const variantType = findVariantType(typeString, typeNamespace, abi)
+
+    if (variantType) {
+        typeString = variantType
+    }
+
     const abiType = abi.structs.find((abiType) => abiType.name === typeString)?.name
 
     if (abiType) {
@@ -219,7 +217,7 @@ export function findExternalType(type: string, abi: ABI.Def, typeNamespace?: str
     typeString = parseType(typeString)
 
     const relevantAbitype = findAbiType(typeString, abi, typeNamespace)
-
+    
     if (relevantAbitype) {
         typeString = relevantAbitype
     }

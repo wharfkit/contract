@@ -15,9 +15,6 @@
     "scripts": {
         "prepare": "make"
     },
-    "bin": {
-        "wharf-generate": "./scripts/codegen-cli.js"
-    },
     "dependencies": {
         "@wharfkit/abicache": "^1.1.1",
         "@wharfkit/antelope": "^0.7.3",

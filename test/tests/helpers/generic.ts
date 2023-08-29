@@ -1,8 +1,7 @@
 import {Action, Name} from '@wharfkit/antelope'
 import {assert} from 'chai'
 
-import {ActionDataType, Contract} from 'src/contract'
-import {Table} from 'src/index-module'
+import {ActionDataType, Contract, Table} from '@wharfkit/contract'
 
 // Mocks data for the first action defined in the contract for testing purposes
 export function getMockParams(contract: Contract): ActionDataType {

@@ -9,7 +9,6 @@ Features:
 -   Create action data by accessing actions directly through the `.action` method of a `Contract`
 -   Retrieve Ricardian Contracts for specific actions through the `.ricardian` method of a `Contract`
 -   Cache and optimize ABI call patterns automatically in your application.
--   Generate frontend code based on a smart contracts ABI.
 
 ## Installation
 

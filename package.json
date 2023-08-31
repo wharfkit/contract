@@ -17,12 +17,12 @@
     },
     "dependencies": {
         "@wharfkit/abicache": "^1.1.1",
-        "@wharfkit/antelope": "^0.7.3",
+        "@wharfkit/antelope": "^0.8.0",
         "@wharfkit/signing-request": "^3.0.0",
         "tslib": "^2.1.0"
     },
     "resolutions": {
-        "@wharfkit/antelope": "^0.7.3"
+        "@wharfkit/antelope": "^0.8.0"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.20.2",
@@ -39,8 +39,8 @@
         "@types/node": "^18.7.18",
         "@typescript-eslint/eslint-plugin": "^5.20.0",
         "@typescript-eslint/parser": "^5.20.0",
-        "@wharfkit/mock-data": "^1.0.0",
-        "@wharfkit/session": "^1.0.0-beta9",
+        "@wharfkit/mock-data": "^1.0.2",
+        "@wharfkit/session": "^1.0.0",
         "assert": "^2.0.0",
         "chai": "^4.3.4",
         "eslint": "^8.13.0",

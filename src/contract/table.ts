@@ -6,6 +6,7 @@ import {TableCursor} from './table-cursor'
 
 export interface QueryParams {
     index?: string
+    index_position?: string
     scope?: NameType | number
     key_type?: keyof API.v1.TableIndexTypes
     json?: boolean
@@ -120,6 +121,7 @@ export class Table<RowType = any> {
             // Response typing
             type: this.rowType,
             // Filtering
+            index_position: params.index_position,
             key_type: params.key_type,
             lower_bound: wrapIndexValue(params.from),
             upper_bound: wrapIndexValue(params.to),
@@ -130,7 +132,11 @@ export class Table<RowType = any> {
             const fieldToIndexMapping = this.getFieldToIndex()
 
             if (!fieldToIndexMapping[params.index]) {
-                throw new Error(`Field ${params.index} is not a valid index.`)
+                // Nearly all contract ABIs are missing data to appropriately map this data.
+                // See: https://github.com/AntelopeIO/cdt/issues/197
+                throw new Error(
+                    `Field ${params.index} is not listed in the ABI under key_names/key_types. Try using 'index_position' instead.`
+                )
             }
 
             tableRowsParams.index_position = fieldToIndexMapping[params.index].index_position
@@ -152,9 +158,7 @@ export class Table<RowType = any> {
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
     async get(value?: API.v1.TableIndexType | string, params: QueryParams = {}): Promise<RowType> {
-        const fieldToIndexMapping = this.getFieldToIndex()
-
-        const tableRowsParams = {
+        const tableRowsParams: any = {
             table: this.name,
             code: this.account,
             scope:
@@ -165,11 +169,23 @@ export class Table<RowType = any> {
             limit: 1,
             lower_bound: wrapIndexValue(value),
             upper_bound: wrapIndexValue(value),
-            index_position: params.index
-                ? fieldToIndexMapping[params.index].index_position
-                : 'primary',
+            index_position: params.index_position,
             key_type: params.key_type,
             json: false,
+        }
+
+        if (params.index) {
+            const fieldToIndexMapping = this.getFieldToIndex()
+
+            if (!fieldToIndexMapping[params.index]) {
+                // Nearly all contract ABIs are missing data to appropriately map this data.
+                // See: https://github.com/AntelopeIO/cdt/issues/197
+                throw new Error(
+                    `Field ${params.index} is not listed in the ABI under key_names/key_types. Try using 'index_position' instead.`
+                )
+            }
+
+            tableRowsParams.index_position = fieldToIndexMapping[params.index].index_position
         }
 
         const {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)

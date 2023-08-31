@@ -2,7 +2,7 @@ import {makeClient, mockPrivateKey, mockSession} from '@wharfkit/mock-data'
 import {assert} from 'chai'
 
 import ContractKit, {Contract, ContractArgs, Table} from '$lib'
-import {ProducerInfo} from '$test/data/structs/eosio'
+import {DelegatedBandwidth, ProducerInfo} from '$test/data/structs/eosio'
 import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 import {runGenericContractTests} from './helpers/generic'
@@ -114,6 +114,25 @@ suite('Contract', async function () {
                     })
                 })
                 suite('table', function () {
+                    test('should accept scope', async function () {
+                        const table = systemContract.table<DelegatedBandwidth>(
+                            'delband',
+                            'teamgreymass'
+                        )
+                        assert.instanceOf(table, Table)
+                        assert.equal(table.defaultScope, 'teamgreymass')
+                        const test1 = await table.all()
+                        assert.lengthOf(test1, 1)
+                        const test2 = await table.get()
+                        assert.isTrue(test2.from.equals('teamgreymass'))
+                        assert.isTrue(test2.to.equals('teamgreymass'))
+                        assert.isTrue(test2.net_weight.equals('1.0000 EOS'))
+                        assert.isTrue(test2.cpu_weight.equals('1.0000 EOS'))
+                        const test3 = table.query()
+                        assert.equal(test3.params.scope, 'teamgreymass')
+                        const test4 = await test3.all()
+                        assert.lengthOf(test4, 1)
+                    })
                     test('should accept rowType', async function () {
                         const table = systemContract.table<ProducerInfo>(
                             'producers',

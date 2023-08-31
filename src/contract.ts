@@ -81,6 +81,7 @@ export class Contract {
             abi: this.abi,
             account: this.account,
             client: this.client,
+            defaultScope: scope,
             name,
             rowType,
         })

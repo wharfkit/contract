@@ -176,6 +176,19 @@ suite('Table', () => {
                 )
             })
 
+            test('should fetch table rows correctly when filtering is used (index_position)', async () => {
+                const tableRowCursor = decentiumTrendingTable.query({
+                    from: 101511,
+                    to: 105056,
+                    index_position: 'secondary',
+                })
+
+                assert.deepEqual(
+                    Serializer.objectify(await tableRowCursor.all()).map((row) => row.score),
+                    [101511, 102465, 102507, 103688, 103734, 105056]
+                )
+            })
+
             test('should fetch all rows', async () => {
                 const contractKit = new ContractKit({
                     client: makeClient('https://jungle4.greymass.com'),

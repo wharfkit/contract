@@ -104,9 +104,6 @@ export class Table<RowType = any> {
      *
      * @param {QueryParams} queryParams - Query parameters to filter rows (eg. `{id: {from: 1, to: 10}}`)
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
-     * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
-     *  May include:
-     *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
     query(params: QueryParams = {}): TableCursor<RowType> {
@@ -153,6 +150,7 @@ export class Table<RowType = any> {
     /**
      * Retrieves the row from the table that matches the given parameters.
      *
+     * @param {API.v1.TableIndexType | string} value - The value to match against the index.
      * @param {QueryParams} queryParams - Query parameters to identify a single row (eg. `{ id: 1 }`).
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
@@ -207,11 +205,10 @@ export class Table<RowType = any> {
     }
 
     /**
-     * Retrieves all the rows from the table.
+     * Retrieves a defined number of rows from the table.
      *
-     * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
-     *  May include:
-     *  - `limit`: Maximum number of rows to return.
+     * @param {number} maxRows - The maximum number of rows to return.
+     * @param {QueryParams} queryParams - Query parameters to filter rows.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
     first(maxRows: number, params: QueryParams = {}): TableCursor<RowType> {

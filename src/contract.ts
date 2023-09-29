@@ -48,7 +48,6 @@ export class Contract {
      * Constructs a new `Contract` instance.
      *
      * @param {ContractArgs} args - The required arguments for a contract.
-     * @param {ContractOptions} options - The options for the contract.
      */
     constructor(args: ContractArgs) {
         if (!args.abi) {

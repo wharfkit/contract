@@ -17,7 +17,7 @@ The `@wharfkit/contract` package is distributed as a module on [npm](https://www
 ```
 yarn add @wharfkit/contract
 # or
-npm install --save @wharfkit/
+npm install --save @wharfkit/contract
 ```
 
 ## Developing

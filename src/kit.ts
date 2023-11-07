@@ -1,18 +1,10 @@
-import {
-    ABI,
-    ABICache,
-    ABICacheInterface,
-    ABIDef,
-    APIClient,
-    Name,
-    NameType,
-    Session,
-} from '@wharfkit/session'
+import type {ABICacheInterface} from '@wharfkit/abicache'
+import {ABICache} from '@wharfkit/abicache'
+import {ABI, ABIDef, APIClient, Name, NameType} from '@wharfkit/antelope'
 import {Contract} from './contract'
 
 export interface ContractKitArgs {
-    client?: APIClient
-    session?: Session
+    client: APIClient
 }
 
 export interface ABIDefinition {
@@ -32,22 +24,15 @@ export class ContractKit {
     readonly client: APIClient
 
     constructor(args: ContractKitArgs, options: ContractKitOptions = defaultContractKitOptions) {
-        // Use either the client given or get it from the session.
         if (args.client) {
             this.client = args.client
-        } else if (args.session) {
-            this.client = args.session.client
         } else {
-            throw new Error(
-                'Either a `client` or `session` must be passed when initializing the ContractKit.'
-            )
+            throw new Error('A `client` must be passed when initializing the ContractKit.')
         }
 
-        // Use either the specified cache, the cache from the session, or create one
+        // Use either the specified cache or create one
         if (options.abiCache) {
             this.abiCache = options.abiCache
-        } else if (args.session) {
-            this.abiCache = args.session.abiCache
         } else {
             this.abiCache = new ABICache(this.client)
         }

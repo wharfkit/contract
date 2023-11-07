@@ -1,28 +1,24 @@
 # Contract Kit
 
-Greymass TypeScript library template, intended for libraries that work in any JavaScript context (node.js, Browser, React native), `@types/node` are installed only for tests, don't rely on any node.js types or imports inside `src/` (no `buffer`, `crypto` imports etc, they can be filled for browser but will bloat the bundle 100x)
+A library to simplify interactions with Antelope-based smart contracts.
+
+Features:
+
+-   Instantiate instances of a `Contract` in your frontend application
+-   Retrieve smart contract data with `Table` instances.
+-   Create action data by accessing actions directly through the `.action` method of a `Contract`
+-   Retrieve Ricardian Contracts for specific actions through the `.ricardian` method of a `Contract`
+-   Cache and optimize ABI call patterns automatically in your application.
 
 ## Installation
 
-The `contract` package is distributed as a module on [npm](https://www.npmjs.com/package/contract).
+The `@wharfkit/contract` package is distributed as a module on [npm](https://www.npmjs.com/package/@wharfkit/contract).
 
 ```
-yarn add contract
+yarn add @wharfkit/contract
 # or
-npm install --save contract
+npm install --save @wharfkit/contract
 ```
-
-## Usage
-
-To generate the Contract helper for a specific Antelope contract, use the `generate` make target:
-
-```bash
-make generate contract=<CONTRACT_NAME_HERE>
-```
-
-and your contract helper will be added to `contracts/CONTRACT_NAME.ts`.
-
-```typescript
 
 ## Developing
 
@@ -33,4 +29,3 @@ Clone the repository and run `make` to checkout all dependencies and build the p
 ---
 
 Made with ☕️ & ❤️ by [Greymass](https://greymass.com), if you find this useful please consider [supporting us](https://greymass.com/support-us).
-```

@@ -1,33 +1,24 @@
 import {assert} from 'chai'
 
-import {Contract, ContractKit, ContractKitArgs, ContractKitOptions} from '$lib'
-import {makeClient, mockSession} from '@wharfkit/mock-data'
-import {ABI, ABICache, Name} from '@wharfkit/session'
+import {Contract, ContractKit, ContractKitArgs} from '$lib'
+import {ABICache} from '@wharfkit/abicache'
+import {ABI, Name} from '@wharfkit/antelope'
+import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://jungle4.greymass.com')
 const mockContractKitArgs: ContractKitArgs = {
     client: mockClient,
 }
-const mockContractKitOptions: ContractKitOptions = {}
 
-suite('kit', function () {
+suite('Kit', function () {
     suite('construct', function () {
         test('defaults', function () {
             const kit = new ContractKit(mockContractKitArgs)
             assert.instanceOf(kit, ContractKit)
         })
-        test('throws if no client/session', function () {
-            assert.throws(() => new ContractKit({}))
-        })
         test('args: client', function () {
             assert.doesNotThrow(() => {
                 const kit = new ContractKit({client: mockClient})
-                assert.instanceOf(kit, ContractKit)
-            })
-        })
-        test('args: session', function () {
-            assert.doesNotThrow(() => {
-                const kit = new ContractKit({session: mockSession})
                 assert.instanceOf(kit, ContractKit)
             })
         })

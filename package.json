@@ -1,7 +1,7 @@
 {
     "name": "@wharfkit/contract",
     "description": "ContractKit for Wharf",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "homepage": "https://github.com/wharfkit/contract",
     "license": "BSD-3-Clause",
     "main": "lib/contract.js",
@@ -15,14 +15,14 @@
     "scripts": {
         "prepare": "make"
     },
-    "bin": {
-        "wharf-generate": "./scripts/codegen-cli.js"
-    },
     "dependencies": {
-        "@wharfkit/mock-data": "^1.0.0-beta11",
-        "@wharfkit/session": "^1.0.0-beta4",
-        "rollup-plugin-cleanup": "^3.2.1",
+        "@wharfkit/abicache": "^1.2.0",
+        "@wharfkit/antelope": "^1.0.0",
+        "@wharfkit/signing-request": "^3.1.0",
         "tslib": "^2.1.0"
+    },
+    "resolutions": {
+        "@wharfkit/antelope": "^1.0.0"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.20.2",
@@ -39,6 +39,8 @@
         "@types/node": "^18.7.18",
         "@typescript-eslint/eslint-plugin": "^5.20.0",
         "@typescript-eslint/parser": "^5.20.0",
+        "@wharfkit/mock-data": "^1.0.2",
+        "@wharfkit/session": "^1.0.0",
         "assert": "^2.0.0",
         "chai": "^4.3.4",
         "eslint": "^8.13.0",
@@ -50,6 +52,7 @@
         "node-fetch": "^2.6.1",
         "nyc": "^15.1.0",
         "prettier": "^2.2.1",
+        "prettier-plugin-organize-imports": "^3.2.3",
         "rollup": "^2.70.2",
         "rollup-plugin-cleanup": "^3.2.1",
         "rollup-plugin-dts": "^4.2.1",
@@ -57,6 +60,7 @@
         "ts-node": "^10.9.1",
         "tsconfig-paths": "^4.1.1",
         "typedoc": "^0.24.6",
-        "typescript": "^4.9.5"
+        "typescript": "^4.9.5",
+        "yarn-deduplicate": "^6.0.2"
     }
 }

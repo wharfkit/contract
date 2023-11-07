@@ -1,13 +1,18 @@
 import {
+    ABI,
     API,
+    Blob,
     Checksum160,
     Checksum256,
     Float64,
     isInstanceOf,
     Name,
+    Serializer,
     UInt128,
     UInt64,
-} from '@wharfkit/session'
+} from '@wharfkit/antelope'
+
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
 export function pascalCase(value: string): string {
     return value
@@ -29,7 +34,7 @@ export function capitalize(string) {
 export function singularize(word: string): string {
     if (word.endsWith('ies')) {
         return word.slice(0, -3) + 'y'
-    } else if (word.endsWith('ches') || word.endsWith('sses')) {
+    } else if (word.endsWith('ches') || word.endsWith('ses')) {
         return word.slice(0, -2)
     } else if (word.endsWith('s') && word.length > 1 && word[word.length - 2] !== 's') {
         return word.slice(0, -1)
@@ -73,4 +78,14 @@ export function wrapIndexValue(value): API.v1.TableIndexType | undefined {
     }
 
     return Name.from(value)
+}
+
+export function abiToBlob(abi: ABI): Blob {
+    const serializedABI = Serializer.encode({object: abi, type: ABI})
+    return new Blob(serializedABI.array)
+}
+
+export function blobStringToAbi(blobString: string): ABI {
+    const blob = Blob.from(blobString)
+    return ABI.from(blob)
 }

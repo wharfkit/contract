@@ -1,54 +1,77 @@
-import {API} from '@wharfkit/session'
-import {wrapIndexValue} from '../utils'
-import {Query, QueryOptions, Table} from './table'
+import {ABI, ABIDef, API, APIClient, Name} from '@wharfkit/antelope'
 
-interface TableCursorParams {
-    table: Table
-    tableParams: API.v1.GetTableRowsParams
-    next_key?: API.v1.TableIndexType | string
-    indexPositionField?: string
+/** Mashup of valid types for an APIClient call to v1.chain.get_table_rows */
+export type TableRowParamsTypes =
+    | API.v1.GetTableRowsParams
+    | API.v1.GetTableRowsParamsKeyed
+    | API.v1.GetTableRowsParamsTyped
+
+export interface TableCursorArgs {
+    /** The ABI for the contract this table belongs to */
+    abi: ABIDef
+    /** The APIClient instance to use for API requests */
+    client: APIClient
+    /** The parameters used for the v1/chain/get_table_rows call */
+    params: TableRowParamsTypes
+    /** The maximum number of rows the cursor should retrieve */
+    maxRows?: number
 }
 
-/**
- * Represents a cursor for a table in the blockchain. Provides methods for
- * iterating over the rows of the table.
- *
- * @typeparam TableRow The type of rows in the table.
- */
-export class TableCursor<TableRow> {
-    private table: Table
-    private next_key: API.v1.TableIndexType | string | undefined
-    private tableParams: API.v1.GetTableRowsParams
-    private endReached = false
-    private indexPositionField?: string
-    private rowsCount = 0
+/** The default parameters to use on a v1/chain/get_table_rows call */
+const defaultParams = {
+    json: false,
+    limit: 1000,
+}
+
+export abstract class TableCursor<RowType = any> {
+    /** The ABI for the contract this table belongs to */
+    readonly abi: ABI
+    /** The type of the table, as defined in the ABI */
+    readonly type: string
+    /** The parameters used for the v1/chain/get_table_rows call */
+    readonly params: TableRowParamsTypes
+    /** The APIClient instance to use for API requests */
+    readonly client: APIClient
+
+    /** For iterating on the cursor, the next key to query against lower_bounds */
+    protected next_key: API.v1.TableIndexType | string | undefined
+    /** Whether or not the cursor believes it has reached the end of its results */
+    protected endReached = false
+    /** The number of rows the cursor has retrieved */
+    protected rowsCount = 0
+    /** The maximum number of rows the cursor should retrieve */
+    protected maxRows: number = Number.MAX_SAFE_INTEGER
 
     /**
-     * @param {TableCursorParams} params - Parameters for creating a new table cursor.
+     * Create a new TableCursor instance.
      *
-     * @param {TableRow[]} params.rows - An array of rows that the cursor will iterate over.
-     * Each row represents an entry in the table.
-     *
-     * @param {Table} params.table - The table that the rows belong to.
-     *
-     * @param {API.v1.GetTableRowsParams} params.tableParams - Parameters for the `get_table_rows`
-     * API call, which are used to fetch the rows from the blockchain.
-     *
-     * @param {(Name | UInt64 | undefined)} [params.next_key] - The key for the next set of rows
-     * that the cursor can fetch. This is used for pagination when there are more rows than can be
-     * fetched in a single API call.
+     * @param args.abi The ABI for the contract.
+     * @param args.client The APIClient instance to use for API requests.
+     * @param args.params The parameters to use for the table query.
+     * @param args.maxRows The maximum number of rows to fetch.
+     * @returns A new TableCursor instance.
      */
-    constructor({table, tableParams, indexPositionField, next_key}: TableCursorParams) {
-        this.table = table
-        this.tableParams = tableParams
-        this.next_key = next_key
-        this.indexPositionField = indexPositionField
+    constructor(args: TableCursorArgs) {
+        this.abi = ABI.from(args.abi)
+        this.client = args.client
+        this.params = {
+            ...defaultParams,
+            ...args.params,
+        }
+        if (args.maxRows) {
+            this.maxRows = args.maxRows
+        }
+        const table = this.abi.tables.find((t) => Name.from(t.name).equals(this.params.table))
+        if (!table) {
+            throw new Error('Table not found')
+        }
+        this.type = table.type
     }
 
     /**
      * Implements the async iterator protocol for the cursor.
      *
-     * @returns An iterator for the rows in the table.
+     * @returns An iterator for all rows in the table.
      */
     async *[Symbol.asyncIterator]() {
         while (true) {
@@ -58,7 +81,6 @@ export class TableCursor<TableRow> {
                 yield row
             }
 
-            // If no rows are returned or next_key is undefined, we have exhausted all rows
             if (rows.length === 0 || !this.next_key) {
                 return
             }
@@ -66,57 +88,15 @@ export class TableCursor<TableRow> {
     }
 
     /**
-     * Fetches more rows from the table and appends them to the cursor.
+     * Fetch the next batch of rows from the cursor.
      *
-     * @returns The new rows.
+     * @param rowsPerAPIRequest The number of rows to fetch per API request.
+     * @returns A promise containing the next batch of rows.
      */
-    async next(): Promise<TableRow[]> {
-        if (this.endReached) {
-            return []
-        }
-
-        let lower_bound = this.tableParams.lower_bound
-        const upper_bound = this.tableParams.upper_bound
-
-        if (this.next_key) {
-            lower_bound = this.next_key
-        }
-
-        let indexPosition = this.tableParams.index_position || 'primary'
-
-        if (this.indexPositionField) {
-            const fieldToIndexMapping = this.table.getFieldToIndex()
-
-            if (!fieldToIndexMapping[this.indexPositionField]) {
-                throw new Error(`Field ${this.indexPositionField} is not a valid index.`)
-            }
-
-            indexPosition = fieldToIndexMapping[this.indexPositionField].index_position
-        }
-
-        const {rows, next_key} = await this.table.contract.client!.v1.chain.get_table_rows({
-            ...this.tableParams,
-            limit: Math.min(this.tableParams.limit - this.rowsCount, 1000000),
-            lower_bound: wrapIndexValue(lower_bound),
-            upper_bound: wrapIndexValue(upper_bound),
-            index_position: indexPosition,
-        })
-
-        this.next_key = next_key
-
-        if (!next_key || rows.length === 0 || this.rowsCount === this.tableParams.limit) {
-            this.endReached = true
-        }
-
-        this.rowsCount += rows.length
-
-        return rows
-    }
+    abstract next(rowsPerAPIRequest?: number): Promise<RowType[]>
 
     /**
-     * Resets the cursor to the beginning of the table and returns the first rows.
-     *
-     * @returns The first rows in the table.
+     * Reset the internal state of the cursor
      */
     async reset() {
         this.next_key = undefined
@@ -125,32 +105,15 @@ export class TableCursor<TableRow> {
     }
 
     /**
-     * Returns all rows in the cursor query.
+     * Fetch all rows from the cursor by recursively calling next() until the end is reached.
      *
-     * @returns All rows in the cursor query.
+     * @returns A promise containing all rows for the cursor.
      */
-    async all() {
-        const rows: TableRow[] = []
+    async all(): Promise<RowType[]> {
+        const rows: RowType[] = []
         for await (const row of this) {
             rows.push(row)
         }
         return rows
-    }
-
-    /**
-     * Returns a new cursor with updated parameters.
-     *
-     * @returns A new cursor with updated parameters.
-     */
-    query(query: Query, {limit}: QueryOptions = {}) {
-        return new TableCursor({
-            table: this.table,
-            tableParams: {
-                ...this.tableParams,
-                limit: limit || this.tableParams.limit,
-                lower_bound: query.from || this.tableParams.lower_bound,
-                upper_bound: query.to || this.tableParams.upper_bound,
-            },
-        })
     }
 }

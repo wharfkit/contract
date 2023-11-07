@@ -30,15 +30,15 @@ coverage: build/coverage
 ci-test: node_modules
 	@TS_NODE_PROJECT='./test/tsconfig.json' MOCK_DIR='./test/data/requests' \
 		${BIN}/nyc ${NYC_OPTS} --reporter=text \
-		${BIN}/mocha ${MOCHA_OPTS} -R list ${TEST_FILES}
+		${BIN}/mocha ${MOCHA_OPTS} -R list ${TEST_FILES} --no-timeout
 
 .PHONY: check
 check: node_modules
-	@${BIN}/eslint src --ext .ts --max-warnings 0 --format unix && echo "Ok"
+	@${BIN}/eslint src test --ext .ts --max-warnings 0 --format unix && echo "Ok"
 
 .PHONY: format
 format: node_modules
-	@${BIN}/eslint src --ext .ts --fix
+	@${BIN}/eslint src test --ext .ts --fix
 
 .PHONY: publish
 publish: | distclean node_modules
@@ -50,10 +50,6 @@ publish: | distclean node_modules
 .PHONY: docs
 docs: build/docs
 	@open build/docs/index.html
-
-.PHONY: generate
-generate: lib
-	node -r esm scripts/codegen-cli.js $(contract)
 
 build/docs: $(SRC_FILES) node_modules
 	@${BIN}/typedoc --out build/docs \

@@ -1,21 +1,19 @@
-import {ABI, ABISerializableConstructor, API, Name, NameType} from '@wharfkit/session'
-import type {Contract} from '../contract'
+import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@wharfkit/antelope'
 import {indexPositionInWords, wrapIndexValue} from '../utils'
+import {TableRowCursor} from './row-cursor'
+import {TableScopeCursor} from './scope-cursor'
 import {TableCursor} from './table-cursor'
 
-export interface FindOptions {
+export interface QueryParams {
     index?: string
-    scope?: NameType
+    index_position?: string
+    scope?: NameType | number
     key_type?: keyof API.v1.TableIndexTypes
-}
-
-export interface QueryOptions extends FindOptions {
-    limit?: number
-}
-
-export interface Query {
-    from: API.v1.TableIndexType | string
-    to: API.v1.TableIndexType | string
+    json?: boolean
+    from?: API.v1.TableIndexType | string | number
+    to?: API.v1.TableIndexType | string | number
+    maxRows?: number
+    rowsPerAPIRequest?: number
 }
 
 interface FieldToIndex {
@@ -25,10 +23,14 @@ interface FieldToIndex {
     }
 }
 interface TableParams<TableRow = any> {
-    contract: Contract
+    abi: ABIDef
+    account: NameType
+    client: APIClient
     name: NameType
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
+    defaultRowLimit?: number
+    defaultScope?: NameType
 }
 
 export interface GetTableRowsOptions {
@@ -42,18 +44,23 @@ export interface GetTableRowsOptions {
  *
  * @typeparam TableRow The type of rows in the table.
  */
-export class Table<TableRow extends ABISerializableConstructor = ABISerializableConstructor> {
-    readonly abi: ABI.Table
+export class Table<RowType = any> {
+    readonly abi: ABI
+    readonly account: Name
+    readonly client: APIClient
     readonly name: Name
-    readonly contract: Contract
-    readonly rowType?: TableRow
+    readonly rowType?: RowType
+    readonly tableABI: ABI.Table
 
     private fieldToIndex?: any
+
+    public defaultScope?: NameType
+    public defaultRowLimit = 1000
 
     /**
      * Constructs a new `Table` instance.
      *
-     * @param {TableParams<TableRow>} tableParams - Parameters for the table.
+     * @param {TableParams} tableParams - Parameters for the table.
      * The parameters should include:
      *  - `contract`: Name of the contract that this table is associated with.
      *  - `name`: Name of the table.
@@ -61,18 +68,19 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `rowType`: (optional) Custom row type.
      *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      */
-    constructor({contract, name, rowType, fieldToIndex}: TableParams<TableRow>) {
-        this.name = Name.from(name)
-
-        const abi = contract.abi.tables.find((table) => this.name.equals(table.name))
-        if (!abi) {
+    constructor(args: TableParams) {
+        this.abi = ABI.from(args.abi)
+        this.account = Name.from(args.account)
+        this.name = Name.from(args.name)
+        this.client = args.client
+        this.rowType = args.rowType
+        this.fieldToIndex = args.fieldToIndex
+        const tableABI = this.abi.tables.find((table) => this.name.equals(table.name))
+        if (!tableABI) {
             throw new Error(`Table ${this.name} not found in ABI`)
         }
-
-        this.abi = abi
-        this.rowType = rowType
-        this.fieldToIndex = fieldToIndex
-        this.contract = contract
+        this.tableABI = tableABI
+        this.defaultScope = args.defaultScope
     }
 
     /**
@@ -87,8 +95,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *  - `fieldToIndex`: (optional) Mapping of fields to their indices.
      * @returns {Table} A new Table instance.
      */
-    static from(tableParams: TableParams) {
-        return new Table(tableParams)
+    static from<RowType = any>(tableParams: TableParams): Table<RowType> {
+        return new Table<RowType>(tableParams)
     }
 
     /**
@@ -96,102 +104,117 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      *
      * @param {QueryParams} queryParams - Query parameters to filter rows (eg. `{id: {from: 1, to: 10}}`)
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
-     * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
-     *  May include:
-     *  - `limit`: Maximum number of rows to return.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the filtered table rows.
      */
-    query(
-        query: Query,
-        {limit = 10, scope = this.contract.account, index, key_type}: QueryOptions = {}
-    ): TableCursor<TableRow> {
-        const {from, to} = query
-
-        const tableRowsParams = {
+    query(params: QueryParams = {}): TableCursor<RowType> {
+        const tableRowsParams: any = {
+            // Table query
             table: this.name,
-            code: this.contract.account,
-            scope,
+            code: this.account,
+            scope:
+                params.scope !== undefined
+                    ? String(params.scope)
+                    : this.defaultScope || this.account,
+            // Response typing
             type: this.rowType,
-            limit,
-            lower_bound: wrapIndexValue(from),
-            upper_bound: wrapIndexValue(to),
-            key_type: key_type,
+            // Filtering
+            index_position: params.index_position,
+            key_type: params.key_type,
+            lower_bound: wrapIndexValue(params.from),
+            upper_bound: wrapIndexValue(params.to),
+            limit: params.rowsPerAPIRequest || this.defaultRowLimit,
         }
 
-        return new TableCursor({
-            table: this,
-            tableParams: tableRowsParams,
-            indexPositionField: index,
+        if (params.index) {
+            const fieldToIndexMapping = this.getFieldToIndex()
+
+            if (!fieldToIndexMapping[params.index]) {
+                // Nearly all contract ABIs are missing data to appropriately map this data.
+                // See: https://github.com/AntelopeIO/cdt/issues/197
+                throw new Error(
+                    `Field ${params.index} is not listed in the ABI under key_names/key_types. Try using 'index_position' instead.`
+                )
+            }
+
+            tableRowsParams.index_position = fieldToIndexMapping[params.index].index_position
+        }
+
+        return new TableRowCursor<RowType>({
+            abi: this.abi,
+            client: this.client,
+            maxRows: params.maxRows,
+            params: tableRowsParams,
         })
     }
 
     /**
      * Retrieves the row from the table that matches the given parameters.
      *
+     * @param {API.v1.TableIndexType | string} value - The value to match against the index.
      * @param {QueryParams} queryParams - Query parameters to identify a single row (eg. `{ id: 1 }`).
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
-    async get(
-        queryValue: API.v1.TableIndexType | string,
-        {scope = this.contract.account, index, key_type}: QueryOptions = {}
-    ): Promise<TableRow> {
-        const fieldToIndexMapping = this.getFieldToIndex()
-
-        const tableRowsParams = {
+    async get(value?: API.v1.TableIndexType | string, params: QueryParams = {}): Promise<RowType> {
+        const tableRowsParams: any = {
             table: this.name,
-            code: this.contract.account,
-            scope,
+            code: this.account,
+            scope:
+                params.scope !== undefined
+                    ? String(params.scope)
+                    : this.defaultScope || this.account,
             type: this.rowType!,
             limit: 1,
-            lower_bound: wrapIndexValue(queryValue),
-            upper_bound: wrapIndexValue(queryValue),
-            index_position: index ? fieldToIndexMapping[index].index_position : 'primary',
-            key_type: key_type,
+            lower_bound: wrapIndexValue(value),
+            upper_bound: wrapIndexValue(value),
+            index_position: params.index_position,
+            key_type: params.key_type,
+            json: false,
         }
 
-        const {rows} = await this.contract.client!.v1.chain.get_table_rows(tableRowsParams)
+        if (params.index) {
+            const fieldToIndexMapping = this.getFieldToIndex()
 
-        return rows[0]
+            if (!fieldToIndexMapping[params.index]) {
+                // Nearly all contract ABIs are missing data to appropriately map this data.
+                // See: https://github.com/AntelopeIO/cdt/issues/197
+                throw new Error(
+                    `Field ${params.index} is not listed in the ABI under key_names/key_types. Try using 'index_position' instead.`
+                )
+            }
+
+            tableRowsParams.index_position = fieldToIndexMapping[params.index].index_position
+        }
+
+        const {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
+        let [row] = rows
+
+        if (!this.rowType) {
+            row = Serializer.decode({
+                data: row,
+                abi: this.abi,
+                type: this.tableABI.type,
+            })
+        }
+
+        if (params.json) {
+            row = Serializer.objectify(row)
+        }
+
+        return row
     }
 
     /**
      * Retrieves all the rows from the table.
      *
-     * @param {GetTableRowsOptions} options - Options for retrieving the table rows.
-     *  May include:
-     *  - `limit`: Maximum number of rows to return.
+     * @param {number} maxRows - The maximum number of rows to return.
+     * @param {QueryParams} queryParams - Query parameters to filter rows.
      * @returns {TableCursor<TableRow>} Promise resolving to a `TableCursor` of the table rows.
      */
-    first(limit: number): TableCursor<TableRow> {
-        const tableRowsParams = {
-            table: this.name,
-            limit,
-            code: this.contract.account,
-            type: this.rowType,
-        }
-
-        return new TableCursor({
-            table: this,
-            tableParams: tableRowsParams,
-        })
-    }
-
-    /**
-     * Returns a cursor to get every single rows on the table.
-     * @returns {TableCursor<TableRow>}
-     */
-    cursor(): TableCursor<TableRow> {
-        const tableRowsParams = {
-            table: this.name,
-            code: this.contract.account,
-            type: this.rowType,
-            limit: 1000000,
-        }
-
-        return new TableCursor({
-            table: this,
-            tableParams: tableRowsParams,
+    first(maxRows: number, params: QueryParams = {}): TableCursor<RowType> {
+        return this.query({
+            ...params,
+            maxRows,
         })
     }
 
@@ -199,8 +222,8 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
      * Returns all the rows from the table.
      * @returns {Promise<TableRow[]>} Promise resolving to an array of table rows.
      */
-    async all(): Promise<TableRow[]> {
-        return this.cursor().all()
+    async all(params: QueryParams = {}): Promise<RowType[]> {
+        return this.query(params).all()
     }
 
     getFieldToIndex() {
@@ -210,13 +233,32 @@ export class Table<TableRow extends ABISerializableConstructor = ABISerializable
 
         const fieldToIndex = {}
 
-        for (let i = 0; i < this.abi.key_names.length; i++) {
-            fieldToIndex[this.abi.key_names[i]] = {
-                type: this.abi.key_types[i],
+        for (let i = 0; i < this.tableABI.key_names.length; i++) {
+            fieldToIndex[this.tableABI.key_names[i]] = {
+                type: this.tableABI.key_types[i],
                 index_position: indexPositionInWords(i),
             }
         }
 
         return fieldToIndex
+    }
+
+    scopes(params: QueryParams = {}): TableScopeCursor {
+        const tableRowsParams: any = {
+            // Table query
+            code: this.account,
+            table: this.name,
+            // Filtering
+            lower_bound: wrapIndexValue(params.from),
+            upper_bound: wrapIndexValue(params.to),
+            limit: params.rowsPerAPIRequest || this.defaultRowLimit,
+        }
+
+        return new TableScopeCursor({
+            abi: this.abi,
+            client: this.client,
+            maxRows: params.maxRows,
+            params: tableRowsParams,
+        })
     }
 }

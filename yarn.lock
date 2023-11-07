@@ -1313,10 +1313,20 @@
     pako "^2.0.4"
     tslib "^2.1.0"
 
-"@wharfkit/antelope@^0.7.3", "@wharfkit/antelope@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@wharfkit/antelope/-/antelope-0.8.0.tgz#128c4986c91d5ebd1f334a32f001154ebf70a62b"
-  integrity sha512-+NPVxQoBR5NoH8CO2Wnk4mT57zMu5N8DGu/qNjzDy92nwDW1eOjfy/SBrLnD06ToSE3Ru+CqIm8cD63BIHdMTA==
+"@wharfkit/abicache@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@wharfkit/abicache/-/abicache-1.2.0.tgz#f67f7bbd854adc443c3e363d5fbe3d27ac4f8383"
+  integrity sha512-1+564ODM1KhUs7chE8KpYhnxShuPLC1MvqYcXVuLosxXXwcYC4IiJ1V3VuikLG+xfBDp1GZivGjHQwv1awE2Zw==
+  dependencies:
+    "@wharfkit/antelope" "^1.0.0"
+    "@wharfkit/signing-request" "^3.1.0"
+    pako "^2.0.4"
+    tslib "^2.1.0"
+
+"@wharfkit/antelope@^0.7.3", "@wharfkit/antelope@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@wharfkit/antelope/-/antelope-1.0.0.tgz#c3057b70575991be5de3aea19e0c474614783c80"
+  integrity sha512-gwc6L3AzceN/menx9HCV22Ekd3it1wRruY6dIkyfCaV2UBGmfvIVJ3wPaDi4Ppj2k50b86ShSSHdd52jOFd+dg==
   dependencies:
     bn.js "^4.11.9"
     brorand "^1.1.0"
@@ -1361,6 +1371,14 @@
   integrity sha512-+9UaznhYlZSgdZGG/LF5GkH7P9dCVh+b32cR1PYHKG6KuOsPlLqfv1DuWkqsxQyi3kGT1fXG1i8sl39ItgwLzg==
   dependencies:
     "@wharfkit/antelope" "^0.7.3"
+    tslib "^2.0.3"
+
+"@wharfkit/signing-request@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@wharfkit/signing-request/-/signing-request-3.1.0.tgz#7883f0b2350c6fe3446d2b8733dd7d0004f01911"
+  integrity sha512-aVWV9Z3o77uDrFSR3wC78c1e/QNkfi3IxZbGzMizvoYTYPKHgHs1F6Go/1oe0Dlo/kEB9tgckFviccUqrK987w==
+  dependencies:
+    "@wharfkit/antelope" "^1.0.0"
     tslib "^2.0.3"
 
 "@wharfkit/wallet-plugin-privatekey@^1.0.0":

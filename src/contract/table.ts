@@ -155,7 +155,10 @@ export class Table<RowType = any> {
      *  Each key-value pair in the queryParams object corresponds to a field and its expected value in the table.
      * @returns {Promise<TableRow>} Promise resolving to a single table row.
      */
-    async get(value?: API.v1.TableIndexType | string, params: QueryParams = {}): Promise<RowType> {
+    async get(
+        value?: API.v1.TableIndexType | string,
+        params: QueryParams = {}
+    ): Promise<RowType | undefined> {
         const tableRowsParams: any = {
             table: this.name,
             code: this.account,
@@ -187,6 +190,10 @@ export class Table<RowType = any> {
         }
 
         const {rows} = await this.client!.v1.chain.get_table_rows(tableRowsParams)
+
+        if (rows.length === 0) {
+            return undefined
+        }
         let [row] = rows
 
         if (!this.rowType) {

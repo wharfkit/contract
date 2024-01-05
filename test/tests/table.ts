@@ -115,8 +115,8 @@ suite('Table', () => {
             assert.instanceOf(table, Table)
             const row = await table.get()
             assert.instanceOf(row, NameBid)
-            assert.instanceOf(row.newname, Name)
-            assert.instanceOf(row.high_bid, Int64)
+            assert.instanceOf(row?.newname, Name)
+            assert.instanceOf(row?.high_bid, Int64)
         })
         suite('all', () => {
             test('should return every single row in a table', async () => {
@@ -387,6 +387,12 @@ suite('Table', () => {
             const contract = await contractKit.load('eosio.token')
             const result = await contract.table('accounts', 'wharfkittest').get()
             assert.instanceOf(result.balance, Asset)
+        })
+
+        test('should return undefined when no entry is found', async function () {
+            const row = await producersTable.get('doesnotexist')
+
+            assert.isUndefined(row)
         })
     })
 

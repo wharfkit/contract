@@ -14,6 +14,7 @@ export interface QueryParams {
     to?: API.v1.TableIndexType | string | number
     maxRows?: number
     rowsPerAPIRequest?: number
+    reverse?: boolean
 }
 
 interface FieldToIndex {
@@ -123,6 +124,7 @@ export class Table<RowType = any> {
             lower_bound: wrapIndexValue(params.from),
             upper_bound: wrapIndexValue(params.to),
             limit: params.rowsPerAPIRequest || this.defaultRowLimit,
+            reverse: params.reverse,
         }
 
         if (params.index) {
@@ -173,6 +175,7 @@ export class Table<RowType = any> {
             index_position: params.index_position,
             key_type: params.key_type,
             json: false,
+            reverse: params.reverse,
         }
 
         if (params.index) {
@@ -259,6 +262,7 @@ export class Table<RowType = any> {
             lower_bound: wrapIndexValue(params.from),
             upper_bound: wrapIndexValue(params.to),
             limit: params.rowsPerAPIRequest || this.defaultRowLimit,
+            reverse: params.reverse,
         }
 
         return new TableScopeCursor({

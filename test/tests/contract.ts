@@ -3,7 +3,7 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, ContractArgs, Table} from '$lib'
 import {DelegatedBandwidth, ProducerInfo} from '$test/data/structs/eosio'
-import {ABI, Action, Asset, Name, PrivateKey, Serializer} from '@wharfkit/antelope'
+import {ABI, Action, Asset, Name, PrivateKey, Serializer, UInt64} from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 import {runGenericContractTests} from './helpers/generic'
 
@@ -359,6 +359,21 @@ suite('Contract', async function () {
                     error = err
                 }
                 assert.instanceOf(error, Error)
+            })
+        })
+
+        suite('readonly transaction', () => {
+            test('basic return', async () => {
+                const contract = await mockKit.load('abcabcabc333')
+                const result = await contract.readonly('returnvalue', {
+                    message: 'hello',
+                })
+                assert.equal(result, 'Validation has passed.')
+            })
+            test('dynamic encoded return', async () => {
+                const contract = await mockKit.load('testing.gm')
+                const result = await contract.readonly('callapi', {})
+                assert.instanceOf(result.foo, UInt64)
             })
         })
     })

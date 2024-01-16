@@ -9,6 +9,8 @@ import {
     NameType,
     PermissionLevel,
     PermissionLevelType,
+    Serializer,
+    Transaction,
 } from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 
@@ -112,6 +114,33 @@ export class Contract {
             },
             this.abi
         )
+    }
+
+    public async readonly(name, data: ActionDataType): Promise<any> {
+        // Generate action
+        const action = this.action(name, data)
+        // Remove authorizations
+        action.authorization = []
+        // Assemble readonly transaction
+        const transaction = Transaction.from({
+            ref_block_num: 0,
+            ref_block_prefix: 0,
+            expiration: 0,
+            actions: [action],
+        })
+        // Execute and retrieve response
+        const response = await this.client.v1.chain.send_read_only_transaction(transaction)
+        // Decode and return results
+        const hexData = response.processed.action_traces[0].return_value_hex_data
+        const returnType = this.abi.action_results.find((a) => Name.from(a.name).equals(name))
+        if (!returnType) {
+            throw new Error(`Return type for ${name} not defined in the ABI.`)
+        }
+        return Serializer.decode({
+            data: hexData,
+            type: returnType.result_type,
+            abi: this.abi,
+        })
     }
 
     public actions(actions: ActionsArgs[], options?: ActionOptions): Action[] {

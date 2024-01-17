@@ -116,7 +116,10 @@ export class Contract {
         )
     }
 
-    public async readonly(name, data: ActionDataType): Promise<any> {
+    public async readonly(name, data?: ActionDataType): Promise<any> {
+        if (!data) {
+            data = {}
+        }
         // Generate action
         const action = this.action(name, data)
         // Remove authorizations

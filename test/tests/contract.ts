@@ -372,7 +372,7 @@ suite('Contract', async function () {
             })
             test('dynamic encoded return', async () => {
                 const contract = await mockKit.load('testing.gm')
-                const result = await contract.readonly('callapi', {})
+                const result = await contract.readonly('callapi')
                 assert.instanceOf(result.foo, UInt64)
             })
         })

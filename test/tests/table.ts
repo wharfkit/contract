@@ -302,6 +302,16 @@ suite('Table', () => {
                 assert.equal(rowsSellTxtScope.length, 348)
             })
         })
+
+        test('reverse', async function () {
+            const tableRowCursor = decentiumTrendingTable.query({from: 5, to: 6, reverse: true})
+            tableRowCursor.reset()
+
+            assert.deepEqual(
+                Serializer.objectify(await tableRowCursor.next()).map((row) => row.id),
+                [6, 5]
+            )
+        })
     })
 
     suite('get', () => {

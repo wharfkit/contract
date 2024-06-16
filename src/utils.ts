@@ -59,7 +59,7 @@ export function indexPositionInWords(index: number): string {
 }
 
 export function wrapIndexValue(value): API.v1.TableIndexType | undefined {
-    if (!value) {
+    if (value === undefined || value === null) {
         return
     }
 

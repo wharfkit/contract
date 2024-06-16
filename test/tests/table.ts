@@ -13,11 +13,13 @@ suite('Table', () => {
     let eosio: Contract
     let msig: Contract
     let decentiumorg: Contract
+    let drops: Contract
 
     let nameBidTable
     let decentiumTrendingTable
     let producersTable
     let proposalTable: Table
+    let dropTable: Table
 
     setup(async function () {
         kit = new ContractKit({
@@ -26,9 +28,12 @@ suite('Table', () => {
 
         eosio = await kit.load('eosio')
         msig = await kit.load('eosio.msig')
+        drops = await kit.load('drops')
+
         proposalTable = msig.table('proposal')
         nameBidTable = eosio.table('namebids')
         producersTable = eosio.table('producers')
+        dropTable = drops.table('drop')
 
         decentiumorg = await kit.load('decentiumorg')
         decentiumTrendingTable = decentiumorg.table('trending')
@@ -174,6 +179,15 @@ suite('Table', () => {
                     Serializer.objectify(await tableRowCursor.all()).map((row) => row.score),
                     [101511, 102465, 102507, 103688, 103734, 105056]
                 )
+            })
+
+            test('should be able to query for a js value of 0', async () => {
+                const tableRowCursor = dropTable.query({
+                    from: 0,
+                    to: 0,
+                })
+                const rows = await tableRowCursor.next()
+                assert.lengthOf(rows, 0)
             })
 
             test('should fetch table rows correctly when filtering is used (index_position)', async () => {

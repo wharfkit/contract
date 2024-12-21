@@ -22,6 +22,10 @@ export interface ContractArgs {
     client: APIClient
 }
 
+export interface ContractOptions {
+    debug?: boolean
+}
+
 export interface ActionOptions {
     authorization?: PermissionLevelType[]
 }
@@ -45,13 +49,14 @@ export class Contract {
     readonly abi: ABI
     readonly account: Name
     readonly client: APIClient
+    readonly debug: boolean = false
 
     /**
      * Constructs a new `Contract` instance.
      *
      * @param {ContractArgs} args - The required arguments for a contract.
      */
-    constructor(args: ContractArgs) {
+    constructor(args: ContractArgs, options: ContractOptions = {}) {
         if (!args.abi) {
             throw new Error('Contract requires an ABI')
         }
@@ -64,6 +69,9 @@ export class Contract {
             throw new Error('Contract requires an APIClient')
         }
         this.client = args.client
+        if (options.debug) {
+            this.debug = options.debug
+        }
     }
 
     public get tableNames(): string[] {
@@ -82,6 +90,7 @@ export class Contract {
             abi: this.abi,
             account: this.account,
             client: this.client,
+            debug: this.debug,
             defaultScope: scope,
             name,
             rowType,

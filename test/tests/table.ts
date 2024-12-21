@@ -326,6 +326,18 @@ suite('Table', () => {
                 [6, 5]
             )
         })
+
+        test('should return deserialized data in debug', async function () {
+            const table = new Table({
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
+                name: 'global',
+                debug: true,
+            })
+            const row = await table.all()
+            assert.deepEqual(row, JSON.parse(JSON.stringify(row)))
+        })
     })
 
     suite('get', () => {
@@ -418,6 +430,18 @@ suite('Table', () => {
 
             assert.isUndefined(row)
         })
+
+        test('should return deserialized data in debug', async function () {
+            const table = new Table({
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
+                name: 'namebids',
+                debug: true,
+            })
+            const row = await table.get()
+            assert.deepEqual(row, JSON.parse(JSON.stringify(row)))
+        })
     })
 
     suite('first', () => {
@@ -485,6 +509,19 @@ suite('Table', () => {
                 assert.instanceOf(batch[0].ref.category, Name)
             })
         })
+
+        test('should return deserialized data in debug', async function () {
+            const table = new Table({
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
+                name: 'global',
+                debug: true,
+            })
+            const cursor = await table.query()
+            const row = await cursor.all()
+            assert.deepEqual(row, JSON.parse(JSON.stringify(row)))
+        })
     })
 
     suite('all', () => {
@@ -495,6 +532,17 @@ suite('Table', () => {
         test('should return typed data', async () => {
             const tableRows = await nameBidTable.all()
             assert.instanceOf(tableRows[0].high_bidder, Name)
+        })
+        test('should return deserialized data in debug', async function () {
+            const table = new Table({
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
+                name: 'global',
+                debug: true,
+            })
+            const row = await table.all()
+            assert.deepEqual(row, JSON.parse(JSON.stringify(row)))
         })
     })
 

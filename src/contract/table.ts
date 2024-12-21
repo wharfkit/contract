@@ -30,6 +30,7 @@ interface TableParams<TableRow = any> {
     name: NameType
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
+    debug?: boolean
     defaultRowLimit?: number
     defaultScope?: NameType
 }
@@ -52,6 +53,7 @@ export class Table<RowType = any> {
     readonly name: Name
     readonly rowType?: RowType
     readonly tableABI: ABI.Table
+    readonly debug: boolean = false
 
     private fieldToIndex?: any
 
@@ -82,6 +84,9 @@ export class Table<RowType = any> {
         }
         this.tableABI = tableABI
         this.defaultScope = args.defaultScope
+        if (args.debug) {
+            this.debug = true
+        }
     }
 
     /**
@@ -118,6 +123,7 @@ export class Table<RowType = any> {
                     : this.defaultScope || this.account,
             // Response typing
             type: this.rowType,
+            json: this.debug,
             // Filtering
             index_position: params.index_position,
             key_type: params.key_type,
@@ -174,7 +180,7 @@ export class Table<RowType = any> {
             upper_bound: wrapIndexValue(value),
             index_position: params.index_position,
             key_type: params.key_type,
-            json: false,
+            json: this.debug,
             reverse: params.reverse,
         }
 
@@ -198,6 +204,11 @@ export class Table<RowType = any> {
             return undefined
         }
         let [row] = rows
+
+        // Debug mode will return a JSON result, so just return it
+        if (this.debug) {
+            return row
+        }
 
         if (!this.rowType) {
             row = Serializer.decode({

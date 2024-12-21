@@ -29,6 +29,18 @@ suite('Kit', function () {
             assert.instanceOf(kit, ContractKit)
             assert.instanceOf(kit.abiCache, ABICache)
         })
+        test('options: debug', async function () {
+            const kit = new ContractKit(mockContractKitArgs, {
+                debug: true,
+            })
+            assert.instanceOf(kit, ContractKit)
+            assert.isTrue(kit.debug)
+            const contract = await kit.load('eosio.token')
+            assert.instanceOf(contract, Contract)
+            assert.isTrue(contract.debug)
+            const table = contract.table('accounts')
+            assert.isTrue(table.debug)
+        })
         suite('options: abis', function () {
             test('untyped', async function () {
                 const kit = new ContractKit(mockContractKitArgs, {

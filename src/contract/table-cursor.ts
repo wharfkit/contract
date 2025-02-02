@@ -69,6 +69,13 @@ export abstract class TableCursor<RowType = any> {
     }
 
     /**
+     * Get the current next key value to use for the lower_bounds parameter in the next API request.
+     */
+    get nextkey() {
+        return this.next_key
+    }
+
+    /**
      * Implements the async iterator protocol for the cursor.
      *
      * @returns An iterator for all rows in the table.

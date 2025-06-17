@@ -1,4 +1,5 @@
 import {ABI, ABIDef, API, APIClient, Name} from '@wharfkit/antelope'
+import {wrapIndexValue} from '../utils'
 
 /** Mashup of valid types for an APIClient call to v1.chain.get_table_rows */
 export type TableRowParamsTypes =
@@ -122,5 +123,31 @@ export abstract class TableCursor<RowType = any> {
             rows.push(row)
         }
         return rows
+    }
+
+    /**
+     * Build the query for the get_table_rows API endpoint.
+     */
+    getTableRowsParams(rowsPerAPIRequest: number = Number.MAX_SAFE_INTEGER): any {
+        // Set the lower_bound, and override if the cursor has a next_key value
+        let lower_bound = this.params.lower_bound
+        if (this.next_key) {
+            lower_bound = this.next_key
+        }
+
+        // Determine the maximum number of remaining rows for the cursor
+        const rowsRemaining = this.maxRows - this.rowsCount
+
+        // Find the lowest amount between rows remaining, rows per request, or the provided query params limit
+        const limit = Math.min(rowsRemaining, rowsPerAPIRequest, this.params.limit)
+
+        // Assemble and perform the v1/chain/get_table_rows query
+        const query = {
+            ...this.params,
+            limit,
+            lower_bound: wrapIndexValue(lower_bound),
+            upper_bound: wrapIndexValue(this.params.upper_bound),
+        }
+        return query
     }
 }

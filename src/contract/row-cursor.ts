@@ -1,5 +1,4 @@
 import {API, Serializer} from '@wharfkit/antelope'
-import {wrapIndexValue} from '../utils'
 import {TableCursor} from './table-cursor'
 
 export class TableRowCursor<RowType = any> extends TableCursor {
@@ -15,26 +14,10 @@ export class TableRowCursor<RowType = any> extends TableCursor {
             return []
         }
 
-        // Set the lower_bound, and override if the cursor has a next_key value
-        let lower_bound = this.params.lower_bound
-        if (this.next_key) {
-            lower_bound = this.next_key
-        }
+        // Assemble the query params
+        const query = this.getTableRowsParams(rowsPerAPIRequest)
 
-        // Determine the maximum number of remaining rows for the cursor
-        const rowsRemaining = this.maxRows - this.rowsCount
-
-        // Find the lowest amount between rows remaining, rows per request, or the provided query params limit
-        const limit = Math.min(rowsRemaining, rowsPerAPIRequest, this.params.limit)
-
-        // Assemble and perform the v1/chain/get_table_rows query
-        const query = {
-            ...this.params,
-            limit,
-            lower_bound: wrapIndexValue(lower_bound),
-            upper_bound: wrapIndexValue(this.params.upper_bound),
-        }
-
+        // Execute the query
         const result = await this.client!.v1.chain.get_table_rows(query)
 
         // Determine if we need to decode the rows, based on if:

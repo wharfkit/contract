@@ -142,6 +142,9 @@ export class Contract {
         })
         // Execute and retrieve response
         const response = await this.client.v1.chain.send_read_only_transaction(transaction)
+        if (response.processed.except) {
+            throw new Error(response.processed.except.message)
+        }
         // Decode and return results
         const hexData = response.processed.action_traces[0].return_value_hex_data
         const returnType = this.abi.action_results.find((a) => Name.from(a.name).equals(name))

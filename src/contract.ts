@@ -15,6 +15,7 @@ import {
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 
 import {Table} from './contract/table'
+import {formatExceptionMessage} from './utils'
 
 export interface ContractArgs {
     abi: ABIDef
@@ -143,7 +144,7 @@ export class Contract {
         // Execute and retrieve response
         const response = await this.client.v1.chain.send_read_only_transaction(transaction)
         if (response.processed.except) {
-            throw new Error(response.processed.except.message)
+            throw new Error(formatExceptionMessage(response.processed.except))
         }
         // Decode and return results
         const hexData = response.processed.action_traces[0].return_value_hex_data

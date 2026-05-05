@@ -89,3 +89,18 @@ export function blobStringToAbi(blobString: string): ABI {
     const blob = Blob.from(blobString)
     return ABI.from(blob)
 }
+
+export function formatExceptionMessage(except: API.v1.SendTransactionResponseException): string {
+    const top = except.stack?.[0]
+    if (top?.format) {
+        const data = top.data ?? {}
+        const substituted = top.format.replace(/\$\{(\w+)\}/g, (_, key) =>
+            key in data ? String(data[key]) : `\${${key}}`
+        )
+        if (substituted) return substituted
+    }
+    if (typeof top?.data?.s === 'string') {
+        return top.data.s
+    }
+    return except.message
+}

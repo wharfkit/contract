@@ -6,6 +6,7 @@ import {
     abiToBlob,
     blobStringToAbi,
     capitalize,
+    formatExceptionMessage,
     indexPositionInWords,
     pascalCase,
     singularize,
@@ -63,5 +64,64 @@ suite('Utility functions', function () {
         const blobString = String(blob)
         const result = blobStringToAbi(blobString)
         assert(result.equals(testABI))
+    })
+
+    suite('formatExceptionMessage', function () {
+        test('substitutes ${key} placeholders from stack[0]', function () {
+            const except: any = {
+                code: 3050003,
+                name: 'eosio_assert_message_exception',
+                message: 'eosio_assert_message assertion failure',
+                stack: [
+                    {
+                        context: {
+                            level: 'error',
+                            file: 'cf_system.cpp',
+                            line: 14,
+                            method: 'eosio_assert',
+                        },
+                        format: 'assertion failure with message: ${s}',
+                        data: {s: 'container not found'},
+                    },
+                ],
+            }
+            assert.equal(
+                formatExceptionMessage(except),
+                'assertion failure with message: container not found'
+            )
+        })
+
+        test('falls back to except.message when stack is empty', function () {
+            const except: any = {
+                code: 3080004,
+                name: 'tx_cpu_usage_exceeded',
+                message: 'transaction exceeded the current CPU usage limit',
+                stack: [],
+            }
+            assert.equal(
+                formatExceptionMessage(except),
+                'transaction exceeded the current CPU usage limit'
+            )
+        })
+
+        test('uses data.s when format is empty', function () {
+            const except: any = {
+                code: 3050003,
+                name: 'eosio_assert_message_exception',
+                message: 'eosio_assert_message assertion failure',
+                stack: [{context: {}, format: '', data: {s: 'leftover string'}}],
+            }
+            assert.equal(formatExceptionMessage(except), 'leftover string')
+        })
+
+        test('leaves unmatched placeholders intact', function () {
+            const except: any = {
+                code: 1,
+                name: 'whatever',
+                message: 'fallback',
+                stack: [{context: {}, format: 'oops ${missing}', data: {}}],
+            }
+            assert.equal(formatExceptionMessage(except), 'oops ${missing}')
+        })
     })
 })

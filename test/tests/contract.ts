@@ -104,8 +104,8 @@ suite('Contract', async function () {
 
         suite('specific contract', function () {
             suite('system contract', function () {
-                suite('generic tests', async () => {
-                    runGenericContractTests(systemContract)
+                suite('generic tests', function () {
+                    runGenericContractTests(() => systemContract)
                 })
                 suite('tableNames', function () {
                     test('validate for contract', function () {
@@ -255,8 +255,8 @@ suite('Contract', async function () {
                 })
             })
             suite('token contract', function () {
-                suite('generic tests', async () => {
-                    runGenericContractTests(tokenContract)
+                suite('generic tests', function () {
+                    runGenericContractTests(() => tokenContract)
                 })
                 suite('action', function () {
                     suite('load', function () {

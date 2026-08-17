@@ -15,7 +15,7 @@ import {
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 
 import {Table} from './contract/table'
-import {formatExceptionMessage} from './utils'
+import {formatExceptionMessage, TableScopeType} from './utils'
 
 export interface ContractArgs {
     abi: ABIDef
@@ -83,7 +83,7 @@ export class Contract {
         return this.tableNames.includes(String(name))
     }
 
-    public table<RowType>(name: NameType, scope?: NameType, rowType?): Table<RowType | any> {
+    public table<RowType>(name: NameType, scope?: TableScopeType, rowType?): Table<RowType | any> {
         if (!this.hasTable(name)) {
             throw new Error(`Contract (${this.account}) does not have a table named (${name})`)
         }

@@ -7,12 +7,17 @@ import {
     Float64,
     isInstanceOf,
     Name,
+    NameType,
     Serializer,
     UInt128,
     UInt64,
+    UInt64Type,
 } from '@wharfkit/antelope'
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+
+/** A table scope: a name, or any `uint64` value. Numeric scopes above 2^53 must be passed as a `UInt64`, since a `number` cannot hold them. */
+export type TableScopeType = NameType | UInt64Type
 
 export function pascalCase(value: string): string {
     return value
@@ -78,6 +83,35 @@ export function wrapIndexValue(value): API.v1.TableIndexType | undefined {
     }
 
     return Name.from(value)
+}
+
+/** Whether a scope is absent, meaning a query should fall back to its default. A `0` scope is present. */
+export function isAbsentScope(value?: TableScopeType | null): value is undefined | null | '' {
+    return value === undefined || value === null || value === ''
+}
+
+/** Resolve a {@link TableScopeType} to the value sent as the `scope` of a table query. */
+export function wrapScopeValue(value: TableScopeType): Name | UInt64 | string {
+    if (value === undefined || value === null) {
+        throw new Error('Scope is required')
+    }
+
+    if (isInstanceOf(value, Name)) {
+        return value
+    }
+
+    // Strings reach the chain untouched, which reads an all-digit scope as a number and the rest as a name
+    if (typeof value === 'string') {
+        return value
+    }
+
+    if (typeof value === 'number' && !Number.isSafeInteger(value)) {
+        throw new Error(
+            `Scope ${value} is not an integer a number can hold, use UInt64.from() to pass it instead`
+        )
+    }
+
+    return UInt64.from(value)
 }
 
 export function abiToBlob(abi: ABI): Blob {

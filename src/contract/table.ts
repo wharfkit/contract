@@ -1,5 +1,11 @@
-import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@wharfkit/antelope'
-import {indexPositionInWords, wrapIndexValue} from '../utils'
+import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer, UInt64} from '@wharfkit/antelope'
+import {
+    indexPositionInWords,
+    isAbsentScope,
+    TableScopeType,
+    wrapIndexValue,
+    wrapScopeValue,
+} from '../utils'
 import {TableRowCursor} from './row-cursor'
 import {TableScopeCursor} from './scope-cursor'
 import {TableCursor} from './table-cursor'
@@ -7,7 +13,7 @@ import {TableCursor} from './table-cursor'
 export interface QueryParams {
     index?: string
     index_position?: string
-    scope?: NameType | number
+    scope?: TableScopeType
     key_type?: keyof API.v1.TableIndexTypes
     json?: boolean
     from?: API.v1.TableIndexType | string | number
@@ -32,12 +38,12 @@ interface TableParams<TableRow = any> {
     fieldToIndex?: FieldToIndex
     debug?: boolean
     defaultRowLimit?: number
-    defaultScope?: NameType
+    defaultScope?: TableScopeType
 }
 
 export interface GetTableRowsOptions {
     limit?: number
-    scope?: NameType
+    scope?: TableScopeType
 }
 
 /**
@@ -57,7 +63,7 @@ export class Table<RowType = any> {
 
     private fieldToIndex?: any
 
-    public defaultScope?: NameType
+    public defaultScope?: TableScopeType
     public defaultRowLimit = 1000
 
     /**
@@ -117,10 +123,7 @@ export class Table<RowType = any> {
             // Table query
             table: this.name,
             code: this.account,
-            scope:
-                params.scope !== undefined
-                    ? String(params.scope)
-                    : this.defaultScope || this.account,
+            scope: this.resolveScope(params.scope),
             // Response typing
             type: this.rowType,
             json: this.debug,
@@ -170,10 +173,7 @@ export class Table<RowType = any> {
         const tableRowsParams: any = {
             table: this.name,
             code: this.account,
-            scope:
-                params.scope !== undefined
-                    ? String(params.scope)
-                    : this.defaultScope || this.account,
+            scope: this.resolveScope(params.scope),
             type: this.rowType!,
             limit: 1,
             lower_bound: wrapIndexValue(value),
@@ -245,6 +245,15 @@ export class Table<RowType = any> {
      */
     async all(params: QueryParams = {}): Promise<RowType[]> {
         return this.query(params).all()
+    }
+
+    /** Resolve the scope of a query, falling back to the table default and then the contract account. */
+    private resolveScope(scope?: TableScopeType): Name | UInt64 | string {
+        const value = isAbsentScope(scope) ? this.defaultScope : scope
+        if (isAbsentScope(value)) {
+            return this.account
+        }
+        return wrapScopeValue(value)
     }
 
     getFieldToIndex() {

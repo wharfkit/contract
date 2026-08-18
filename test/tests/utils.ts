@@ -1,15 +1,18 @@
 import {assert} from 'chai'
 import fs from 'fs'
 
-import {ABI, Blob, Name, Serializer, UInt128, UInt64} from '@wharfkit/antelope'
+import {ABI, Blob, Int64, Name, Serializer, UInt128, UInt32, UInt64} from '@wharfkit/antelope'
 import {
     abiToBlob,
     blobStringToAbi,
     capitalize,
+    formatExceptionMessage,
     indexPositionInWords,
+    isAbsentScope,
     pascalCase,
     singularize,
     wrapIndexValue,
+    wrapScopeValue,
 } from '../../src/utils'
 
 suite('Utility functions', function () {
@@ -42,6 +45,66 @@ suite('Utility functions', function () {
         assert.deepEqual(wrapIndexValue('name'), Name.from('name'))
     })
 
+    suite('Wraps scope value', function () {
+        test('names', function () {
+            assert.deepEqual(wrapScopeValue(Name.from('teamgreymass')), Name.from('teamgreymass'))
+        })
+
+        test('strings pass through untouched', function () {
+            assert.equal(wrapScopeValue('teamgreymass'), 'teamgreymass')
+            assert.equal(wrapScopeValue('0'), '0')
+            assert.equal(wrapScopeValue('18446744073709551615'), '18446744073709551615')
+        })
+
+        test('numbers', function () {
+            assert.deepEqual(wrapScopeValue(0), UInt64.from(0))
+            assert.deepEqual(wrapScopeValue(10), UInt64.from(10))
+        })
+
+        test('uint64 values beyond the range of a number', function () {
+            const scope = UInt64.from('9223372036854775808')
+            assert.deepEqual(wrapScopeValue(scope), scope)
+            assert.equal(String(wrapScopeValue(scope)), '9223372036854775808')
+        })
+
+        test('rejects numbers that cannot hold the scope', function () {
+            assert.throws(
+                () => wrapScopeValue(9223372036854775808),
+                /is not an integer a number can hold/
+            )
+            assert.throws(() => wrapScopeValue(1.5), /is not an integer a number can hold/)
+        })
+
+        test('rejects negative values', function () {
+            assert.throws(() => wrapScopeValue(-1), /underflows uint64/)
+            assert.throws(() => wrapScopeValue(Int64.from(-5)), /underflows uint64/)
+        })
+
+        test('accepts the full uint64 range', function () {
+            const max = UInt64.from('18446744073709551615')
+            assert.equal(String(wrapScopeValue(max)), '18446744073709551615')
+        })
+
+        test('accepts other integer types', function () {
+            assert.deepEqual(wrapScopeValue(Int64.from(5)), UInt64.from(5))
+            assert.deepEqual(wrapScopeValue(UInt32.from(7)), UInt64.from(7))
+        })
+
+        test('rejects an absent scope rather than exhausting memory', function () {
+            assert.throws(() => wrapScopeValue(null as any), /Scope is required/)
+            assert.throws(() => wrapScopeValue(undefined as any), /Scope is required/)
+        })
+
+        test('reports which scopes are absent', function () {
+            assert.isTrue(isAbsentScope(undefined))
+            assert.isTrue(isAbsentScope(null))
+            assert.isTrue(isAbsentScope(''))
+            assert.isFalse(isAbsentScope(0))
+            assert.isFalse(isAbsentScope('teamgreymass'))
+            assert.isFalse(isAbsentScope(UInt64.from(0)))
+        })
+    })
+
     const testABI = ABI.from(fs.readFileSync(`test/data/abis/rewards.gm.json`, {encoding: 'utf8'}))
 
     // Blob created from the testABI
@@ -63,5 +126,64 @@ suite('Utility functions', function () {
         const blobString = String(blob)
         const result = blobStringToAbi(blobString)
         assert(result.equals(testABI))
+    })
+
+    suite('formatExceptionMessage', function () {
+        test('substitutes ${key} placeholders from stack[0]', function () {
+            const except: any = {
+                code: 3050003,
+                name: 'eosio_assert_message_exception',
+                message: 'eosio_assert_message assertion failure',
+                stack: [
+                    {
+                        context: {
+                            level: 'error',
+                            file: 'cf_system.cpp',
+                            line: 14,
+                            method: 'eosio_assert',
+                        },
+                        format: 'assertion failure with message: ${s}',
+                        data: {s: 'container not found'},
+                    },
+                ],
+            }
+            assert.equal(
+                formatExceptionMessage(except),
+                'assertion failure with message: container not found'
+            )
+        })
+
+        test('falls back to except.message when stack is empty', function () {
+            const except: any = {
+                code: 3080004,
+                name: 'tx_cpu_usage_exceeded',
+                message: 'transaction exceeded the current CPU usage limit',
+                stack: [],
+            }
+            assert.equal(
+                formatExceptionMessage(except),
+                'transaction exceeded the current CPU usage limit'
+            )
+        })
+
+        test('uses data.s when format is empty', function () {
+            const except: any = {
+                code: 3050003,
+                name: 'eosio_assert_message_exception',
+                message: 'eosio_assert_message assertion failure',
+                stack: [{context: {}, format: '', data: {s: 'leftover string'}}],
+            }
+            assert.equal(formatExceptionMessage(except), 'leftover string')
+        })
+
+        test('leaves unmatched placeholders intact', function () {
+            const except: any = {
+                code: 1,
+                name: 'whatever',
+                message: 'fallback',
+                stack: [{context: {}, format: 'oops ${missing}', data: {}}],
+            }
+            assert.equal(formatExceptionMessage(except), 'oops ${missing}')
+        })
     })
 })

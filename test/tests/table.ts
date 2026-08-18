@@ -3,7 +3,17 @@ import {assert} from 'chai'
 import ContractKit, {Contract, Table, TableRowCursor, TableScopeCursor} from '$lib'
 
 import {EosioGlobalState} from '$test/data/structs/eosio'
-import {Asset, Int64, Name, Serializer, Struct, TimePoint, UInt32} from '@wharfkit/antelope'
+import {
+    APIClient,
+    Asset,
+    Int64,
+    Name,
+    Serializer,
+    Struct,
+    TimePoint,
+    UInt32,
+    UInt64,
+} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
 
 const mockClient = makeClient('https://eos.greymass.com')
@@ -315,6 +325,93 @@ suite('Table', () => {
                 assert.equal(rowsBuyTxtScope.length, 144)
                 assert.equal(rowsSellTxtScope.length, 348)
             })
+
+            test('should work with uint64 scopes', async function () {
+                const testKit = new ContractKit({
+                    client: makeClient('https://wax.greymass.com'),
+                })
+
+                const contract = await testKit.load('alcordexmain')
+
+                const rowsBuy = await contract
+                    .table('buyorder')
+                    .query({scope: UInt64.from(0)})
+                    .all()
+                const rowsSell = await contract
+                    .table('sellorder')
+                    .query({scope: UInt64.from(0)})
+                    .all()
+                assert.equal(rowsBuy.length, 144)
+                assert.equal(rowsSell.length, 348)
+            })
+
+            test('should keep a uint64 scope beyond the range of a number', function () {
+                const cursor = producersTable.query({scope: UInt64.from('9223372036854775808')})
+                assert.equal(String(cursor.params.scope), '9223372036854775808')
+            })
+
+            test('should accept a uint64 scope from the table call', function () {
+                const cursor = eosio.table('producers', UInt64.from('9223372036854775808')).query()
+                assert.equal(String(cursor.params.scope), '9223372036854775808')
+            })
+
+            test('should reject a number scope that cannot hold the value', function () {
+                assert.throws(
+                    () => producersTable.query({scope: 9223372036854775808}),
+                    /is not an integer a number can hold/
+                )
+            })
+
+            test('should still default to the contract account', function () {
+                const cursor = producersTable.query()
+                assert.equal(String(cursor.params.scope), 'eosio')
+            })
+
+            test('should keep a scope of zero from the table call', function () {
+                const cursor = eosio.table('producers', 0).query()
+                assert.equal(String(cursor.params.scope), '0')
+            })
+
+            test('should fall back to the default scope for an absent query scope', function () {
+                const table = eosio.table('producers', UInt64.from(42))
+                assert.equal(String(table.query().params.scope), '42')
+                assert.equal(String(table.query({scope: null as any}).params.scope), '42')
+                assert.equal(String(table.query({scope: ''}).params.scope), '42')
+            })
+
+            test('should fall back to the contract account for an empty default scope', function () {
+                const cursor = eosio.table('producers', '').query()
+                assert.equal(String(cursor.params.scope), 'eosio')
+            })
+
+            test('should send a uint64 scope on a get request', async function () {
+                const scopes: unknown[] = []
+                const client = new APIClient({
+                    provider: {
+                        call: async ({params}: any) => {
+                            // Assert against the encoded body, where a number scope would lose precision
+                            scopes.push(JSON.parse(JSON.stringify(params)).scope)
+                            return {
+                                status: 200,
+                                headers: {},
+                                text: '{"rows":[],"more":false}',
+                                json: {rows: [], more: false},
+                            }
+                        },
+                    },
+                })
+                const table = new Table({
+                    abi: eosio.abi,
+                    account: 'eosio',
+                    client,
+                    name: 'producers',
+                })
+
+                await table.get(undefined, {scope: UInt64.from('9223372036854775808')})
+                await table.get()
+
+                assert.deepEqual(scopes, ['9223372036854775808', 'eosio'])
+            })
         })
 
         test('reverse', async function () {
@@ -325,6 +422,18 @@ suite('Table', () => {
                 Serializer.objectify(await tableRowCursor.next()).map((row) => row.id),
                 [6, 5]
             )
+        })
+
+        test('should return deserialized data in debug', async function () {
+            const table = new Table({
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
+                name: 'global',
+                debug: true,
+            })
+            const row = await table.all()
+            assert.deepEqual(row, JSON.parse(JSON.stringify(row)))
         })
     })
 
@@ -418,6 +527,18 @@ suite('Table', () => {
 
             assert.isUndefined(row)
         })
+
+        test('should return deserialized data in debug', async function () {
+            const table = new Table({
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
+                name: 'namebids',
+                debug: true,
+            })
+            const row = await table.get()
+            assert.deepEqual(row, JSON.parse(JSON.stringify(row)))
+        })
     })
 
     suite('first', () => {
@@ -485,6 +606,19 @@ suite('Table', () => {
                 assert.instanceOf(batch[0].ref.category, Name)
             })
         })
+
+        test('should return deserialized data in debug', async function () {
+            const table = new Table({
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
+                name: 'global',
+                debug: true,
+            })
+            const cursor = await table.query()
+            const row = await cursor.all()
+            assert.deepEqual(row, JSON.parse(JSON.stringify(row)))
+        })
     })
 
     suite('all', () => {
@@ -495,6 +629,17 @@ suite('Table', () => {
         test('should return typed data', async () => {
             const tableRows = await nameBidTable.all()
             assert.instanceOf(tableRows[0].high_bidder, Name)
+        })
+        test('should return deserialized data in debug', async function () {
+            const table = new Table({
+                abi: eosio.abi,
+                account: 'eosio',
+                client: mockClient,
+                name: 'global',
+                debug: true,
+            })
+            const row = await table.all()
+            assert.deepEqual(row, JSON.parse(JSON.stringify(row)))
         })
     })
 

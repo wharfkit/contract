@@ -15,11 +15,16 @@ import {
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 
 import {Table} from './contract/table'
+import {formatExceptionMessage, TableScopeType} from './utils'
 
 export interface ContractArgs {
     abi: ABIDef
     account: NameType
     client: APIClient
+}
+
+export interface ContractOptions {
+    debug?: boolean
 }
 
 export interface ActionOptions {
@@ -45,13 +50,14 @@ export class Contract {
     readonly abi: ABI
     readonly account: Name
     readonly client: APIClient
+    readonly debug: boolean = false
 
     /**
      * Constructs a new `Contract` instance.
      *
      * @param {ContractArgs} args - The required arguments for a contract.
      */
-    constructor(args: ContractArgs) {
+    constructor(args: ContractArgs, options: ContractOptions = {}) {
         if (!args.abi) {
             throw new Error('Contract requires an ABI')
         }
@@ -64,6 +70,9 @@ export class Contract {
             throw new Error('Contract requires an APIClient')
         }
         this.client = args.client
+        if (options.debug) {
+            this.debug = options.debug
+        }
     }
 
     public get tableNames(): string[] {
@@ -74,7 +83,7 @@ export class Contract {
         return this.tableNames.includes(String(name))
     }
 
-    public table<RowType>(name: NameType, scope?: NameType, rowType?): Table<RowType | any> {
+    public table<RowType>(name: NameType, scope?: TableScopeType, rowType?): Table<RowType | any> {
         if (!this.hasTable(name)) {
             throw new Error(`Contract (${this.account}) does not have a table named (${name})`)
         }
@@ -82,6 +91,7 @@ export class Contract {
             abi: this.abi,
             account: this.account,
             client: this.client,
+            debug: this.debug,
             defaultScope: scope,
             name,
             rowType,
@@ -133,6 +143,9 @@ export class Contract {
         })
         // Execute and retrieve response
         const response = await this.client.v1.chain.send_read_only_transaction(transaction)
+        if (response.processed.except) {
+            throw new Error(formatExceptionMessage(response.processed.except))
+        }
         // Decode and return results
         const hexData = response.processed.action_traces[0].return_value_hex_data
         const returnType = this.abi.action_results.find((a) => Name.from(a.name).equals(name))

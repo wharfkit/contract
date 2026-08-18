@@ -15,6 +15,7 @@ export interface ABIDefinition {
 export interface ContractKitOptions {
     abiCache?: ABICacheInterface
     abis?: ABIDefinition[]
+    debug?: boolean
 }
 
 const defaultContractKitOptions: ContractKitOptions = {}
@@ -22,6 +23,7 @@ const defaultContractKitOptions: ContractKitOptions = {}
 export class ContractKit {
     readonly abiCache: ABICacheInterface
     readonly client: APIClient
+    readonly debug: boolean = false
 
     constructor(args: ContractKitArgs, options: ContractKitOptions = defaultContractKitOptions) {
         if (args.client) {
@@ -43,6 +45,10 @@ export class ContractKit {
                 this.abiCache.setAbi(Name.from(name), ABI.from(abi))
             )
         }
+
+        if (options.debug) {
+            this.debug = options.debug
+        }
     }
 
     /**
@@ -54,10 +60,15 @@ export class ContractKit {
     async load(contract: NameType): Promise<Contract> {
         const account = Name.from(contract)
         const abiDef = await this.abiCache.getAbi(account)
-        return new Contract({
-            abi: ABI.from(abiDef),
-            account,
-            client: this.client,
-        })
+        return new Contract(
+            {
+                abi: ABI.from(abiDef),
+                account,
+                client: this.client,
+            },
+            {
+                debug: this.debug,
+            }
+        )
     }
 }

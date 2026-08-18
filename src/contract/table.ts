@@ -1,5 +1,11 @@
-import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer} from '@wharfkit/antelope'
-import {indexPositionInWords, wrapIndexValue} from '../utils'
+import {ABI, ABIDef, API, APIClient, Name, NameType, Serializer, UInt64} from '@wharfkit/antelope'
+import {
+    indexPositionInWords,
+    isAbsentScope,
+    TableScopeType,
+    wrapIndexValue,
+    wrapScopeValue,
+} from '../utils'
 import {TableRowCursor} from './row-cursor'
 import {TableScopeCursor} from './scope-cursor'
 import {TableCursor} from './table-cursor'
@@ -7,7 +13,7 @@ import {TableCursor} from './table-cursor'
 export interface QueryParams {
     index?: string
     index_position?: string
-    scope?: NameType | number
+    scope?: TableScopeType
     key_type?: keyof API.v1.TableIndexTypes
     json?: boolean
     from?: API.v1.TableIndexType | string | number
@@ -30,13 +36,14 @@ interface TableParams<TableRow = any> {
     name: NameType
     rowType?: TableRow
     fieldToIndex?: FieldToIndex
+    debug?: boolean
     defaultRowLimit?: number
-    defaultScope?: NameType
+    defaultScope?: TableScopeType
 }
 
 export interface GetTableRowsOptions {
     limit?: number
-    scope?: NameType
+    scope?: TableScopeType
 }
 
 /**
@@ -52,10 +59,11 @@ export class Table<RowType = any> {
     readonly name: Name
     readonly rowType?: RowType
     readonly tableABI: ABI.Table
+    readonly debug: boolean = false
 
     private fieldToIndex?: any
 
-    public defaultScope?: NameType
+    public defaultScope?: TableScopeType
     public defaultRowLimit = 1000
 
     /**
@@ -82,6 +90,9 @@ export class Table<RowType = any> {
         }
         this.tableABI = tableABI
         this.defaultScope = args.defaultScope
+        if (args.debug) {
+            this.debug = true
+        }
     }
 
     /**
@@ -112,12 +123,10 @@ export class Table<RowType = any> {
             // Table query
             table: this.name,
             code: this.account,
-            scope:
-                params.scope !== undefined
-                    ? String(params.scope)
-                    : this.defaultScope || this.account,
+            scope: this.resolveScope(params.scope),
             // Response typing
             type: this.rowType,
+            json: this.debug,
             // Filtering
             index_position: params.index_position,
             key_type: params.key_type,
@@ -164,17 +173,14 @@ export class Table<RowType = any> {
         const tableRowsParams: any = {
             table: this.name,
             code: this.account,
-            scope:
-                params.scope !== undefined
-                    ? String(params.scope)
-                    : this.defaultScope || this.account,
+            scope: this.resolveScope(params.scope),
             type: this.rowType!,
             limit: 1,
             lower_bound: wrapIndexValue(value),
             upper_bound: wrapIndexValue(value),
             index_position: params.index_position,
             key_type: params.key_type,
-            json: false,
+            json: this.debug,
             reverse: params.reverse,
         }
 
@@ -198,6 +204,11 @@ export class Table<RowType = any> {
             return undefined
         }
         let [row] = rows
+
+        // Debug mode will return a JSON result, so just return it
+        if (this.debug) {
+            return row
+        }
 
         if (!this.rowType) {
             row = Serializer.decode({
@@ -234,6 +245,15 @@ export class Table<RowType = any> {
      */
     async all(params: QueryParams = {}): Promise<RowType[]> {
         return this.query(params).all()
+    }
+
+    /** Resolve the scope of a query, falling back to the table default and then the contract account. */
+    private resolveScope(scope?: TableScopeType): Name | UInt64 | string {
+        const value = isAbsentScope(scope) ? this.defaultScope : scope
+        if (isAbsentScope(value)) {
+            return this.account
+        }
+        return wrapScopeValue(value)
     }
 
     getFieldToIndex() {

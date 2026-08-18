@@ -39,48 +39,66 @@ export function getMockParams(contract: Contract): ActionDataType {
     }
 }
 
-export function runGenericContractTests(contract: Contract) {
-    // suite: tableNames
-    // contains tables
-    assert.isArray(contract.tableNames)
-    assert.isTrue(contract.tableNames.length > 0)
+export function runGenericContractTests(getContract: () => Contract) {
+    suite('tableNames', function () {
+        test('contains tables', function () {
+            const contract = getContract()
+            assert.isArray(contract.tableNames)
+            assert.isTrue(contract.tableNames.length > 0)
+        })
+    })
 
-    // suite: table
-    // load table using Name
-    const tableName = Name.from(contract.tableNames[0])
-    const table = contract.table(tableName)
-    assert.instanceOf(table, Table)
-    assert.isTrue(table.name.equals(tableName))
+    suite('table', function () {
+        test('loads table using Name', function () {
+            const contract = getContract()
+            const tableName = Name.from(contract.tableNames[0])
+            const table = contract.table(tableName)
+            assert.instanceOf(table, Table)
+            assert.isTrue(table.name.equals(tableName))
+        })
 
-    // load table using string
-    const tableName2 = contract.tableNames[0]
-    const table2 = contract.table(tableName2)
-    assert.instanceOf(table2, Table)
-    assert.isTrue(table2.name.equals(tableName2))
+        test('loads table using string', function () {
+            const contract = getContract()
+            const tableName = contract.tableNames[0]
+            const table = contract.table(tableName)
+            assert.instanceOf(table, Table)
+            assert.isTrue(table.name.equals(tableName))
+        })
 
-    // throws on invalid name
-    assert.throws(() => contract.table('foo'))
+        test('throws on invalid name', function () {
+            const contract = getContract()
+            assert.throws(() => contract.table('foo'))
+        })
+    })
 
-    // suite: actionNames
-    // contains actions
-    assert.isArray(contract.actionNames)
-    assert.isTrue(contract.actionNames.length > 0)
+    suite('actionNames', function () {
+        test('contains actions', function () {
+            const contract = getContract()
+            assert.isArray(contract.actionNames)
+            assert.isTrue(contract.actionNames.length > 0)
+        })
+    })
 
-    // suite: action
-    // load action using Name
-    const actionName = Name.from(contract.actionNames[0])
-    const params = getMockParams(contract)
-    const action = contract.action(actionName, params)
-    assert.instanceOf(action, Action)
-    assert.isTrue(action.name.equals(actionName))
+    suite('action', function () {
+        test('loads action using Name', function () {
+            const contract = getContract()
+            const actionName = Name.from(contract.actionNames[0])
+            const action = contract.action(actionName, getMockParams(contract))
+            assert.instanceOf(action, Action)
+            assert.isTrue(action.name.equals(actionName))
+        })
 
-    // load action using string
-    const actionName2 = contract.actionNames[0]
-    const params2 = getMockParams(contract)
-    const action2 = contract.action(actionName2, params2)
-    assert.instanceOf(action2, Action)
-    assert.isTrue(action2.name.equals(actionName2))
+        test('loads action using string', function () {
+            const contract = getContract()
+            const actionName = contract.actionNames[0]
+            const action = contract.action(actionName, getMockParams(contract))
+            assert.instanceOf(action, Action)
+            assert.isTrue(action.name.equals(actionName))
+        })
 
-    // throws on invalid name
-    assert.throws(() => contract.action('foo', {}))
+        test('throws on invalid name', function () {
+            const contract = getContract()
+            assert.throws(() => contract.action('foo', {}))
+        })
+    })
 }

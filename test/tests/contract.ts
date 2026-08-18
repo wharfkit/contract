@@ -3,7 +3,16 @@ import {assert} from 'chai'
 
 import ContractKit, {Contract, ContractArgs, Table} from '$lib'
 import {DelegatedBandwidth, ProducerInfo} from '$test/data/structs/eosio'
-import {ABI, Action, Asset, Name, PrivateKey, Serializer, UInt64} from '@wharfkit/antelope'
+import {
+    ABI,
+    Action,
+    APIClient,
+    Asset,
+    Name,
+    PrivateKey,
+    Serializer,
+    UInt64,
+} from '@wharfkit/antelope'
 import {PlaceholderAuth} from '@wharfkit/signing-request'
 import {runGenericContractTests} from './helpers/generic'
 
@@ -374,6 +383,91 @@ suite('Contract', async function () {
                 const contract = await mockKit.load('testing.gm')
                 const result = await contract.readonly('callapi')
                 assert.instanceOf(result.foo, UInt64)
+            })
+
+            suite('exceptions', () => {
+                function failingContract(except: unknown): Promise<Contract> {
+                    const response = {
+                        transaction_id: 'ff'.repeat(32),
+                        processed: {
+                            id: 'ff'.repeat(32),
+                            block_num: 1,
+                            block_time: '2026-01-01T00:00:00.000',
+                            receipt: null,
+                            elapsed: 1,
+                            except,
+                            net_usage: 0,
+                            scheduled: false,
+                            action_traces: [],
+                            account_ram_delta: null,
+                        },
+                    }
+                    return mockKit.load('testing.gm').then(
+                        (loaded) =>
+                            new Contract({
+                                abi: loaded.abi,
+                                account: loaded.account,
+                                client: new APIClient({
+                                    provider: {
+                                        call: async () => ({
+                                            status: 200,
+                                            headers: {},
+                                            text: JSON.stringify(response),
+                                            json: response,
+                                        }),
+                                    },
+                                }),
+                            })
+                    )
+                }
+
+                test('throws the substituted assertion message', async () => {
+                    const contract = await failingContract({
+                        code: 3050003,
+                        name: 'eosio_assert_message_exception',
+                        message: 'eosio_assert_message assertion failure',
+                        stack: [
+                            {
+                                context: {level: 'error'},
+                                format: 'assertion failure with message: ${s}',
+                                data: {s: 'insufficient balance'},
+                            },
+                        ],
+                    })
+
+                    let error
+                    try {
+                        await contract.readonly('callapi')
+                    } catch (err) {
+                        error = err
+                    }
+                    assert.instanceOf(error, Error)
+                    assert.equal(
+                        (error as Error).message,
+                        'assertion failure with message: insufficient balance'
+                    )
+                })
+
+                test('falls back to the exception message with an empty stack', async () => {
+                    const contract = await failingContract({
+                        code: 3080004,
+                        name: 'tx_cpu_usage_exceeded',
+                        message: 'transaction exceeded the current CPU usage limit',
+                        stack: [],
+                    })
+
+                    let error
+                    try {
+                        await contract.readonly('callapi')
+                    } catch (err) {
+                        error = err
+                    }
+                    assert.instanceOf(error, Error)
+                    assert.equal(
+                        (error as Error).message,
+                        'transaction exceeded the current CPU usage limit'
+                    )
+                })
             })
         })
     })
